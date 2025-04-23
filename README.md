@@ -16,9 +16,6 @@ Ce projet vous demandera d'écrire votre propre serveur HTTP. Vous devrez suivre
   </a>
 </p>
 
-
-- [Jerome's GitHub Profile](https://github.com/jeportie)
-
 ### Languages and Tools:
 
 <p align="left">
@@ -29,7 +26,3 @@ Ce projet vous demandera d'écrire votre propre serveur HTTP. Vous devrez suivre
   <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/git/git-original.svg" height="40" alt="Git" />
   <img width="12" />
 </p>
-
-<div>
-  <img height="150" src="https://github-readme-stats.vercel.app/api?username=jeportie&show_icons=true&theme=default" alt="Jerome's GitHub stats" />
-</div>
