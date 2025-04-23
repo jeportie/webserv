@@ -21,7 +21,7 @@ webserv
 ### Languages and Tools:
 
 <p align="left">
-  <img src="https://github.com/devicons/devicon/blob/master/icons/c++/C++ (CPlusPlus).svg" height="40" alt="C++" />
+  <img src="https://github.com/devicons/devicon/blob/master/icons/c++/C++.svg" height="40" alt="C++" />
   <img width="12" />
   <img src="https://github.com/devicons/devicon/blob/master/icons/bash/bash-original.svg" height="40" alt="Bash" />
   <img width="12" />
