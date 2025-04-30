@@ -1,20 +1,13 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   ClassName.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/30 11:49:58 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/04/30 11:51:27 by fsalomon         ###   ########.fr       */
+/*   Created: 2025/04/30 12:08:00 by fsalomon          #+#    #+#             */
+/*   Updated: 2025/04/30 12:08:07 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-
-#include "include/webserv.h"
-
-int main()
-{
-    std::cout << "This is not yet a webserv X)" << std::endl;
-    return;
-}
+//template
