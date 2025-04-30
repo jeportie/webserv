@@ -10,11 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-
 #include "include/webserv.h"
 
 int main()
 {
     std::cout << "This is not yet a webserv X)" << std::endl;
-    return;
+    return (0);
 }
