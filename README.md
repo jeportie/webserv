@@ -1,6 +1,412 @@
-# webserv
-## Description
-Ce projet vous demandera d'écrire votre propre serveur HTTP. Vous devrez suivre la RFC d'HTTP et vous serez donc capable de tester avec un vrai browser web. HTTP est un des protocoles les plus utilisés sur internet. Connaitre son fonctionnement sera plus qu'utile même si vous ne faites pas de web à la fin.
+# Webserv - HTTP Server Implementation
+
+## Overview
+
+Webserv is a custom HTTP server implementation built from scratch in C++98. This project aims to provide a deep understanding of how web servers work, the HTTP protocol, and network programming concepts. By implementing a fully functional HTTP server, users will gain insights into the fundamental technologies that power the World Wide Web.
+
+The server handles client connections, processes HTTP requests, serves static content, executes CGI scripts, and manages file uploads. It is designed to be configurable, allowing users to define server behavior through configuration files similar to those used by industry-standard servers like NGINX.
+
+This project is primarily educational, targeting students and developers who want to understand web technologies at a lower level than typically encountered when using high-level frameworks and libraries.
+
+## Core Features
+
+### HTTP Protocol Implementation
+- **What it does**: Implements the core functionality of the HTTP/1.1 protocol, including request parsing and response generation.
+- **Why it's important**: Understanding HTTP is fundamental to web development and network programming.
+- **How it works**: The server parses incoming HTTP requests, extracts headers and body content, and generates appropriate HTTP responses with correct status codes and headers.
+
+### Non-blocking I/O with Event Loop
+- **What it does**: Handles multiple client connections simultaneously without blocking using poll() or equivalent functions.
+- **Why it's important**: Enables the server to handle many concurrent connections efficiently without spawning multiple processes or threads.
+- **How it works**: Uses non-blocking sockets and an event loop to monitor file descriptors for read/write readiness, processing them only when they're ready for I/O operations.
+
+### Configuration File Parsing
+- **What it does**: Reads and interprets a configuration file that defines server behavior.
+- **Why it's important**: Allows users to customize server behavior without modifying code.
+- **How it works**: Parses a configuration file format similar to NGINX, extracting settings for ports, hosts, routes, error pages, and other server behaviors.
+
+### Static File Serving
+- **What it does**: Serves static files (HTML, CSS, JavaScript, images, etc.) to clients.
+- **Why it's important**: This is the primary function of a web server - delivering content to browsers.
+- **How it works**: Maps URL paths to filesystem paths based on configuration, reads files, and sends them to clients with appropriate content types.
+
+### Directory Listing
+- **What it does**: Generates and serves directory listings when a directory is requested and directory listing is enabled.
+- **Why it's important**: Provides a way to browse server content when no index file is present.
+- **How it works**: Reads directory contents and generates an HTML page listing files and subdirectories.
+
+### HTTP Method Support
+- **What it does**: Implements at least GET, POST, and DELETE HTTP methods.
+- **Why it's important**: These methods are essential for basic web functionality (retrieving, submitting, and deleting content).
+- **How it works**: Processes different HTTP methods according to their specifications, handling request bodies and generating appropriate responses.
+
+### CGI Execution
+- **What it does**: Executes CGI scripts (like PHP, Python) to generate dynamic content.
+- **Why it's important**: Enables dynamic content generation beyond static files.
+- **How it works**: Forks processes to execute CGI scripts, passes request data to them via environment variables and stdin, and captures their output to send back to clients.
+
+### File Upload Handling
+- **What it does**: Processes file uploads from clients.
+- **Why it's important**: Enables users to submit files to the server, a common web application requirement.
+- **How it works**: Parses multipart/form-data requests, extracts file content, and saves it to configured locations.
+
+### Error Handling
+- **What it does**: Generates appropriate error responses (404 Not Found, 500 Internal Server Error, etc.).
+- **Why it's important**: Provides meaningful feedback to clients when requests cannot be fulfilled.
+- **How it works**: Detects error conditions, generates HTTP responses with appropriate status codes, and serves custom or default error pages.
+
+### Multiple Server Support
+- **What it does**: Allows configuration of multiple virtual servers on different host:port combinations.
+- **Why it's important**: Enables hosting multiple websites on a single server instance.
+- **How it works**: Routes requests to different server configurations based on the requested host and port.
+
+## User Experience
+
+### User Personas
+
+1. **Student Developer**
+   - Learning about web servers and HTTP
+   - Wants to understand how web technologies work at a lower level
+   - Uses the server as a learning tool
+
+2. **Web Developer**
+   - Testing static websites locally
+   - Needs a simple, configurable server for development
+   - May need to test file uploads and form submissions
+
+3. **System Administrator**
+   - Configuring and deploying web servers
+   - Needs to understand server configuration options
+   - Concerned with performance and security
+
+### Key User Flows
+
+1. **Server Configuration**
+   - User writes a configuration file defining server behavior
+   - User starts the server with the configuration file
+   - Server validates configuration and begins listening for connections
+
+2. **Serving Static Content**
+   - Client requests a URL
+   - Server maps URL to filesystem path
+   - Server reads file and sends it to client
+
+3. **Processing CGI Requests**
+   - Client sends request to CGI script
+   - Server identifies request as CGI based on file extension
+   - Server executes CGI script and captures output
+   - Server sends CGI output to client
+
+4. **Handling File Uploads**
+   - Client submits form with file upload
+   - Server parses multipart/form-data request
+   - Server extracts file and saves it to configured location
+   - Server sends response confirming upload
+
+### UI/UX Considerations
+
+- **Command Line Interface**: Simple command-line interface for starting the server
+- **Configuration Syntax**: Clear, readable configuration syntax similar to NGINX
+- **Error Messages**: Descriptive error messages for configuration issues and runtime errors
+- **Logging**: Detailed logging of requests, responses, and errors for debugging
+
+## Technical Architecture
+
+### System Components
+
+1. **Socket Manager**
+   - Creates and manages server sockets
+   - Accepts new client connections
+   - Maintains list of active connections
+
+2. **Event Loop**
+   - Uses poll() or equivalent to monitor file descriptors
+   - Dispatches events to appropriate handlers
+   - Ensures non-blocking operation
+
+3. **Configuration Parser**
+   - Reads and validates configuration files
+   - Creates server and route configurations
+   - Provides access to configuration settings
+
+4. **HTTP Request Parser**
+   - Parses raw HTTP request data
+   - Extracts method, URI, headers, and body
+   - Handles chunked encoding and content-length
+
+5. **Route Handler**
+   - Matches requests to configured routes
+   - Applies route-specific settings
+   - Dispatches to appropriate content handlers
+
+6. **Static File Handler**
+   - Maps URLs to filesystem paths
+   - Reads and serves static files
+   - Generates directory listings
+
+7. **CGI Handler**
+   - Executes CGI scripts
+   - Manages environment variables and I/O
+   - Captures script output
+
+8. **HTTP Response Generator**
+   - Creates HTTP response headers
+   - Adds appropriate status codes
+   - Formats response data
+
+9. **Error Handler**
+   - Generates error responses
+   - Serves custom or default error pages
+   - Logs error information
+
+### Data Models
+
+1. **Server Configuration**
+   - Host and port
+   - Server names
+   - Default error pages
+   - Client body size limits
+   - Routes
+
+2. **Route Configuration**
+   - Path
+   - Root directory
+   - Allowed methods
+   - Directory listing settings
+   - Default files
+   - CGI settings
+   - Upload settings
+   - Redirects
+
+3. **HTTP Request**
+   - Method
+   - URI
+   - Headers
+   - Body
+   - Query parameters
+
+4. **HTTP Response**
+   - Status code
+   - Headers
+   - Body
+
+5. **Client Connection**
+   - Socket file descriptor
+   - Input buffer
+   - Output buffer
+   - Connection state
+
+### Infrastructure Requirements
+
+1. **Development Environment**
+   - C++ compiler with C++98 support
+   - Make build system
+   - Unix-like operating system (Linux, macOS)
+
+2. **Runtime Environment**
+   - Unix-like operating system
+   - File system access for static files and CGI scripts
+   - Network access for listening on ports
+
+3. **Testing Environment**
+   - Web browsers for manual testing
+   - HTTP testing tools (curl, telnet, etc.)
+   - Automated test scripts
+
+## Development Roadmap
+
+### Phase 1: Foundation
+
+1. **Basic Server Setup**
+   - Socket creation and binding
+   - Connection acceptance
+   - Simple request reading and response writing
+
+2. **Event Loop Implementation**
+   - poll() or equivalent integration
+   - Non-blocking I/O handling
+   - Basic client connection management
+
+3. **Configuration Parser**
+   - Configuration file format definition
+   - Basic parsing functionality
+   - Server and route configuration structures
+
+### Phase 2: Core HTTP Functionality
+
+1. **HTTP Request Parsing**
+   - Header parsing
+   - Method and URI extraction
+   - Query parameter parsing
+   - Body handling (content-length based)
+
+2. **HTTP Response Generation**
+   - Status code handling
+   - Header generation
+   - Response formatting
+
+3. **Static File Serving**
+   - URL to filesystem path mapping
+   - File reading and sending
+   - Content type determination
+
+4. **Error Handling**
+   - Default error pages
+   - Custom error page support
+   - Error logging
+
+### Phase 3: Advanced Features
+
+1. **Multiple Server Support**
+   - Virtual server configuration
+   - Host-based routing
+   - Default server handling
+
+2. **Route Configuration**
+   - Method restrictions
+   - Directory listing
+   - Default files
+   - Redirects
+
+3. **CGI Implementation**
+   - CGI process execution
+   - Environment variable setup
+   - Input/output handling
+   - Timeout management
+
+4. **File Upload Handling**
+   - multipart/form-data parsing
+   - File extraction and saving
+   - Upload size limiting
+
+### Phase 4: Refinement and Testing
+
+1. **Performance Optimization**
+   - Buffer management
+   - Connection handling improvements
+   - Resource usage optimization
+
+2. **Comprehensive Testing**
+   - Unit tests for components
+   - Integration tests for end-to-end functionality
+   - Stress testing for stability
+
+3. **Documentation**
+   - Code documentation
+   - Configuration guide
+   - Usage examples
+
+## Logical Dependency Chain
+
+1. **Socket and Event Loop (Foundation)**
+   - These components form the core of the server and must be implemented first
+   - They enable the basic ability to accept connections and handle I/O events
+
+2. **Configuration Parser**
+   - Needed early to define server behavior
+   - Influences the implementation of subsequent components
+
+3. **HTTP Request Parsing and Response Generation**
+   - Basic HTTP functionality needed before specific features
+   - Enables simple request-response cycle
+
+4. **Static File Serving**
+   - First user-visible feature
+   - Provides a testable endpoint for basic functionality
+
+5. **Error Handling**
+   - Required for robust operation
+   - Needed before implementing more complex features
+
+6. **Route Configuration and Multiple Servers**
+   - Builds on basic HTTP and configuration functionality
+   - Enables more complex server setups
+
+7. **CGI Implementation**
+   - Depends on request parsing and response generation
+   - More complex than static file serving
+
+8. **File Upload Handling**
+   - Requires advanced request parsing
+   - One of the more complex features
+
+9. **Refinement and Optimization**
+   - Final phase after all features are working
+   - Improves performance and stability
+
+## Risks and Mitigations
+
+### Technical Challenges
+
+1. **Non-blocking I/O Complexity**
+   - **Risk**: Implementing truly non-blocking I/O is challenging and error-prone
+   - **Mitigation**: Careful design of the event loop, thorough testing of edge cases, and clear documentation of the I/O model
+
+2. **Memory Management in C++98**
+   - **Risk**: Memory leaks and segmentation faults due to manual memory management
+   - **Mitigation**: Consistent use of RAII pattern, thorough testing with memory analysis tools, clear ownership rules for resources
+
+3. **HTTP Protocol Complexity**
+   - **Risk**: Incomplete or incorrect implementation of HTTP features
+   - **Mitigation**: Thorough study of the HTTP RFC, comparison with NGINX behavior, comprehensive test suite
+
+4. **CGI Implementation Challenges**
+   - **Risk**: Difficulties with process management, environment setup, and I/O handling
+   - **Mitigation**: Careful study of the CGI specification, incremental implementation with thorough testing
+
+### Resource Constraints
+
+1. **C++98 Limitations**
+   - **Risk**: Lack of modern C++ features makes some tasks more difficult
+   - **Mitigation**: Careful design patterns, custom implementations of needed functionality, focus on simplicity
+
+2. **Performance Under Load**
+   - **Risk**: Server may become unstable or unresponsive under heavy load
+   - **Mitigation**: Stress testing, performance profiling, buffer size tuning, connection limiting
+
+### MVP Definition
+
+1. **Core Functionality Focus**
+   - **Risk**: Trying to implement all features at once could lead to none working properly
+   - **Mitigation**: Define a clear MVP with basic HTTP functionality and static file serving, then incrementally add features
+
+2. **Testing Strategy**
+   - **Risk**: Difficult to verify correctness without comprehensive testing
+   - **Mitigation**: Develop testing tools and scripts early, compare behavior with NGINX, use browser testing for validation
+
+## Appendix
+
+### HTTP Protocol References
+
+- RFC 7230-7235: HTTP/1.1 specification
+- RFC 3875: CGI specification
+- RFC 1867: Form-based File Upload in HTML
+
+### Technical Specifications
+
+#### Allowed Functions
+
+- Socket operations: socket, accept, listen, send, recv
+- Address operations: getaddrinfo, freeaddrinfo, setsockopt, getsockname, getprotobyname
+- I/O multiplexing: select, poll, epoll (epoll_create, epoll_ctl, epoll_wait), kqueue (kqueue, kevent)
+- File operations: open, close, read, write, access, stat, opendir, readdir, closedir
+- Process management: execve, fork, waitpid, kill, signal
+- Descriptor management: dup, dup2, pipe, socketpair, fcntl
+- Error handling: strerror, gai_strerror, errno
+
+#### Performance Considerations
+
+- Buffer sizes and management
+- Connection timeouts
+- File descriptor limits
+- Process creation overhead for CGI
+
+#### Security Considerations
+
+- Path traversal prevention
+- CGI script security
+- Upload validation
+- Request size limiting
 
 ## Connect with Us 🤝
 
