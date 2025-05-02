@@ -196,6 +196,8 @@ This project is primarily educational, targeting students and developers who wan
    - Output buffer
    - Connection state
 
+![webserv](https://github.com/user-attachments/assets/4b02ceaa-c5d1-4b5d-a309-5fa7c640c484)
+
 ### Infrastructure Requirements
 
 1. **Development Environment**
