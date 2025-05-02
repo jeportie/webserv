@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 14:53:50 by jeportie          #+#    #+#             */
-/*   Updated: 2025/04/30 17:43:02 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/02 14:18:43 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,11 +39,11 @@ private:
 	Server&	operator=(const Server& rhs);
 
 	int					_serverSocketFd;
-	struct sockaddr_in	_severSocketAdresse;
+	struct sockaddr_in	_serverSocketAdresse;
 
 	int					_clientSocketFd;
 	struct sockaddr_in	_clientSocketAdresse;
-	size_t				_clientSocketAdresseLength;
+	socklen_t			_clientSocketAdresseLength;
 
 };
 
