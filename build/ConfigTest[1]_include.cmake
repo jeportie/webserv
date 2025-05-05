@@ -1,0 +1,5 @@
+if(EXISTS "/project/build/ConfigTest[1]_tests.cmake")
+  include("/project/build/ConfigTest[1]_tests.cmake")
+else()
+  add_test(ConfigTest_NOT_BUILT ConfigTest_NOT_BUILT)
+endif()

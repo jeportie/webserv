@@ -1,0 +1,5 @@
+add_test( ConfigTest.DefaultConstructor /project/build/ConfigTest [==[--gtest_filter=ConfigTest.DefaultConstructor]==] --gtest_also_run_disabled_tests)
+set_tests_properties( ConfigTest.DefaultConstructor PROPERTIES WORKING_DIRECTORY /project/build SKIP_REGULAR_EXPRESSION [==[\[  SKIPPED \]]==])
+add_test( ConfigTest.ParseConfigFile /project/build/ConfigTest [==[--gtest_filter=ConfigTest.ParseConfigFile]==] --gtest_also_run_disabled_tests)
+set_tests_properties( ConfigTest.ParseConfigFile PROPERTIES WORKING_DIRECTORY /project/build SKIP_REGULAR_EXPRESSION [==[\[  SKIPPED \]]==])
+set( ConfigTest_TESTS ConfigTest.DefaultConstructor ConfigTest.ParseConfigFile)

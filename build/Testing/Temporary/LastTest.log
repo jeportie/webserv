@@ -1,0 +1,43 @@
+Start testing: May 05 18:16 UTC
+----------------------------------------------------------
+2/5 Testing: ConfigTest.ParseConfigFile
+2/5 Test: ConfigTest.ParseConfigFile
+Command: "/project/build/ConfigTest" "--gtest_filter=ConfigTest.ParseConfigFile" "--gtest_also_run_disabled_tests"
+Directory: /project/build
+"ConfigTest.ParseConfigFile" start time: May 05 18:16 UTC
+Output:
+----------------------------------------------------------
+Running main() from ./googletest/src/gtest_main.cc
+[0;33mNote: Google Test filter = ConfigTest.ParseConfigFile
+[m[0;32m[==========] [mRunning 1 test from 1 test suite.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m1 test from ConfigTest
+[0;32m[ RUN      ] [mConfigTest.ParseConfigFile
+[Server] - default constructor called - 
+/project/test/class/ConfigTest.cpp:30: Failure
+Expected: c.parseConfigFile("/home/naphy/42/webserv/config_files/exconfig.conf") doesn't throw an exception.
+  Actual: it throws std::runtime_error with description "Failed to open config file: /home/naphy/42/webserv/config_files/exconfig.conf".
+/project/test/class/ConfigTest.cpp:32: Failure
+Value of: c.isConfigFileOpen()
+  Actual: false
+Expected: true
+[Server] - destructor called - 
+[0;31m[  FAILED  ] [mConfigTest.ParseConfigFile (0 ms)
+[0;32m[----------] [m1 test from ConfigTest (0 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m1 test from 1 test suite ran. (0 ms total)
+[0;32m[  PASSED  ] [m0 tests.
+[0;31m[  FAILED  ] [m1 test, listed below:
+[0;31m[  FAILED  ] [mConfigTest.ParseConfigFile
+
+ 1 FAILED TEST
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Failed.
+"ConfigTest.ParseConfigFile" end time: May 05 18:16 UTC
+"ConfigTest.ParseConfigFile" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: May 05 18:16 UTC

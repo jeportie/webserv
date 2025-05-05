@@ -1,0 +1,7 @@
+add_test( ServerTest.DefaultConstructor /project/build/ServerTest [==[--gtest_filter=ServerTest.DefaultConstructor]==] --gtest_also_run_disabled_tests)
+set_tests_properties( ServerTest.DefaultConstructor PROPERTIES WORKING_DIRECTORY /project/build SKIP_REGULAR_EXPRESSION [==[\[  SKIPPED \]]==])
+add_test( ServerTest.InitConnect /project/build/ServerTest [==[--gtest_filter=ServerTest.InitConnect]==] --gtest_also_run_disabled_tests)
+set_tests_properties( ServerTest.InitConnect PROPERTIES WORKING_DIRECTORY /project/build SKIP_REGULAR_EXPRESSION [==[\[  SKIPPED \]]==])
+add_test( ServerTest.AcceptWithMockTelnetClient /project/build/ServerTest [==[--gtest_filter=ServerTest.AcceptWithMockTelnetClient]==] --gtest_also_run_disabled_tests)
+set_tests_properties( ServerTest.AcceptWithMockTelnetClient PROPERTIES WORKING_DIRECTORY /project/build SKIP_REGULAR_EXPRESSION [==[\[  SKIPPED \]]==])
+set( ServerTest_TESTS ServerTest.DefaultConstructor ServerTest.InitConnect ServerTest.AcceptWithMockTelnetClient)

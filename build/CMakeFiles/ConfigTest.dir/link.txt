@@ -1,0 +1,1 @@
+/usr/bin/c++ -Wall -Wextra -Werror -Wshadow CMakeFiles/ConfigTest.dir/test/class/ConfigTest.cpp.o CMakeFiles/ConfigTest.dir/src/class/Config.cpp.o CMakeFiles/ConfigTest.dir/src/class/Server.cpp.o -o ConfigTest  /usr/lib/x86_64-linux-gnu/libgmock.a -lpthread /usr/lib/x86_64-linux-gnu/libgtest_main.a /usr/lib/x86_64-linux-gnu/libgtest.a 

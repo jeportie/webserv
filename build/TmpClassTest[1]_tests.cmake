@@ -1,0 +1,1 @@
+set( TmpClassTest_TESTS)

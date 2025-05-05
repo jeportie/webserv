@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 15:36:45 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/02 16:58:30 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/05 19:52:42 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,11 +27,6 @@ Server::Server(void) : _serverSocketFd(-1), _clientSocketFd(-1)
 	std::cout << "[Server] - default constructor called - " << std::endl;
 }
 
-Server::Server(const Server &src)
-{
-	*this = src;
-	return ;
-}
 
 Server::~Server(void)
 {
@@ -41,9 +36,27 @@ Server::~Server(void)
 	return ;
 }
 
+Server::Server(const Server &src)
+{
+	*this = src;
+	return ;
+}
+
 Server &Server::operator=(const Server &rhs)
 {
-	(void)rhs;
+	if (this != &rhs)
+	{
+		this->_serverSocketFd = rhs._serverSocketFd;
+		this->_clientSocketFd = rhs._clientSocketFd;
+		this->_serverSocketAdresse = rhs._serverSocketAdresse;
+		this->_clientSocketAdresse = rhs._clientSocketAdresse;
+		this->_clientSocketAdresseLength = rhs._clientSocketAdresseLength;
+		this->_port = rhs._port;
+		this->_serverName = rhs._serverName;
+		this->_root = rhs._root;
+		this->_index = rhs._index;
+		this->_errorPage = rhs._errorPage;
+	}
 	return (*this);
 }
 
@@ -56,6 +69,57 @@ int Server::getClientSocket() const
 {
 	return (_clientSocketFd);
 }
+
+int Server::getPort() const
+{
+	return (_port);
+}
+
+std::string Server::getServerName() const
+{
+	return (_serverName);
+}
+
+std::string Server::getRoot() const
+{
+	return (_root);
+}
+
+std::string Server::getIndex() const
+{
+	return (_index);
+}
+
+std::string Server::getErrorPage() const
+{
+	return (_errorPage);
+}
+
+void Server::setPort(int port)
+{
+	_port = port;
+}
+
+void Server::setServerName(std::string serverName)
+{
+	_serverName = serverName;
+}
+
+void Server::setRoot(std::string root)
+{
+	_root = root;
+}
+
+void Server::setIndex(std::string index)
+{
+	_index = index;
+}
+
+void Server::setErrorPage(std::string errorPage)
+{
+	_errorPage = errorPage;
+}
+
 
 bool Server::safeBind(void)
 {
@@ -137,11 +201,6 @@ void Server::communication()
 		write(_clientSocketFd, "Re", 2);
 	}
 }
-// std::ostream & operator<<(std::ostream & out, const Server& in)
-// {
-// 	out << "The value of _foo is : " << in.getFoo();
-// 	return (out);
-// }
 
 /* Pourquoi deux sockets ?
 
@@ -150,3 +209,14 @@ void Server::communication()
 
    conn_fd : dédié à un seul client, sert à échanger requêtes/réponses.
    */
+
+   
+std::ostream & operator<<(std::ostream & out, const Server& in)
+{
+	out << "The value of port is : " << in.getPort() << std::endl;
+	out << "The value of serverName is : " << in.getServerName() << std::endl;
+	out << "The value of root is : " << in.getRoot() << std::endl;
+	out << "The value of index is : " << in.getIndex() << std::endl;
+	out << "The value of errorPage is : " << in.getErrorPage() << std::endl;
+	return (out);
+}
