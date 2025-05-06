@@ -12,15 +12,26 @@
 
 #include "include/webserv.h"
 #include "src/class/Server.hpp"
-
+#include <stdexcept>
 
 int main()
 {
-    std::cout << "This is not yet a webserv X)" << std::endl;
-    Server o;
+    try
+    {
+		std::cout << "This is not yet a webserv X)" << std::endl;
+		Server o;
 
-    o.connect();
-    o.communication();
-    
+		o.init_connect();
+    }
+    catch (const std::runtime_error& e)
+    { std::cerr << "Runtime Error: " << e.what() << std::endl; }
+
+    catch (const std::exception& e)
+    { std::cerr << "Exceptions Error: " << e.what() << std::endl; }
+
+    catch (...)
+    { std::cerr << "Unknown Error: " << std::endl; }
+
+
     return (0);
 }

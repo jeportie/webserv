@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 14:53:50 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/06 15:09:25 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/06 17:24:02 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include <iostream>
 # include <arpa/inet.h>
 
+
 class Server
 {
 public:
@@ -23,7 +24,7 @@ public:
 	~Server(void);
 
 	void	init_connect(void);			
-	void	communication(void);			
+	void	communication(int fd);			
 
 	int		getServerSocket(void) const;
 	int		getClientSocket(void) const;
@@ -32,6 +33,7 @@ public:
 	bool	safeBind(void);
 	bool	safeListen(void);
 	bool	safeAccept(int epoll_fd);
+	void	eventLoop(int epoll_fd);
 
 
 private:
