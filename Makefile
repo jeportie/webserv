@@ -6,11 +6,11 @@
 #    By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/04/06 08:55:40 by jeportie          #+#    #+#              #
-#    Updated: 2025/05/02 17:18:03 by anastruc         ###   ########.fr        #
+#    Updated: 2025/05/06 14:20:20 by anastruc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME = Interface
+NAME = webserv
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 VALFLAGS = --leak-check=full
@@ -23,11 +23,7 @@ ARGS=$(filter-out $@,$(MAKECMDGOALS))
 #### BEGIN AUTO GENERATED FILES ###
 # List of source files:
 SRC = \
-  src/class/Ice.cpp \
-  src/class/Character.cpp \
-  src/class/AMateria.cpp \
-  src/class/MateriaSource.cpp \
-  src/class/Cure.cpp 
+  src/class/Server.cpp 
 ### END AUTO GENERATED FILES ###
 
 # Create object for main.cpp

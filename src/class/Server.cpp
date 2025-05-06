@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 15:36:45 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/02 16:58:30 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/06 15:10:44 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <ostream>
 #include <string.h>
 #include <unistd.h>
+#include <sys/epoll.h>
 
 #define PORT 8666
 #define BUFFER_SIZE 1024
@@ -94,7 +95,7 @@ bool Server::safeListen(void)
 	return (true);
 }
 
-bool Server::safeAccept(void)
+bool Server::safeAccept(int epoll_fd)
 {
 	_clientSocketFd = accept(_serverSocketFd,
 			(struct sockaddr *)&_clientSocketAdresse,
@@ -105,21 +106,24 @@ bool Server::safeAccept(void)
 		return (false);
 	}
 	std::cout << "Connection accepted!\n";
+	epoll_event client_ev;
+	client_ev.events = EPOLLIN;
+	client_ev.data.fd = _clientSocketFd;
+	epoll_ctl(epoll_fd , EPOLL_CTL_ADD, _clientSocketFd, &client_ev);
 	return (true);
 }
 
-void Server::connect(void)
+void Server::init_connect(void)
 {
-	try
-	{
+
 		safeBind();
 		safeListen();
-		safeAccept();
-	}
-	catch (const std::exception &e)
-	{
-		std::cerr << e.what() << '\n';
-	}
+		int epoll_fd = epoll_create(1);
+		epoll_event ev;
+		ev.events = EPOLLIN; // On veut savoir quqnd on peutr read()'
+		ev.data.fd = _serverSocketFd; 
+		if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, _serverSocketFd, &ev))
+		safeAccept(epoll_fd);
 }
 
 void Server::communication()

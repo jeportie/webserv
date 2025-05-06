@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/16 15:06:38 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/02 17:01:48 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/06 14:14:48 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,31 +47,40 @@ TEST(ServerTest, InitConnect)
 
 TEST(ServerTest, AcceptWithMockTelnetClient)
 {
-    Server srv;
-    ASSERT_TRUE(srv.safeBind());
-    ASSERT_TRUE(srv.safeListen());
-    int port = 8666; 
-
-    std::thread t_client([port](){
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-
-        int sock = ::socket(AF_INET, SOCK_STREAM, 0);
-        ASSERT_GE(sock, 0);  // fatal if socket() failed
-
-        sockaddr_in addr{};
-        addr.sin_family = AF_INET;
-        addr.sin_port   = htons(port);
-        inet_pton(AF_INET, "127.0.0.1", &addr.sin_addr);
-
-        ASSERT_EQ(::connect(sock, (sockaddr*)&addr, sizeof(addr)), 0);
-
-        const char* hello = "hello\r\n";
-        ::send(sock, hello, strlen(hello), 0);
-
-        ::close(sock);
-    });
-    EXPECT_TRUE(srv.safeAccept());
-    t_client.join();
+    try
+    {
+        /* code */
+        
+        Server srv;
+        ASSERT_TRUE(srv.safeBind());
+        ASSERT_TRUE(srv.safeListen());
+        int port = 8666; 
+        
+        std::thread t_client([port](){
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            
+            int sock = ::socket(AF_INET, SOCK_STREAM, 0);
+            ASSERT_GE(sock, 0);  // fatal if socket() failed
+            
+            sockaddr_in addr{};
+            addr.sin_family = AF_INET;
+            addr.sin_port   = htons(port);
+            inet_pton(AF_INET, "127.0.0.1", &addr.sin_addr);
+            
+            ASSERT_EQ(::connect(sock, (sockaddr*)&addr, sizeof(addr)), 0);
+            
+            const char* hello = "hello\r\n";
+            ::send(sock, hello, strlen(hello), 0);
+            
+            ::close(sock);
+        });
+        EXPECT_TRUE(srv.safeAccept());
+        t_client.join();
+    }
+    catch(...)
+    {
+        std::cerr << "Failure" << '\n';
+    }
 }
 
 

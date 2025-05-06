@@ -3,14 +3,14 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+         #
+#    By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/04/06 08:55:40 by jeportie          #+#    #+#              #
-#    Updated: 2025/04/17 14:16:49 by jeportie         ###   ########.fr        #
+#    Updated: 2025/05/02 17:18:03 by anastruc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME = webserv
+NAME = Interface
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 VALFLAGS = --leak-check=full
@@ -23,9 +23,10 @@ ARGS=$(filter-out $@,$(MAKECMDGOALS))
 #### BEGIN AUTO GENERATED FILES ###
 # List of source files:
 SRC = \
+  src/class/Server.cpp 
+### END AUTO GENERATED FILES ###
 
 # Create object for main.cpp
-
 MAIN_OBJ = $(OBJDIR)/main.o
 
 # Pattern rule for src files (for .cpp files)

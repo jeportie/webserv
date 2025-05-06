@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 14:53:50 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/02 14:18:43 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/06 15:09:25 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ public:
 	Server(void); // init a -1 lesfd server et client
 	~Server(void);
 
-	void	connect(void);			
+	void	init_connect(void);			
 	void	communication(void);			
 
 	int		getServerSocket(void) const;
@@ -31,7 +31,7 @@ public:
 	bool	checkServerSocketAdresse(void) const;
 	bool	safeBind(void);
 	bool	safeListen(void);
-	bool	safeAccept(void);
+	bool	safeAccept(int epoll_fd);
 
 
 private:
