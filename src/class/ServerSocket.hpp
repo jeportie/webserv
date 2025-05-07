@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerSocket.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:13:39 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/07 13:14:40 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/07 15:47:08 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,11 @@
 
 # include "Socket.hpp"
 # include "ClientSocket.hpp"
-#include <netinet/in.h>
+# include <netinet/in.h>
 # include <string>
+# include <iostream>
+# include <cstring>
+
 
 class ServerSocket: public Socket
 {

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Socket.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:12:59 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/07 12:44:03 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/07 16:00:29 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ public:
 	bool		setReuseAddr(bool reuse); // init reuse to true.
 	
 	int			getFd(void)			const;
+	void		setFd(int fd);
 	bool		isValid(void)		const;	
 	bool		isNonBlocking(void) const; // to dig
 	

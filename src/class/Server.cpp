@@ -6,14 +6,13 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 15:36:45 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/07 12:28:51 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/07 15:48:07 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 #include "../../include/webserv.h"
 #include <cmath>
-#include <cstring>
 #include <iostream>
 #include <ostream>
 #include <stdexcept>

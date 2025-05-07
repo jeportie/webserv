@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:28:05 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/07 12:32:29 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/07 15:55:19 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,24 +62,6 @@ int setNonBlockingClient(int fd)
     return(safeFcntlClient(fd, F_SETFL, flags | O_NONBLOCK));
 }
 
-
-
-void Server::safeBind(void)
-{
-    setNonBlockingServer(_serverSocketFd);
-    _serverSockAdr.sin_port = htons(PORT);
-    _serverSockAdr.sin_family      = AF_INET; 
-    _serverSockAdr.sin_addr.s_addr = INADDR_ANY;
-    if (bind(_serverSocketFd, (struct sockaddr*) &_serverSockAdr, sizeof(_serverSockAdr)) < 0)
-        throw std::runtime_error("Bind() Failed");
-}
-
-
-void Server::safeListen(void)
-{
-    if (listen(_serverSocketFd, SOMAXCONN) < 0)
-        throw std::runtime_error("Listen() Failed");
-}
 
 
 int safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event* event)

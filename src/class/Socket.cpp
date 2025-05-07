@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Socket.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:32:17 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/07 13:06:17 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/07 16:00:59 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,8 @@ bool Socket::socketCreate(void)
 bool Socket::setReuseAddr(bool reuse) { return (true); }
 
 int Socket::getFd(void) const { return (_socketFd); }
+
+void Socket::setFd(int fd) { _socketFd = fd;}
 
 bool Socket::isValid(void) const { return (_socketFd != -1); }
 

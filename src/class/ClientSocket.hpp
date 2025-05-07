@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientSocket.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:16:38 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/07 13:21:36 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/07 16:22:27 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,11 +22,9 @@ class ClientSocket : public Socket
 {
 public:
 	ClientSocket(void);
-    ClientSocket(ClientSocket&&)            = delete;
-    ClientSocket& operator=(ClientSocket&&) = delete;
     virtual ~ClientSocket(void);
 
-	std::string	getClient(void) const;
+	std::string	getClientIP(void) const;
 	int			getClientPort() const;
 
 private:
