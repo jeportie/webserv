@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:28:05 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/07 12:31:09 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/07 12:32:29 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/epoll.h>
-#include <vector>
 #include <fcntl.h>
 #include <errno.h>
 #include <cstdio>
@@ -63,12 +62,10 @@ int setNonBlockingClient(int fd)
     return(safeFcntlClient(fd, F_SETFL, flags | O_NONBLOCK));
 }
 
+
+
 void Server::safeBind(void)
 {
-    _serverSocketFd = socket(AF_INET, SOCK_STREAM, 0);
-    if (_serverSocketFd < 0)
-        throw std::runtime_error("Socket() Failed");
-
     setNonBlockingServer(_serverSocketFd);
     _serverSockAdr.sin_port = htons(PORT);
     _serverSockAdr.sin_family      = AF_INET; 
