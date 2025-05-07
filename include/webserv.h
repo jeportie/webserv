@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 11:50:22 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/06 18:05:44 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/07 12:33:10 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 #include <iostream>
 
 
-#define PORT 8665
+#define PORT 8666
 #define BUFFER_SIZE 1024
 #define MAXEVENTS 10
 

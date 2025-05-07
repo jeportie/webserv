@@ -1,1 +1,0 @@
-/usr/bin/c++ -Wall -Wextra -Werror -Wshadow CMakeFiles/UnitTester.dir/src/class/Server.cpp.o CMakeFiles/UnitTester.dir/main.cpp.o -o bin/UnitTester 

@@ -1,6 +1,0 @@
-/project/build/CMakeFiles/UnitTester.dir
-/project/build/CMakeFiles/ServerTest.dir
-/project/build/CMakeFiles/TmpClassTest.dir
-/project/build/CMakeFiles/test.dir
-/project/build/CMakeFiles/edit_cache.dir
-/project/build/CMakeFiles/rebuild_cache.dir

@@ -1,5 +1,0 @@
-if(EXISTS "/project/build/TmpClassTest[1]_tests.cmake")
-  include("/project/build/TmpClassTest[1]_tests.cmake")
-else()
-  add_test(TmpClassTest_NOT_BUILT TmpClassTest_NOT_BUILT)
-endif()

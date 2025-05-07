@@ -1,5 +1,0 @@
-if(EXISTS "/project/build/ServerTest[1]_tests.cmake")
-  include("/project/build/ServerTest[1]_tests.cmake")
-else()
-  add_test(ServerTest_NOT_BUILT ServerTest_NOT_BUILT)
-endif()

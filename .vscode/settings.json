@@ -1,6 +1,5 @@
+
 {
-    "files.associations": {
-        "stdexcept": "cpp",
-        "thread": "cpp"
-    }
+    "clang-format.executable": ".clang-format"
 }
+  
