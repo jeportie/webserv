@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:28:05 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/07 15:55:19 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/07 22:48:54 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,17 +34,7 @@ int safeFcntlServer(int fd, int cmd, int flag)
     
 }
 
-int safeFcntlClient(int fd, int cmd, int flag)
-{
-    int ret = fcntl(fd, cmd, flag);
-    if (ret == -1)
-    {
-        std::cerr << "[Error] fcntl failed on client fd " << fd
-                  << ": " << strerror(errno) << std::endl;
-        return -1;
-    }
-    return ret;
-}
+
     
         
 int Server::setNonBlockingServer(int fd)
@@ -61,8 +51,6 @@ int setNonBlockingClient(int fd)
     //Futur gestion erreur client a implementer ici
     return(safeFcntlClient(fd, F_SETFL, flags | O_NONBLOCK));
 }
-
-
 
 int safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event* event)
 {
@@ -85,6 +73,7 @@ void Server::safeRegisterToEpoll(int epoll_fd)
 	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, _serverSocketFd, &ev) == -1)
 		throw std::runtime_error("Failed to add server socket to epoll: " + std::string(strerror(errno)));
 }
+
 void Server::safeAccept(int epoll_fd)
 {
     _clientSocketFd = accept(_serverSocketFd, (struct sockaddr*) &_clientSockAdr, &_clientSockAdrLen);

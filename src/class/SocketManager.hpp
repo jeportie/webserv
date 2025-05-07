@@ -6,7 +6,7 @@
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:23:58 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/07 12:24:01 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/07 23:33:45 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,15 +14,22 @@
 # define SOCKETMANAGER_HPP
 
 # include <iostream>
+# include <arpa/inet.h>
 
 class SocketManager
 {
 public:
 	SocketManager(void);
-	SocketManager(const SocketManager& src);
 	~SocketManager(void);
 
-	SocketManager& operator=(const SocketManager& rhs);
+    void init_connect(void);
+    void communication(int fd);
+
+    int getServerSocket(void) const;
+    int setNonBlockingServer(int fd);
+    int getClientSocket(void) const;
+    
+    void eventLoop(int epoll_fd);
 
 private:
 };
