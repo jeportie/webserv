@@ -1,0 +1,48 @@
+version: 1.0
+rules:
+  - id: initialization
+    trigger: startup
+    actions:
+      - tool: ls
+        description: "List project root files to detect entry points"
+      - tool: task-master list
+        description: "Retrieve pending tasks and display the next item"
+      - action: display-next-task
+        description: "Show the first pending task/subtask"
+  - id: request-routing
+    trigger: user-query
+    actions:
+      - tool: perplexity
+        description: "Estimate task complexity"
+      - tool: sequential-thinking
+        description: "Generate step-by-step reasoning"
+      - tool: mcp-hub select
+        args:
+          module_categories: ["html-css", "js-qdm"]
+        description: "Select the appropriate MCP submodule"
+  - id: editor-ops
+    trigger: submodule-ready
+    actions:
+      - tool: nvim --open
+      - tool: nvim --insert
+  - id: task-update
+    trigger: task-completion
+    actions:
+      - tool: task-master done
+    post_actions:
+      - action: spaced-repetition-schedule
+      - action: mnemonic-insertion
+
+## Enabling Tutor Mode in Avante
+
+To activate this configuration, add a custom mode in your Neovim Avante settings (e.g., `~/.config/nvim/avante.toml`):
+
+```toml
+[[modes]]
+name = "tutor"
+rules_file = "tutor.avanterules"
+start_sequence = ["ls", "task-master list", "display-next-task"]
+```
+
+Now, invoking `:AvanteMode tutor` will load `tutor.avanterules` and execute the defined stage-based flow, providing a modular, adaptive, and highly productive tutoring experience within Neovim.
+
