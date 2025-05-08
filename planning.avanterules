@@ -1,0 +1,25 @@
+{# planning.avanterules #}
+{{ system_prompt }}
+
+{% for path in [
+  "rules/ai_providers.mdc",
+  "rules/ai_services.mdc",
+  "rules/architecture.mdc",
+  "rules/changeset.mdc",
+  "rules/commands.mdc",
+  "rules/cursor_rules.mdc",
+  "rules/dependencies.mdc",
+  "rules/dev_workflow.mdc",
+  "rules/glossary.mdc",
+  "rules/mcp.mdc",
+  "rules/new_features.mdc",
+  "rules/self_improve.mdc",
+  "rules/taskmaster.mdc",
+  "rules/tasks.mdc",
+  "rules/tests.mdc",
+  "rules/ui.mdc",
+  "rules/utilities.mdc"
+] %}
+--- Rules from {{ path }} ---
+{% include path %}
+{% endfor %}
