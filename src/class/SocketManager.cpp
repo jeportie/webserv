@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <cerrno>
 #include <iostream>
 #include <ostream>
 #include <stdexcept>

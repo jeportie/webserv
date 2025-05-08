@@ -10,11 +10,12 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../include/webserv.h"
-#include "ClientSocket.hpp"
+# include "../../include/webserv.h"
+# include "ClientSocket.hpp"
 # include <cstring>
 # include <iostream>
 # include <sstream>
+# include <cerrno>
 
 /**
  * @brief Default constructor

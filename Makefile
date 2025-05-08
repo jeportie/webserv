@@ -23,8 +23,10 @@ ARGS=$(filter-out $@,$(MAKECMDGOALS))
 #### BEGIN AUTO GENERATED FILES ###
 # List of source files:
 SRC = \
-  src/class/Server.cpp \
-  src/class/Server.utils.cpp 
+  src/class/Socket.cpp \
+  src/class/SocketManager.cpp \
+  src/class/ClientSocket.cpp \
+  src/class/ServerSocket.cpp 
 ### END AUTO GENERATED FILES ###
 
 # Create object for main.cpp

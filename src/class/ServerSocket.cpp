@@ -16,6 +16,8 @@
 #include <stdexcept>
 #include <sys/epoll.h>
 #include <iostream>
+#include <sstream>
+#include <cerrno>
 
 /**
  * @brief Default constructor
@@ -93,6 +95,7 @@ bool ServerSocket::safeBind(int port, const std::string& adress)
         return false;
     }
 
+	(void)adress;
     setNonBlocking(this->_socketFd);
     _serverAddr.sin_port = htons(port);
     _serverAddr.sin_family      = AF_INET; 

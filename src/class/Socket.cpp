@@ -19,6 +19,7 @@
 #include <cstdio>
 #include <sys/socket.h>
 #include <iostream>
+#include <cerrno>
 
 Socket::Socket(void)
 : _socketFd(-1)
