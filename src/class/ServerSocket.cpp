@@ -213,3 +213,25 @@ std::string ServerSocket::getAddress(void) const
     
     return oss.str();
 }
+
+// int safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event* event)
+// {
+//     if (epoll_ctl(epoll_fd, op, fd, event) < 0)
+//     {
+//         std::cerr << "[Error] epoll_ctl failed (epoll_fd=" << epoll_fd
+//                   << ", fd=" << fd << ", op=" << op << "): "
+//                   << strerror(errno) << std::endl;
+//         return -1;
+//     }
+//     return 0;
+// }
+//
+// void Server::safeRegisterToEpoll(int epoll_fd)
+// {
+// 	struct epoll_event ev;
+// 	ev.events = EPOLLIN;
+// 	ev.data.fd = _serverSocketFd;
+//
+// 	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, _serverSocketFd, &ev) == -1)
+// 		throw std::runtime_error("Failed to add server socket to epoll: " + std::string(strerror(errno)));
+// }

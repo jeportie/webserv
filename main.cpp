@@ -11,31 +11,30 @@
 /* ************************************************************************** */
 
 #include "include/webserv.h"
-#include "src/class/Server.hpp"
+#include "src/class/SocketManager.hpp"
 #include <stdexcept>
+#include <iostream>
 
 int main()
 {
     try
     {
-        std::cout << "This is not yet a webserv X)" << std::endl;
-        Server o;
+        std::cout << "Starting webserv on port " << PORT << std::endl;
+        SocketManager socketManager;
 
-        o.init_connect();
+        socketManager.init_connect();
     }
     catch (const std::runtime_error& e)
     {
         std::cerr << "Runtime Error: " << e.what() << std::endl;
     }
-
     catch (const std::exception& e)
     {
-        std::cerr << "Exceptions Error: " << e.what() << std::endl;
+        std::cerr << "Exception Error: " << e.what() << std::endl;
     }
-
     catch (...)
     {
-        std::cerr << "Unknown Error: " << std::endl;
+        std::cerr << "Unknown Error" << std::endl;
     }
     return (0);
 }

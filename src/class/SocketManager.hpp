@@ -13,8 +13,7 @@
 #ifndef SOCKETMANAGER_HPP
 # define SOCKETMANAGER_HPP
 
-# include <iostream>
-# include <vector>
+# include <arpa/inet.h>
 # include <map>
 # include <sys/epoll.h>
 # include "ServerSocket.hpp"
@@ -23,113 +22,82 @@
 /**
  * @brief Manages server and client sockets
  * 
- * This class is responsible for creating and managing server sockets,
- * accepting new client connections, and maintaining a list of active
- * connections. It provides an interface for the application to interact
- * with sockets without dealing with low-level socket operations.
+ * This class is responsible for managing server sockets and client connections.
+ * It handles the creation of server sockets, accepting client connections,
+ * and managing the event loop for handling I/O events.
  */
 class SocketManager
 {
 public:
-    /**
-     * @brief Default constructor
-     */
+
     SocketManager(void);
-    
-    /**
-     * @brief Destructor
-     * Cleans up all server and client sockets
-     */
+    SocketManager(const SocketManager& src);
     ~SocketManager(void);
+    SocketManager& operator=(const SocketManager& rhs);
 
     /**
-     * @brief Creates a new server socket
+     * @brief Initializes the server connection
      * 
-     * @param port The port to bind to
-     * @param address The address to bind to (default: all interfaces)
-     * @return int The index of the new server socket, or -1 on failure
+     * Creates a server socket, binds it to a port, and starts listening
+     * for connections. Then creates an epoll instance and registers the
+     * server socket with it.
      */
-    int createServerSocket(int port, const std::string& address = "");
+    void init_connect(void);
+
+    /**
+     * @brief Handles communication with a client
+     * 
+     * Reads data from a client socket and processes it.
+     * 
+     * @param fd The client socket file descriptor
+     */
+    void communication(int fd);
+
+    /**
+     * @brief Runs the event loop
+     * 
+     * Waits for events on the registered file descriptors and handles them.
+     * 
+     * @param epoll_fd The epoll file descriptor
+     */
+    void eventLoop(int epoll_fd);
+
+    /**
+     * @brief Sets the server socket to non-blocking mode
+     * 
+     * @param fd The file descriptor to set to non-blocking mode
+     * @return int Return value from fcntl call, -1 on error
+     */
+    int setNonBlockingServer(int fd);
     
     /**
-     * @brief Initializes the epoll instance
+     * @brief Safely registers a file descriptor with epoll
      * 
-     * @return int The epoll file descriptor, or -1 on failure
+     * @param epoll_fd The epoll file descriptor
+     * @param op The operation to perform (EPOLL_CTL_ADD, EPOLL_CTL_MOD, EPOLL_CTL_DEL)
+     * @param fd The file descriptor to register
+     * @param event The epoll_event structure
+     * @return int 0 on success, -1 on error
      */
-    int initEpoll(void);
+    int safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event* event);
     
     /**
-     * @brief Runs the main event loop
+     * @brief Registers the server socket with epoll
      * 
-     * Monitors sockets for events and handles them accordingly.
-     * This method blocks until an error occurs or the manager is stopped.
+     * @param epoll_fd The epoll file descriptor
      */
-    void eventLoop(void);
-    
-    /**
-     * @brief Stops the event loop and cleans up resources
-     */
-    void stop(void);
-    
-    /**
-     * @brief Gets the number of active client connections
-     * 
-     * @return size_t The number of active client connections
-     */
-    size_t getClientCount(void) const;
-    
-    /**
-     * @brief Gets the number of server sockets
-     * 
-     * @return size_t The number of server sockets
-     */
-    size_t getServerCount(void) const;
+    void safeRegisterToEpoll(int epoll_fd);
+
+    int getServerSocket(void) const;
+    int getClientSocket(void) const;
 
 private:
-    /**
-     * @brief Copy constructor (private to prevent copying)
-     * 
-     * @param src The source object to copy from
-     */
-    SocketManager(const SocketManager& src);
-    
-    /**
-     * @brief Assignment operator (private to prevent assignment)
-     * 
-     * @param rhs The right-hand side object to assign from
-     * @return SocketManager& Reference to this object
-     */
-    SocketManager& operator=(const SocketManager& rhs);
-    
-    /**
-     * @brief Handles events on server sockets
-     * 
-     * @param serverIdx The index of the server socket
-     * @return true if successful, false otherwise
-     */
-    bool handleServerEvent(int serverIdx);
-    
-    /**
-     * @brief Handles events on client sockets
-     * 
-     * @param fd The client socket file descriptor
-     * @return true if successful, false otherwise
-     */
-    bool handleClientEvent(int fd);
-    
-    /**
-     * @brief Removes a client socket
-     * 
-     * @param fd The client socket file descriptor
-     */
-    void removeClient(int fd);
+    ServerSocket				 _serverSocket;	  ///< The server socket
+    std::map<int, ClientSocket*> _clientSockets;  ///< Map of client sockets by file descriptor
 
-    std::vector<ServerSocket*> _serverSockets;  ///< List of server sockets
-    std::map<int, ClientSocket*> _clientSockets;  ///< Map of client sockets (fd -> socket)
-    int _epollFd;  ///< Epoll file descriptor
-    bool _running;  ///< Flag indicating if the event loop is running
-    static const int MAX_EVENTS = 64;  ///< Maximum number of events to process at once
-    static const int LISTEN_BACKLOG = 128;  ///< Backlog for listen()
+    int							 _serverSocketFd; ///< Server socket file descriptor
+    int							 _clientSocketFd; ///< Client socket file descriptor (most recent)
 };
 
 #endif  // ************************************************ SOCKETMANAGER_HPP //
+
