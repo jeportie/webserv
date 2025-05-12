@@ -1,0 +1,101 @@
+# Task ID: 1
+# Title: Implement Socket Manager and Basic Server Setup
+# Status: done
+# Dependencies: None
+# Priority: high
+# Description: Create the foundation for the HTTP server by implementing socket creation, binding, and connection acceptance.
+# Details:
+Implement a Socket Manager class that handles:
+1. Creating server sockets using socket()
+2. Binding to specified host:port combinations
+3. Setting sockets to non-blocking mode using fcntl()
+4. Listening for incoming connections
+5. Accepting new client connections
+
+Pseudo-code:
+```cpp
+class SocketManager {
+private:
+    std::map<int, ServerConfig> server_sockets;
+    
+public:
+    bool setupServerSockets(const std::vector<ServerConfig>& configs);
+    int acceptConnection(int server_socket);
+    void closeConnection(int client_socket);
+    // Helper methods for socket operations
+};
+
+bool SocketManager::setupServerSockets(const std::vector<ServerConfig>& configs) {
+    for (each config in configs) {
+        int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+        if (sockfd < 0) return false;
+        
+        // Set socket options (SO_REUSEADDR)
+        setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+        
+        // Set non-blocking
+        fcntl(sockfd, F_SETFL, O_NONBLOCK);
+        
+        // Setup sockaddr_in structure with host:port
+        struct sockaddr_in address;
+        // Fill address structure with config values
+        
+        // Bind socket
+        if (bind(sockfd, (struct sockaddr*)&address, sizeof(address)) < 0) {
+            close(sockfd);
+            return false;
+        }
+        
+        // Listen
+        if (listen(sockfd, SOMAXCONN) < 0) {
+            close(sockfd);
+            return false;
+        }
+        
+        server_sockets[sockfd] = config;
+    }
+    return true;
+}
+```
+
+Implement a basic main function that initializes the server and enters a simple accept loop for testing the socket functionality.
+
+# Test Strategy:
+1. Unit tests for SocketManager class methods using mock socket interfaces
+2. Integration test that verifies the server can bind to ports and accept connections
+3. Test binding to multiple ports simultaneously
+4. Test error handling when ports are already in use
+5. Verify non-blocking behavior by connecting multiple clients
+6. Use tools like netcat or telnet to manually test connection acceptance
+
+# Subtasks:
+## 1. Implement dual-stack socket creation (IPv4/IPv6) [done]
+### Dependencies: None
+### Description: Create a socket creation function that supports both IPv4 and IPv6 protocols with proper fallback mechanisms
+### Details:
+Implement a function that attempts to create an IPv6 socket first with IPv6_V6ONLY option disabled to allow dual-stack operation. If IPv6 creation fails, fall back to IPv4 socket creation. Return appropriate error codes for socket creation failures. Include platform-specific considerations for Windows (WSA) vs POSIX systems. Document the address family selection process.
+
+## 2. Implement socket configuration and options [done]
+### Dependencies: 1.1
+### Description: Configure socket properties including non-blocking mode, reuse address, and other performance options
+### Details:
+Create functions to set socket to non-blocking mode using platform-specific APIs (ioctl/FIONBIO for POSIX, ioctlsocket for Windows). Implement SO_REUSEADDR option setting. Add TCP_NODELAY for performance. Implement buffer size configuration (SO_RCVBUF, SO_SNDBUF). Create comprehensive error handling for each socket option with detailed error reporting. Include timeout configuration options.
+
+## 3. Implement socket binding and listening [done]
+### Dependencies: 1.2
+### Description: Create functions to bind sockets to addresses/ports and establish listening state with proper error handling
+### Details:
+Implement address structure preparation for both IPv4/IPv6. Create bind() wrapper with comprehensive error handling (address in use, permission issues, etc.). Implement listen() functionality with configurable backlog parameter. Add validation for binding to specific interfaces. Implement wildcard address binding. Create detailed error reporting for binding and listening failures with suggestions for resolution.
+
+## 4. Implement connection acceptance and client tracking [done]
+### Dependencies: 1.3
+### Description: Create a system to accept incoming connections and maintain a registry of active client connections
+### Details:
+Implement non-blocking accept() with proper error handling for EAGAIN/EWOULDBLOCK. Create a connection registry data structure to track active clients. Implement client metadata storage (address, connection time, statistics). Add connection limiting functionality. Implement client identification mechanism. Create comprehensive error handling for accept failures including resource exhaustion scenarios. Add logging for connection events.
+
+## 5. Implement resource management and cleanup procedures [done]
+### Dependencies: 1.4
+### Description: Create robust cleanup mechanisms for socket resources with proper error handling
+### Details:
+Implement graceful socket shutdown sequence (shutdown() before close()). Create cleanup functions for client connection registry. Implement platform-specific socket closure (close() for POSIX, closesocket() for Windows). Add resource leak detection mechanisms. Implement timeout-based cleanup for stale connections. Create comprehensive error handling for cleanup failures. Implement signal handlers for proper cleanup on program termination.
+

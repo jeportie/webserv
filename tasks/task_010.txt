@@ -1,0 +1,206 @@
+# Task ID: 10
+# Title: Implement Error Handling and Multiple Server Support
+# Status: pending
+# Dependencies: 3, 5, 7
+# Priority: medium
+# Description: Create a comprehensive error handling system and support for multiple virtual servers on different host:port combinations.
+# Details:
+Implement error handling and multiple server support:
+
+1. Error Handling:
+   - Create an ErrorHandler class that generates appropriate error responses
+   - Support custom error pages from configuration
+   - Log detailed error information
+   - Handle various HTTP error codes (400, 403, 404, 405, 413, 500, etc.)
+
+2. Multiple Server Support:
+   - Enhance the server to handle multiple virtual servers
+   - Route requests to the correct server based on Host header
+   - Support default server for unmatched hosts
+   - Handle different configurations for each server
+
+Pseudo-code for ErrorHandler:
+```cpp
+class ErrorHandler {
+private:
+    std::map<int, std::string> default_error_pages;
+    
+    std::string readErrorPage(const std::string& path) const;
+    
+public:
+    ErrorHandler();
+    HTTPResponse makeErrorResponse(int status_code, const std::map<int, std::string>& custom_error_pages = std::map<int, std::string>());
+};
+
+ErrorHandler::ErrorHandler() {
+    // Initialize default error pages
+    default_error_pages[400] = "<html><body><h1>400 Bad Request</h1></body></html>";
+    default_error_pages[403] = "<html><body><h1>403 Forbidden</h1></body></html>";
+    default_error_pages[404] = "<html><body><h1>404 Not Found</h1></body></html>";
+    default_error_pages[405] = "<html><body><h1>405 Method Not Allowed</h1></body></html>";
+    default_error_pages[413] = "<html><body><h1>413 Request Entity Too Large</h1></body></html>";
+    default_error_pages[500] = "<html><body><h1>500 Internal Server Error</h1></body></html>";
+    default_error_pages[501] = "<html><body><h1>501 Not Implemented</h1></body></html>";
+    default_error_pages[502] = "<html><body><h1>502 Bad Gateway</h1></body></html>";
+    default_error_pages[504] = "<html><body><h1>504 Gateway Timeout</h1></body></html>";
+}
+
+HTTPResponse ErrorHandler::makeErrorResponse(int status_code, const std::map<int, std::string>& custom_error_pages) {
+    HTTPResponse response;
+    response.setStatusCode(status_code);
+    
+    // Check for custom error page
+    if (custom_error_pages.find(status_code) != custom_error_pages.end()) {
+        std::string page_path = custom_error_pages.at(status_code);
+        std::string content = readErrorPage(page_path);
+        if (!content.empty()) {
+            response.setBody(content, "text/html");
+            return response;
+        }
+    }
+    
+    // Use default error page
+    if (default_error_pages.find(status_code) != default_error_pages.end()) {
+        response.setBody(default_error_pages.at(status_code), "text/html");
+    } else {
+        // Generic error page
+        response.setBody("<html><body><h1>Error " + std::to_string(status_code) + "</h1></body></html>", "text/html");
+    }
+    
+    return response;
+}
+```
+
+Pseudo-code for multiple server support in the main server class:
+```cpp
+class WebServer {
+private:
+    SocketManager socket_manager;
+    EventLoop event_loop;
+    std::vector<ServerConfig> server_configs;
+    RouteHandler route_handler;
+    ErrorHandler error_handler;
+    
+    const ServerConfig* findServerConfig(const std::string& host, int port) const;
+    
+public:
+    WebServer(const std::vector<ServerConfig>& configs);
+    bool start();
+    void handleRequest(int client_socket, const std::string& request_data);
+};
+
+const ServerConfig* WebServer::findServerConfig(const std::string& host, int port) const {
+    // First, try to find exact match for host:port
+    for (const auto& config : server_configs) {
+        if (config.port == port) {
+            for (const auto& name : config.server_names) {
+                if (name == host) {
+                    return &config;
+                }
+            }
+        }
+    }
+    
+    // If no exact match, find default server for this port
+    for (const auto& config : server_configs) {
+        if (config.port == port && config.server_names.empty()) {
+            return &config;
+        }
+    }
+    
+    // If no default server, use first server for this port
+    for (const auto& config : server_configs) {
+        if (config.port == port) {
+            return &config;
+        }
+    }
+    
+    return nullptr;
+}
+
+void WebServer::handleRequest(int client_socket, const std::string& request_data) {
+    // Parse HTTP request
+    HTTPRequest request;
+    if (!request.parse(request_data)) {
+        // Bad request
+        HTTPResponse response = error_handler.makeErrorResponse(400);
+        // Send response
+        send(client_socket, response.serialize().c_str(), response.serialize().length(), 0);
+        return;
+    }
+    
+    // Extract host and find matching server config
+    std::string host = request.getHeader("Host");
+    // Remove port from host if present
+    size_t colon_pos = host.find(':');
+    if (colon_pos != std::string::npos) {
+        host = host.substr(0, colon_pos);
+    }
+    
+    // Get client address info to determine port
+    struct sockaddr_in addr;
+    socklen_t addr_len = sizeof(addr);
+    getsockname(client_socket, (struct sockaddr*)&addr, &addr_len);
+    int port = ntohs(addr.sin_port);
+    
+    // Find server config
+    const ServerConfig* server = findServerConfig(host, port);
+    if (!server) {
+        // No matching server
+        HTTPResponse response = error_handler.makeErrorResponse(404);
+        send(client_socket, response.serialize().c_str(), response.serialize().length(), 0);
+        return;
+    }
+    
+    // Handle request with route handler
+    HTTPResponse response = route_handler.handleRequest(request, *server);
+    
+    // Send response
+    send(client_socket, response.serialize().c_str(), response.serialize().length(), 0);
+}
+```
+
+Integrate these components into the main server implementation.
+
+# Test Strategy:
+1. Unit tests for ErrorHandler methods
+2. Test generation of error responses for various status codes
+3. Test custom error page loading and fallback to defaults
+4. Test server configuration matching based on host and port
+5. Test request routing to the correct virtual server
+6. Test default server behavior when no exact match is found
+7. Integration tests with multiple server configurations
+8. Test with various Host headers and port combinations
+9. Test error handling across the entire request-response cycle
+
+# Subtasks:
+## 1. Implement Error Response Generation [pending]
+### Dependencies: None
+### Description: Create a standardized error response system that generates consistent error messages across the application
+### Details:
+Develop a centralized error handling module that: 1) Creates standardized JSON error responses with appropriate HTTP status codes, 2) Supports different error types (validation, authentication, server, etc.), 3) Includes configurable error detail levels based on environment (development vs production), 4) Implements error codes for client-side interpretation, 5) Ensures minimal performance overhead with efficient error object creation
+
+## 2. Build Logging Infrastructure with Multiple Levels [pending]
+### Dependencies: None
+### Description: Implement a comprehensive logging system with configurable severity levels
+### Details:
+Create a logging infrastructure that: 1) Supports multiple log levels (debug, info, warn, error, fatal), 2) Allows runtime configuration of minimum log level, 3) Includes context information with each log entry (timestamp, request ID, user ID if available), 4) Provides async logging capabilities to minimize performance impact, 5) Implements a plugin architecture for different logging destinations (console, file, external services)
+
+## 3. Implement Request/Response Logging [pending]
+### Dependencies: 10.2
+### Description: Create middleware for logging incoming requests and outgoing responses
+### Details:
+Develop request/response logging that: 1) Logs request details (method, URL, headers, body) with configurable sanitization of sensitive data, 2) Records response status, timing information, and size, 3) Includes correlation IDs to track requests through the system, 4) Provides performance optimization options (sampling rate, minimal logging for high-traffic routes), 5) Supports conditional logging based on request characteristics
+
+## 4. Develop Log Output Management and Formatting [pending]
+### Dependencies: 10.2
+### Description: Create configurable log formatting and output management system
+### Details:
+Implement log formatting that: 1) Supports multiple output formats (JSON, plain text, structured), 2) Allows custom format templates, 3) Includes colorization options for console output, 4) Provides compression options for stored logs, 5) Implements batching capabilities for high-volume logging scenarios to minimize I/O operations, 6) Ensures thread-safety for concurrent logging operations
+
+## 5. Implement Log Rotation and Archiving [pending]
+### Dependencies: 10.2, 10.4
+### Description: Create a system for log file rotation, archiving, and retention management
+### Details:
+Develop log rotation and archiving that: 1) Rotates logs based on configurable criteria (size, time), 2) Compresses archived logs to minimize storage requirements, 3) Implements configurable retention policies, 4) Provides hooks for external archiving solutions (S3, cloud storage), 5) Ensures no log data is lost during rotation, 6) Includes cleanup utilities for managing log storage, 7) Optimizes file operations to minimize performance impact during rotation events
+
