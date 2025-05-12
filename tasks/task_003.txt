@@ -1,6 +1,6 @@
 # Task ID: 3
 # Title: Implement Configuration Parser
-# Status: pending
+# Status: in-progress
 # Dependencies: None
 # Priority: high
 # Description: Create a parser for server configuration files that defines server behavior similar to NGINX configuration format.
@@ -64,43 +64,43 @@ Implement the parsing logic to handle the NGINX-like syntax, with proper nesting
 6. Verify the parsed configuration matches expected structure
 
 # Subtasks:
-## 1. Lexical Analysis Implementation [pending]
+## 1. Lexical Analysis Implementation [done]
 ### Dependencies: None
 ### Description: Develop the lexical analyzer (tokenizer) for the configuration file
 ### Details:
 Implement a lexical analyzer that converts the configuration file text into tokens. Define token types for keywords (server, route, location), identifiers, strings, numbers, and special characters. Handle comments and whitespace appropriately. Implement error detection for invalid characters and malformed tokens. Include line and column tracking for error reporting. Provide clear error messages for lexical errors with context information.
 
-## 2. Server Block Parser Implementation [pending]
+## 2. Server Block Parser Implementation [done]
 ### Dependencies: 3.1
 ### Description: Develop the parser for server blocks and their directives
 ### Details:
 Implement parsing logic for server blocks including host, port, and server_name directives. Validate that each server block has required directives. Implement validation for directive values (e.g., port numbers are valid integers in range 0-65535). Handle duplicate server blocks with same host:port combination. Detect and report missing closing braces or semicolons. Implement context-aware error messages that explain the specific validation failure.
 
-## 3. Route Block Parser Implementation [pending]
+## 3. Route Block Parser Implementation [done]
 ### Dependencies: 3.2
 ### Description: Develop the parser for route blocks and their directives
 ### Details:
 Implement parsing logic for route blocks including path, method, and handler directives. Validate route paths for correct format (starting with '/'). Validate HTTP methods against allowed values (GET, POST, etc.). Ensure each route has required directives. Detect conflicting routes with same path and method. Implement nested location block parsing if supported. Provide detailed error messages for invalid route configurations.
 
-## 4. Directive Validation System [pending]
+## 4. Directive Validation System [done]
 ### Dependencies: 3.1, 3.2, 3.3
 ### Description: Implement a comprehensive validation system for all directive types
 ### Details:
 Create a validation framework for all directive types. Implement type-specific validators (string, integer, size, path, etc.). Add support for range validation, regex pattern validation, and enum validation. Implement conditional validation based on context. Create a registry of all valid directives with their validation rules. Develop a clear error reporting mechanism that explains validation failures with suggestions for correction.
 
-## 5. Configuration Object Model Design [pending]
+## 5. Configuration Object Model Design [done]
 ### Dependencies: 3.2, 3.3, 3.4
 ### Description: Design and implement the object model to represent parsed configuration
 ### Details:
 Design class hierarchy for configuration objects (Config, Server, Route, etc.). Implement methods to access and manipulate configuration elements. Ensure immutability of configuration objects after parsing. Implement serialization/deserialization for configuration objects. Add methods for configuration validation and normalization. Include helper methods for common configuration queries (findServerByName, getRouteByPath, etc.).
 
-## 6. Error Reporting System [pending]
+## 6. Error Reporting System [done]
 ### Dependencies: 3.1, 3.2, 3.3, 3.4
 ### Description: Implement a comprehensive error reporting system for configuration parsing
 ### Details:
 Design error classes for different types of configuration errors (syntax, semantic, validation). Include source location information (file, line, column) in error reports. Implement context-aware error messages with suggestions for fixing issues. Add support for multiple error collection (continue parsing after error). Create formatted error output for console and logs. Implement error severity levels (warning, error, fatal).
 
-## 7. Configuration Reloading System [pending]
+## 7. Configuration Reloading System [done]
 ### Dependencies: 3.5, 3.6
 ### Description: Implement support for hot reloading of configuration files
 ### Details:
