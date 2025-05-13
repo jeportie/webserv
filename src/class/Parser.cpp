@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 16:21:43 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/13 16:48:24 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/13 18:25:50 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,3 +169,17 @@ ServerConfig Parser::parseServerBlock() {
 
     return config;
 }
+
+RouteConfig::RouteConfig()
+    : path("/"),
+      autoindex(false),
+      uploadEnabled(false),
+      returnCode(0)
+{}
+
+ServerConfig::ServerConfig()
+    : port(80),
+      host("0.0.0.0"),
+      autoindex(false),
+      client_max_body_size(1000000)
+{}

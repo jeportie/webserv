@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 15:32:24 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/13 16:49:15 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/13 18:29:25 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,10 @@
 
 #include "Lexer.hpp"
 #include <vector>
+#include <map>
+#include <stdexcept>
+#include <cstdlib>
+
 
 struct RouteConfig {
     std::string path; // le chemin de la route, ex: /images
@@ -40,10 +44,12 @@ struct ServerConfig {
     bool autoindex;
     std::map<int, std::string>      error_pages;             // ex: {404: "/errors/404.html"}
     size_t                          client_max_body_size;    // en octets
+    std::map<std::string, RouteConfig> routes;
     // Autres directives comme error_pages, cgi, etc.
 
     ServerConfig();
 };
+
 
 
 class Parser
@@ -52,10 +58,10 @@ class Parser
     Parser(Lexer& lexer);
     ~Parser();
     ServerConfig parseServerBlock();
-
+    
     private :   
     Lexer& _lexer;
-    Token _currentToken;
+    Token _current;
     int parseListenDirective();
     std::vector<std::string> parseServerNameDirective();
     std::map<std::string, RouteConfig> parseLocationBlocks();
