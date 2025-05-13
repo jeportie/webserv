@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 17:07:17 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/13 12:19:51 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/13 12:33:09 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,6 @@ class Lexer {
     public:
     Lexer(const std::string &content);
     Token nextToken(); // retourne le porchain token
-    bool hasMoreTokens() const; // retourne false quand EOF atteint 
     ~Lexer();                           
     
     private :
