@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 17:07:17 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/12 17:07:31 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/13 12:19:51 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # define LEXER_HPP
 
 #include <string>
+#include <cctype>
 
 enum TokenType {
     TOKEN_IDENTIFIER, //pour les mots comme server listen root
@@ -52,10 +53,13 @@ class Lexer {
 
     char peek() const; // regarde le prochain char sans avancer 
     char get(); // avance et retourne le prochin char 
+    bool isAtEnd() const;
+    bool isValidIdentifierSymbol(char c) const;
     void skipWhitespace(); // Ignore les espaces et les sauts de ligne
     void skipComment(); // Ignore les lignes de commentaire
     Token parseIdentifier();
     Token parseString();
+    Token parseNumber();
     Token parseSymbol();
 };
 
