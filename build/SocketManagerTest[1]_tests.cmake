@@ -1,0 +1,1 @@
+set( SocketManagerTest_TESTS)

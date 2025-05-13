@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   httpParser.hpp                                     :+:      :+:    :+:   */
+/*   HttpParser.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:17:22 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/12 19:08:25 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/13 15:51:29 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,20 +20,12 @@
 #include <sys/socket.h>
 #include <unistd.h>  // pour read()
 
-// === Méthodes HTTP (C++98 enum classique) ===
-namespace HttpRequest {
-  enum Method {
-    METHOD_GET,
-    METHOD_POST,
-    METHOD_PUT,
-    METHOD_DELETE,
-    METHOD_INVALID
-  };
-}
 
 // === Structure pour la Request-Line ===
 struct RequestLine {
-  HttpRequest::Method method;
+  
+  enum Method {METHOD_GET, METHOD_POST, METHOD_PUT, METHOD_DELETE, METHOD_INVALID};
+  Method              method;
   std::string         target;     // URI
   int                 http_major;
   int                 http_minor;
@@ -42,8 +34,9 @@ struct RequestLine {
 // === Parser HTTP (tout static, pas d’état interne) ===
 class HttpParser {
 public:
+
   // 1) Convertit un token ("GET", "POST", ...) en HttpRequest::Method
-  static HttpRequest::Method parseMethod(const std::string& token);
+  static RequestLine::Method parseMethod(const std::string& token);
 
   // 2) Découpe "METHOD target HTTP/x.y" en RequestLine
   static RequestLine parseRequestLine(const std::string& line);

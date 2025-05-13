@@ -1,0 +1,1 @@
+set( ServerTest_TESTS)

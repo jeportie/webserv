@@ -6,27 +6,16 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:03:17 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/12 18:54:40 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/13 11:59:33 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <string>
 #include <unordered_map>
 
-// Might need to be moved somewhere else
-namespace HttpRequest {
-enum Method
-{
-    GET,
-    POST,
-    PUT,
-    DELETE,
-    INVALID,
-};
-}
-
 struct HttpRequest
 {
+    enum Method { GET, POST, PUT, DELETE, INVALID};
     Method method;
     std::string path;
     std::string raw_query;

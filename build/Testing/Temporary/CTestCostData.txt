@@ -1,0 +1,10 @@
+ParseMethod.RecognizesStandardMethods 1 0.00130057
+ParseMethod.RejectsUnknownOrEmpty 1 0.00135366
+ParseRequestLine.ValidRequestLine 1 0.0016768
+ParseRequestLine.TooFewTokens 0 0
+ParseRequestLine.BadVersionFormat 1 0.00165153
+ParseHeaders.ParsesMultipleValidLines 1 0.00174659
+ParseHeaders.SkipsMalformedLines 0 0
+---
+ParseRequestLine.TooFewTokens
+ParseHeaders.SkipsMalformedLines
