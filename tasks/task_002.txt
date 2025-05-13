@@ -90,7 +90,7 @@ Implement thread-safe methods for adding/removing file descriptors. Support diff
 ### Details:
 Implement the main event loop that processes ready events and dispatches to callbacks. Ensure proper ordering of events (e.g., prioritize certain event types). Handle high-throughput scenarios without starvation. Include metrics collection for monitoring event processing rates and latencies. Implement safeguards against callback functions that take too long to execute.
 
-## 4. Implement timeout handling [pending]
+## 4. Implement timeout handling [done]
 ### Dependencies: 2.3
 ### Description: Add support for timed events and operation timeouts
 ### Details:
