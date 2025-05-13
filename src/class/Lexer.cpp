@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 17:07:10 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/13 15:22:00 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/13 16:27:29 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,7 +121,11 @@ Token Lexer::parseString()
     if (peek() == '"')
     {
        get();
-    }    
+    }
+    else
+    {
+        return Token(TOKEN_UNKNOWN, value, startLine, startColumn);
+    }   
     
     return Token(TOKEN_STRING, value, startLine, startColumn);
 }
@@ -129,7 +133,10 @@ Token Lexer::parseString()
 Token Lexer::parseNumber()
 {
         int startLine = _line;
-    int startColumn = _column;
+    int startColumn = _columLexer
+Lexer
+Lexer
+Lexern;
     
     std::string value;
     while (!isAtEnd() && isdigit(peek()))
