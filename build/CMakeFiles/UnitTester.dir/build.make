@@ -111,10 +111,24 @@ CMakeFiles/UnitTester.dir/src/class/HttpRequest.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/UnitTester.dir/src/class/HttpRequest.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /project/src/class/HttpRequest.cpp -o CMakeFiles/UnitTester.dir/src/class/HttpRequest.cpp.s
 
+CMakeFiles/UnitTester.dir/src/class/RequestLine.cpp.o: CMakeFiles/UnitTester.dir/flags.make
+CMakeFiles/UnitTester.dir/src/class/RequestLine.cpp.o: ../src/class/RequestLine.cpp
+CMakeFiles/UnitTester.dir/src/class/RequestLine.cpp.o: CMakeFiles/UnitTester.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/project/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/UnitTester.dir/src/class/RequestLine.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/UnitTester.dir/src/class/RequestLine.cpp.o -MF CMakeFiles/UnitTester.dir/src/class/RequestLine.cpp.o.d -o CMakeFiles/UnitTester.dir/src/class/RequestLine.cpp.o -c /project/src/class/RequestLine.cpp
+
+CMakeFiles/UnitTester.dir/src/class/RequestLine.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/UnitTester.dir/src/class/RequestLine.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /project/src/class/RequestLine.cpp > CMakeFiles/UnitTester.dir/src/class/RequestLine.cpp.i
+
+CMakeFiles/UnitTester.dir/src/class/RequestLine.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/UnitTester.dir/src/class/RequestLine.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /project/src/class/RequestLine.cpp -o CMakeFiles/UnitTester.dir/src/class/RequestLine.cpp.s
+
 CMakeFiles/UnitTester.dir/src/class/ServerSocket.cpp.o: CMakeFiles/UnitTester.dir/flags.make
 CMakeFiles/UnitTester.dir/src/class/ServerSocket.cpp.o: ../src/class/ServerSocket.cpp
 CMakeFiles/UnitTester.dir/src/class/ServerSocket.cpp.o: CMakeFiles/UnitTester.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/project/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/UnitTester.dir/src/class/ServerSocket.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/project/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/UnitTester.dir/src/class/ServerSocket.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/UnitTester.dir/src/class/ServerSocket.cpp.o -MF CMakeFiles/UnitTester.dir/src/class/ServerSocket.cpp.o.d -o CMakeFiles/UnitTester.dir/src/class/ServerSocket.cpp.o -c /project/src/class/ServerSocket.cpp
 
 CMakeFiles/UnitTester.dir/src/class/ServerSocket.cpp.i: cmake_force
@@ -128,7 +142,7 @@ CMakeFiles/UnitTester.dir/src/class/ServerSocket.cpp.s: cmake_force
 CMakeFiles/UnitTester.dir/src/class/Socket.cpp.o: CMakeFiles/UnitTester.dir/flags.make
 CMakeFiles/UnitTester.dir/src/class/Socket.cpp.o: ../src/class/Socket.cpp
 CMakeFiles/UnitTester.dir/src/class/Socket.cpp.o: CMakeFiles/UnitTester.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/project/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/UnitTester.dir/src/class/Socket.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/project/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/UnitTester.dir/src/class/Socket.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/UnitTester.dir/src/class/Socket.cpp.o -MF CMakeFiles/UnitTester.dir/src/class/Socket.cpp.o.d -o CMakeFiles/UnitTester.dir/src/class/Socket.cpp.o -c /project/src/class/Socket.cpp
 
 CMakeFiles/UnitTester.dir/src/class/Socket.cpp.i: cmake_force
@@ -142,7 +156,7 @@ CMakeFiles/UnitTester.dir/src/class/Socket.cpp.s: cmake_force
 CMakeFiles/UnitTester.dir/src/class/SocketManager.cpp.o: CMakeFiles/UnitTester.dir/flags.make
 CMakeFiles/UnitTester.dir/src/class/SocketManager.cpp.o: ../src/class/SocketManager.cpp
 CMakeFiles/UnitTester.dir/src/class/SocketManager.cpp.o: CMakeFiles/UnitTester.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/project/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/UnitTester.dir/src/class/SocketManager.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/project/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/UnitTester.dir/src/class/SocketManager.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/UnitTester.dir/src/class/SocketManager.cpp.o -MF CMakeFiles/UnitTester.dir/src/class/SocketManager.cpp.o.d -o CMakeFiles/UnitTester.dir/src/class/SocketManager.cpp.o -c /project/src/class/SocketManager.cpp
 
 CMakeFiles/UnitTester.dir/src/class/SocketManager.cpp.i: cmake_force
@@ -156,7 +170,7 @@ CMakeFiles/UnitTester.dir/src/class/SocketManager.cpp.s: cmake_force
 CMakeFiles/UnitTester.dir/main.cpp.o: CMakeFiles/UnitTester.dir/flags.make
 CMakeFiles/UnitTester.dir/main.cpp.o: ../main.cpp
 CMakeFiles/UnitTester.dir/main.cpp.o: CMakeFiles/UnitTester.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/project/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/UnitTester.dir/main.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/project/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/UnitTester.dir/main.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/UnitTester.dir/main.cpp.o -MF CMakeFiles/UnitTester.dir/main.cpp.o.d -o CMakeFiles/UnitTester.dir/main.cpp.o -c /project/main.cpp
 
 CMakeFiles/UnitTester.dir/main.cpp.i: cmake_force
@@ -172,6 +186,7 @@ UnitTester_OBJECTS = \
 "CMakeFiles/UnitTester.dir/src/class/ClientSocket.cpp.o" \
 "CMakeFiles/UnitTester.dir/src/class/HttpParser.cpp.o" \
 "CMakeFiles/UnitTester.dir/src/class/HttpRequest.cpp.o" \
+"CMakeFiles/UnitTester.dir/src/class/RequestLine.cpp.o" \
 "CMakeFiles/UnitTester.dir/src/class/ServerSocket.cpp.o" \
 "CMakeFiles/UnitTester.dir/src/class/Socket.cpp.o" \
 "CMakeFiles/UnitTester.dir/src/class/SocketManager.cpp.o" \
@@ -183,13 +198,14 @@ UnitTester_EXTERNAL_OBJECTS =
 bin/UnitTester: CMakeFiles/UnitTester.dir/src/class/ClientSocket.cpp.o
 bin/UnitTester: CMakeFiles/UnitTester.dir/src/class/HttpParser.cpp.o
 bin/UnitTester: CMakeFiles/UnitTester.dir/src/class/HttpRequest.cpp.o
+bin/UnitTester: CMakeFiles/UnitTester.dir/src/class/RequestLine.cpp.o
 bin/UnitTester: CMakeFiles/UnitTester.dir/src/class/ServerSocket.cpp.o
 bin/UnitTester: CMakeFiles/UnitTester.dir/src/class/Socket.cpp.o
 bin/UnitTester: CMakeFiles/UnitTester.dir/src/class/SocketManager.cpp.o
 bin/UnitTester: CMakeFiles/UnitTester.dir/main.cpp.o
 bin/UnitTester: CMakeFiles/UnitTester.dir/build.make
 bin/UnitTester: CMakeFiles/UnitTester.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/project/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX executable bin/UnitTester"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/project/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking CXX executable bin/UnitTester"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/UnitTester.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

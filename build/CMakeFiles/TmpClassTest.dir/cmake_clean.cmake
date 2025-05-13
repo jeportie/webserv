@@ -5,6 +5,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/TmpClassTest.dir/src/class/HttpParser.cpp.o.d"
   "CMakeFiles/TmpClassTest.dir/src/class/HttpRequest.cpp.o"
   "CMakeFiles/TmpClassTest.dir/src/class/HttpRequest.cpp.o.d"
+  "CMakeFiles/TmpClassTest.dir/src/class/RequestLine.cpp.o"
+  "CMakeFiles/TmpClassTest.dir/src/class/RequestLine.cpp.o.d"
   "CMakeFiles/TmpClassTest.dir/src/class/ServerSocket.cpp.o"
   "CMakeFiles/TmpClassTest.dir/src/class/ServerSocket.cpp.o.d"
   "CMakeFiles/TmpClassTest.dir/src/class/Socket.cpp.o"

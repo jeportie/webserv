@@ -324,6 +324,42 @@ src/class/HttpRequest.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/TmpClassTest.dir/build.make CMakeFiles/TmpClassTest.dir/src/class/HttpRequest.cpp.s
 .PHONY : src/class/HttpRequest.cpp.s
 
+src/class/RequestLine.o: src/class/RequestLine.cpp.o
+.PHONY : src/class/RequestLine.o
+
+# target to build an object file
+src/class/RequestLine.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/UnitTester.dir/build.make CMakeFiles/UnitTester.dir/src/class/RequestLine.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/HttpParserTest.dir/build.make CMakeFiles/HttpParserTest.dir/src/class/RequestLine.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ServerTest.dir/build.make CMakeFiles/ServerTest.dir/src/class/RequestLine.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SocketManagerTest.dir/build.make CMakeFiles/SocketManagerTest.dir/src/class/RequestLine.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TmpClassTest.dir/build.make CMakeFiles/TmpClassTest.dir/src/class/RequestLine.cpp.o
+.PHONY : src/class/RequestLine.cpp.o
+
+src/class/RequestLine.i: src/class/RequestLine.cpp.i
+.PHONY : src/class/RequestLine.i
+
+# target to preprocess a source file
+src/class/RequestLine.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/UnitTester.dir/build.make CMakeFiles/UnitTester.dir/src/class/RequestLine.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/HttpParserTest.dir/build.make CMakeFiles/HttpParserTest.dir/src/class/RequestLine.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ServerTest.dir/build.make CMakeFiles/ServerTest.dir/src/class/RequestLine.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SocketManagerTest.dir/build.make CMakeFiles/SocketManagerTest.dir/src/class/RequestLine.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TmpClassTest.dir/build.make CMakeFiles/TmpClassTest.dir/src/class/RequestLine.cpp.i
+.PHONY : src/class/RequestLine.cpp.i
+
+src/class/RequestLine.s: src/class/RequestLine.cpp.s
+.PHONY : src/class/RequestLine.s
+
+# target to generate assembly for a file
+src/class/RequestLine.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/UnitTester.dir/build.make CMakeFiles/UnitTester.dir/src/class/RequestLine.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/HttpParserTest.dir/build.make CMakeFiles/HttpParserTest.dir/src/class/RequestLine.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ServerTest.dir/build.make CMakeFiles/ServerTest.dir/src/class/RequestLine.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SocketManagerTest.dir/build.make CMakeFiles/SocketManagerTest.dir/src/class/RequestLine.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TmpClassTest.dir/build.make CMakeFiles/TmpClassTest.dir/src/class/RequestLine.cpp.s
+.PHONY : src/class/RequestLine.cpp.s
+
 src/class/ServerSocket.o: src/class/ServerSocket.cpp.o
 .PHONY : src/class/ServerSocket.o
 
@@ -554,6 +590,9 @@ help:
 	@echo "... src/class/HttpRequest.o"
 	@echo "... src/class/HttpRequest.i"
 	@echo "... src/class/HttpRequest.s"
+	@echo "... src/class/RequestLine.o"
+	@echo "... src/class/RequestLine.i"
+	@echo "... src/class/RequestLine.s"
 	@echo "... src/class/ServerSocket.o"
 	@echo "... src/class/ServerSocket.i"
 	@echo "... src/class/ServerSocket.s"

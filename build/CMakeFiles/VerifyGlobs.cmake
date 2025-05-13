@@ -8,6 +8,7 @@ set(OLD_GLOB
   "/project/src/class/ClientSocket.cpp"
   "/project/src/class/HttpParser.cpp"
   "/project/src/class/HttpRequest.cpp"
+  "/project/src/class/RequestLine.cpp"
   "/project/src/class/ServerSocket.cpp"
   "/project/src/class/Socket.cpp"
   "/project/src/class/SocketManager.cpp"

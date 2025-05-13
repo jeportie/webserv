@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:17:24 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/13 15:52:45 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/13 17:31:41 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,7 +81,7 @@ HttpParser::parseHeaders(const std::string& hdr_block) {
       std::string name  = trim(line.substr(0, colon));
       std::string value = trim(line.substr(colon + 1));
       // normaliser case-insensitive : ici on laisse tel quel ou à toi de transformer en lowercase
-      // if(!name.empty() || !value.empty())
+      if(name.empty() == 0 && value.empty() == 0)
         headers[name] = value;
     }
     start = end + 2;
@@ -97,7 +97,7 @@ std::string HttpParser::readFixedBody(int sockfd, size_t length) {
   size_t total = 0;
   while (total < length) {
     ssize_t r = read(sockfd, buf, std::min(sizeof(buf), length - total));
-    if (r <= 0) break; // client fermé ou erreur (non bloquant)
+    if (r <= 0 || r == 0) break; // client fermé ou erreur, ou r == 0 --> plus rien a lire (non bloquant)
     body.append(buf, r);
     total += r;
   }

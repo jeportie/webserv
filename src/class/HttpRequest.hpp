@@ -6,22 +6,43 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:03:17 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/13 11:59:33 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/13 16:22:46 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <string>
-#include <unordered_map>
+#include <map>
 
-struct HttpRequest
-{
-    enum Method { GET, POST, PUT, DELETE, INVALID};
-    Method method;
-    std::string path;
-    std::string raw_query;
-    int http_major, http_minor;
-    std::unordered_map<std::string, std::string> headers; 
-    std::string body;
-    std::unordered_map<std::string, std::string> query_params;
-    std::unordered_map<std::string, std::string> form_data;
+#ifndef HTTPREQUEST_HPP
+#define HTTPREQUEST_HPP
+
+
+#include <string>
+#include <map>
+
+struct HttpRequest {
+    // 1) Déclaration de l’énum **une seule fois**
+    enum Method {
+        METHOD_GET,
+        METHOD_POST,
+        METHOD_PUT,
+        METHOD_DELETE,
+        METHOD_INVALID
+    };
+
+    // 2) Constructeur par défaut déclaré
+    HttpRequest();
+
+    // 3) Champs de la requête complète
+    Method                                method;
+    std::string                           path;
+    std::string                           raw_query;
+    int                                   http_major;
+    int                                   http_minor;
+    std::map<std::string, std::string>    headers;
+    std::string                           body;
+    std::map<std::string, std::string>    query_params;
+    std::map<std::string, std::string>    form_data;
 };
+
+#endif // HTTPREQUEST_HPP

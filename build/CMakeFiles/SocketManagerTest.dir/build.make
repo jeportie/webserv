@@ -125,10 +125,24 @@ CMakeFiles/SocketManagerTest.dir/src/class/HttpRequest.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/SocketManagerTest.dir/src/class/HttpRequest.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /project/src/class/HttpRequest.cpp -o CMakeFiles/SocketManagerTest.dir/src/class/HttpRequest.cpp.s
 
+CMakeFiles/SocketManagerTest.dir/src/class/RequestLine.cpp.o: CMakeFiles/SocketManagerTest.dir/flags.make
+CMakeFiles/SocketManagerTest.dir/src/class/RequestLine.cpp.o: ../src/class/RequestLine.cpp
+CMakeFiles/SocketManagerTest.dir/src/class/RequestLine.cpp.o: CMakeFiles/SocketManagerTest.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/project/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/SocketManagerTest.dir/src/class/RequestLine.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SocketManagerTest.dir/src/class/RequestLine.cpp.o -MF CMakeFiles/SocketManagerTest.dir/src/class/RequestLine.cpp.o.d -o CMakeFiles/SocketManagerTest.dir/src/class/RequestLine.cpp.o -c /project/src/class/RequestLine.cpp
+
+CMakeFiles/SocketManagerTest.dir/src/class/RequestLine.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/SocketManagerTest.dir/src/class/RequestLine.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /project/src/class/RequestLine.cpp > CMakeFiles/SocketManagerTest.dir/src/class/RequestLine.cpp.i
+
+CMakeFiles/SocketManagerTest.dir/src/class/RequestLine.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/SocketManagerTest.dir/src/class/RequestLine.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /project/src/class/RequestLine.cpp -o CMakeFiles/SocketManagerTest.dir/src/class/RequestLine.cpp.s
+
 CMakeFiles/SocketManagerTest.dir/src/class/ServerSocket.cpp.o: CMakeFiles/SocketManagerTest.dir/flags.make
 CMakeFiles/SocketManagerTest.dir/src/class/ServerSocket.cpp.o: ../src/class/ServerSocket.cpp
 CMakeFiles/SocketManagerTest.dir/src/class/ServerSocket.cpp.o: CMakeFiles/SocketManagerTest.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/project/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/SocketManagerTest.dir/src/class/ServerSocket.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/project/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/SocketManagerTest.dir/src/class/ServerSocket.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SocketManagerTest.dir/src/class/ServerSocket.cpp.o -MF CMakeFiles/SocketManagerTest.dir/src/class/ServerSocket.cpp.o.d -o CMakeFiles/SocketManagerTest.dir/src/class/ServerSocket.cpp.o -c /project/src/class/ServerSocket.cpp
 
 CMakeFiles/SocketManagerTest.dir/src/class/ServerSocket.cpp.i: cmake_force
@@ -142,7 +156,7 @@ CMakeFiles/SocketManagerTest.dir/src/class/ServerSocket.cpp.s: cmake_force
 CMakeFiles/SocketManagerTest.dir/src/class/Socket.cpp.o: CMakeFiles/SocketManagerTest.dir/flags.make
 CMakeFiles/SocketManagerTest.dir/src/class/Socket.cpp.o: ../src/class/Socket.cpp
 CMakeFiles/SocketManagerTest.dir/src/class/Socket.cpp.o: CMakeFiles/SocketManagerTest.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/project/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/SocketManagerTest.dir/src/class/Socket.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/project/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/SocketManagerTest.dir/src/class/Socket.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SocketManagerTest.dir/src/class/Socket.cpp.o -MF CMakeFiles/SocketManagerTest.dir/src/class/Socket.cpp.o.d -o CMakeFiles/SocketManagerTest.dir/src/class/Socket.cpp.o -c /project/src/class/Socket.cpp
 
 CMakeFiles/SocketManagerTest.dir/src/class/Socket.cpp.i: cmake_force
@@ -156,7 +170,7 @@ CMakeFiles/SocketManagerTest.dir/src/class/Socket.cpp.s: cmake_force
 CMakeFiles/SocketManagerTest.dir/src/class/SocketManager.cpp.o: CMakeFiles/SocketManagerTest.dir/flags.make
 CMakeFiles/SocketManagerTest.dir/src/class/SocketManager.cpp.o: ../src/class/SocketManager.cpp
 CMakeFiles/SocketManagerTest.dir/src/class/SocketManager.cpp.o: CMakeFiles/SocketManagerTest.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/project/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/SocketManagerTest.dir/src/class/SocketManager.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/project/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/SocketManagerTest.dir/src/class/SocketManager.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SocketManagerTest.dir/src/class/SocketManager.cpp.o -MF CMakeFiles/SocketManagerTest.dir/src/class/SocketManager.cpp.o.d -o CMakeFiles/SocketManagerTest.dir/src/class/SocketManager.cpp.o -c /project/src/class/SocketManager.cpp
 
 CMakeFiles/SocketManagerTest.dir/src/class/SocketManager.cpp.i: cmake_force
@@ -173,6 +187,7 @@ SocketManagerTest_OBJECTS = \
 "CMakeFiles/SocketManagerTest.dir/src/class/ClientSocket.cpp.o" \
 "CMakeFiles/SocketManagerTest.dir/src/class/HttpParser.cpp.o" \
 "CMakeFiles/SocketManagerTest.dir/src/class/HttpRequest.cpp.o" \
+"CMakeFiles/SocketManagerTest.dir/src/class/RequestLine.cpp.o" \
 "CMakeFiles/SocketManagerTest.dir/src/class/ServerSocket.cpp.o" \
 "CMakeFiles/SocketManagerTest.dir/src/class/Socket.cpp.o" \
 "CMakeFiles/SocketManagerTest.dir/src/class/SocketManager.cpp.o"
@@ -184,6 +199,7 @@ SocketManagerTest: CMakeFiles/SocketManagerTest.dir/test/class/SocketManagerTest
 SocketManagerTest: CMakeFiles/SocketManagerTest.dir/src/class/ClientSocket.cpp.o
 SocketManagerTest: CMakeFiles/SocketManagerTest.dir/src/class/HttpParser.cpp.o
 SocketManagerTest: CMakeFiles/SocketManagerTest.dir/src/class/HttpRequest.cpp.o
+SocketManagerTest: CMakeFiles/SocketManagerTest.dir/src/class/RequestLine.cpp.o
 SocketManagerTest: CMakeFiles/SocketManagerTest.dir/src/class/ServerSocket.cpp.o
 SocketManagerTest: CMakeFiles/SocketManagerTest.dir/src/class/Socket.cpp.o
 SocketManagerTest: CMakeFiles/SocketManagerTest.dir/src/class/SocketManager.cpp.o
@@ -192,7 +208,7 @@ SocketManagerTest: /usr/lib/x86_64-linux-gnu/libgmock.a
 SocketManagerTest: /usr/lib/x86_64-linux-gnu/libgtest_main.a
 SocketManagerTest: /usr/lib/x86_64-linux-gnu/libgtest.a
 SocketManagerTest: CMakeFiles/SocketManagerTest.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/project/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX executable SocketManagerTest"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/project/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking CXX executable SocketManagerTest"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/SocketManagerTest.dir/link.txt --verbose=$(VERBOSE)
 	/usr/bin/cmake -D TEST_TARGET=SocketManagerTest -D TEST_EXECUTABLE=/project/build/SocketManagerTest -D TEST_EXECUTOR= -D TEST_WORKING_DIR=/project/build -D TEST_EXTRA_ARGS= -D TEST_PROPERTIES= -D TEST_PREFIX= -D TEST_SUFFIX= -D TEST_FILTER= -D NO_PRETTY_TYPES=FALSE -D NO_PRETTY_VALUES=FALSE -D TEST_LIST=SocketManagerTest_TESTS -D CTEST_FILE=/project/build/SocketManagerTest[1]_tests.cmake -D TEST_DISCOVERY_TIMEOUT=5 -D TEST_XML_OUTPUT_DIR= -P /usr/share/cmake-3.22/Modules/GoogleTestAddTests.cmake
 

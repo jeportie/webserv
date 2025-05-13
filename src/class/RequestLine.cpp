@@ -1,26 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   HttpRequest.cpp                                    :+:      :+:    :+:   */
+/*   RequestLine.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/05/12 18:03:14 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/13 16:19:16 by anastruc         ###   ########.fr       */
+/*   Created: 2025/05/13 16:20:46 by anastruc          #+#    #+#             */
+/*   Updated: 2025/05/13 16:20:52 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "RequestLine.hpp"
 
-#include "HttpRequest.hpp"
-
-HttpRequest::HttpRequest()
-  : method(METHOD_INVALID)
-  , path()
-  , raw_query()
+RequestLine::RequestLine()
+  : method(HttpRequest::METHOD_INVALID)
+  , target()
   , http_major(0)
   , http_minor(0)
-  , headers()
-  , body()
-  , query_params()
-  , form_data()
 {}
