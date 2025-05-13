@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 17:07:10 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/13 12:28:33 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/13 15:22:00 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ Lexer& Lexer::operator=(const Lexer& rhs) {
         _line = rhs._line;
         _column = rhs._column;
  }
+ return *this;
 }
 
 Lexer::~Lexer(void) {}
@@ -38,7 +39,6 @@ Lexer::Lexer(const std::string &content)
     _column = 1;
 }
 
-Token Lexer::nextToken(){}
 
 char Lexer::peek() const
 {
@@ -67,9 +67,7 @@ char Lexer::get()
 }
 bool Lexer::isAtEnd() const {
     return _pos >= _content.size();
-}    int startLine = _line;
-    int startColumn = _column;
-
+}
 void Lexer::skipWhitespace()
 {
     if (!isAtEnd() && isspace(peek()))
@@ -142,7 +140,7 @@ Token Lexer::parseNumber()
     return Token(TOKEN_NUMBER, value, startLine, startColumn);
 }
 
-Token Lexer::ParseSymbol()
+Token Lexer::parseSymbol()
 {
         int startLine = _line;
     int startColumn = _column;
@@ -154,8 +152,6 @@ Token Lexer::ParseSymbol()
             return Token(TOKEN_LBRACE, "{", startLine, startColumn);
         case '}' : 
             return Token(TOKEN_RBRACE, "}", startLine, startColumn);
-        case '{' : 
-            return Token(TOKEN_LBRACE, "{", startLine, startColumn);
         case ';' : 
             return Token(TOKEN_SEMICOLON, ";", startLine, startColumn);
         case ':' : 
@@ -165,18 +161,37 @@ Token Lexer::ParseSymbol()
     }
 }
 
+Token Lexer::parsePathLike()
+{
+    std::string value;
+    while (!isAtEnd())
+    {
+        char c = peek();
+        if (std::isalnum(c) || c == '/' || c == '.' || c == '-' || c == '_')
+        {
+            value += get();
+        }
+        else
+            break;
+    }
+    return Token(TOKEN_STRING, value, _line, _column);
+}
+
 Token Lexer::nextToken()
 {
     while (!isAtEnd())
     {
-        skipWhitespace();
-        skipComment();
-        skipWhitespace();
+        while (true)
+        {
+            skipWhitespace();
+            skipComment();
 
+            if (!std::isspace(peek()) && peek() != '#')
+                break;
+        }
         if (isAtEnd())
             break;
         
-
         char c = peek();
         if (std::isalpha(c))
         {
@@ -190,11 +205,15 @@ Token Lexer::nextToken()
         {
             return parseString();
         }
+        else if (c == '/' || c == '.' || c == '-') 
+        {
+            return parsePathLike();
+        }
         else
         {
             return parseSymbol();
         }
     }
     
-    return Token(TOKEN_COLON, "", _line, _column);
+    return Token(TOKEN_EOF, "", _line, _column);
 }

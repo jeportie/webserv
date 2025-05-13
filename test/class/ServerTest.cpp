@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerTest.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/16 15:06:38 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/06 14:14:48 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/13 14:23:46 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,16 +32,16 @@
 //
 // 	EXPECT_EQ(o.safeBind(), true);
 // 	EXPECT_EQ(o.safeListen(), true);
-// 	// EXPECT_EQ(o.safeAccept(), true);
+	// EXPECT_EQ(o.safeAccept(), true);
 //
 //     ASSERT_NE(o.getServerSocket(), -1);
-//     // ASSERT_NE(o.getClientSocket(), -1);
+    // ASSERT_NE(o.getClientSocket(), -1);
 //
-// 	// Start to listen std out
-//     // testing::internal::CaptureStdout();
-//     // o.safeAccept();
-//     // std::string out = testing::internal::GetCapturedStdout();
-//     // EXPECT_EQ(out, "Connection accepted!\n");
+	// Start to listen std out
+    // testing::internal::CaptureStdout();
+    // o.safeAccept();
+    // std::string out = testing::internal::GetCapturedStdout();
+    // EXPECT_EQ(out, "Connection accepted!\n");
 // }
 //
 //
@@ -89,9 +89,9 @@
 // {
 //     Server o;
 
-// 	// Start to listen std out
-//     // testing::internal::CaptureStdout();
-//     // o.safeAccept();
-//     // std::string out = testing::internal::GetCapturedStdout();
-//     // EXPECT_EQ(out, "Connection accepted!\n");
+	// Start to listen std out
+    // testing::internal::CaptureStdout();
+    // o.safeAccept();
+    // std::string out = testing::internal::GetCapturedStdout();
+    // EXPECT_EQ(out, "Connection accepted!\n");
 // }
