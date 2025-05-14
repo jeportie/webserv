@@ -34,7 +34,6 @@ public:
      * @param rhs The right-hand side object to assign from
      * @return CallbackQueue& Reference to this object
      */
-    CallbackQueue& operator=(const CallbackQueue& rhs);
 
     /**
      * @brief Add a callback to the queue
@@ -75,8 +74,6 @@ public:
 
 private:
 	std::queue<Callback*> _queue; // Queue of Callbacks
-	
-    CallbackQueue(const CallbackQueue& src);
 };
 
 

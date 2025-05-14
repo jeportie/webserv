@@ -49,14 +49,14 @@ void SocketManager::init_connect(void)
 {
     // Create, bind, and listen on the server socket
     if (!_serverSocket.safeBind(PORT, ""))
-        throw std::runtime_error("Failed to bind server socket");
+        THROW_ERROR(CRITICAL, SOCKET_ERROR, "Failed to bind server socket", "SocketManager::init_connect");
     
     _serverSocket.safeListen(10);
     _serverSocketFd = _serverSocket.getFd();
     
     int epoll_fd = epoll_create(1);
     if (epoll_fd < 0)
-        throw std::runtime_error("Failed to create epoll instance: " + std::string(strerror(errno)));
+        THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "Failed to create epoll instance", "SocketManager::init_connect");
     
     safeRegisterToEpoll(epoll_fd);
     std::cout << "Server listening on port " << PORT << std::endl;
@@ -120,7 +120,7 @@ void SocketManager::eventLoop(int epoll_fd, int timeout_ms)
 		{
             if (errno == EINTR)
                 continue;
-            throw std::runtime_error("epoll_wait failed: " + std::string(strerror(errno)));
+            THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "epoll_wait failed", "SocketManager::eventLoop");
 		}
         
         for (int i = 0; i < n; ++i)
@@ -149,7 +149,7 @@ void SocketManager::eventLoop(int epoll_fd, int timeout_ms)
                 }
                 catch (const std::exception& e)
                 {
-                    std::cerr << "Accept failed: " << e.what() << std::endl;
+                    LOG_ERROR(ERROR, SOCKET_ERROR, "Accept failed: " + std::string(e.what()), "SocketManager::eventLoop");
                 }
             }
             else if ((ev & EPOLLIN) && fd != _serverSocketFd)
@@ -374,12 +374,17 @@ void SocketManager::communication(int fd)
         std::cout << "Received from client (fd=" << fd << "): " << buffer;
         
         // Echo back to the client
-        write(fd, buffer, bytes_read);
+        if (write(fd, buffer, bytes_read) < 0)
+        {
+            LOG_SYSTEM_ERROR(WARNING, SOCKET_ERROR, "Failed to write response to client", "SocketManager::communication");
+        }
     }
     else if (bytes_read == 0)
     {
         // Client closed the connection
-        std::cout << "Client disconnected (fd=" << fd << ")" << std::endl;
+        std::stringstream ss;
+        ss << fd;
+        LOG_ERROR(INFO, SOCKET_ERROR, "Client disconnected (fd=" + ss.str() + ")", "SocketManager::communication");
         
         // Clean up the client socket
         std::map<int, ClientSocket*>::iterator it = _clientSockets.find(fd);
@@ -390,13 +395,18 @@ void SocketManager::communication(int fd)
         }
         
         // Remove from epoll
-        epoll_ctl(fd, EPOLL_CTL_DEL, fd, NULL);
+        if (epoll_ctl(fd, EPOLL_CTL_DEL, fd, NULL) < 0)
+        {
+            LOG_SYSTEM_ERROR(WARNING, EPOLL_ERROR, "Failed to remove client from epoll", "SocketManager::communication");
+        }
         close(fd);
     }
     else if (bytes_read < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
     {
         // Unexpected read error
-        std::cerr << "Read error on fd " << fd << ": " << strerror(errno) << std::endl;
+        std::stringstream ss;
+        ss << fd;
+        LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR, "Read error on fd " + ss.str(), "SocketManager::communication");
         
         // Clean up the client socket
         std::map<int, ClientSocket*>::iterator it = _clientSockets.find(fd);
@@ -407,7 +417,10 @@ void SocketManager::communication(int fd)
         }
         
         // Remove from epoll
-        epoll_ctl(fd, EPOLL_CTL_DEL, fd, NULL);
+        if (epoll_ctl(fd, EPOLL_CTL_DEL, fd, NULL) < 0)
+        {
+            LOG_SYSTEM_ERROR(WARNING, EPOLL_ERROR, "Failed to remove client from epoll", "SocketManager::communication");
+        }
         close(fd);
     }
     // If errno == EAGAIN or EWOULDBLOCK, we'll wait for the next EPOLLIN event
@@ -437,9 +450,10 @@ int SocketManager::safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll
 {
     if (epoll_ctl(epoll_fd, op, fd, event) < 0)
     {
-        std::cerr << "[Error] epoll_ctl failed (epoll_fd=" << epoll_fd
-                  << ", fd=" << fd << ", op=" << op << "): "
-                  << strerror(errno) << std::endl;
+        std::stringstream ss;
+        ss << "epoll_ctl failed (epoll_fd=" << epoll_fd << ", fd=" << fd << ", op=" << op << ")";
+        LOG_SYSTEM_ERROR(ERROR, EPOLL_ERROR, ss.str(),
+                        "SocketManager::safeEpollCtlClient");
         return -1;
     }
     return 0;
@@ -457,7 +471,7 @@ void SocketManager::safeRegisterToEpoll(int epoll_fd)
     ev.data.fd = _serverSocketFd;
 
     if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, _serverSocketFd, &ev) == -1)
-        throw std::runtime_error("Failed to add server socket to epoll: " + std::string(strerror(errno)));
+        THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "Failed to add server socket to epoll", "SocketManager::safeRegisterToEpoll");
 }
 
 int SocketManager::getServerSocket(void) const { return _serverSocketFd; }

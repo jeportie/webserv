@@ -78,7 +78,6 @@ private:
     
     // Prevent copying
     CallbackManager(const CallbackManager& src);
-    CallbackManager& operator=(const CallbackManager& rhs);
 };
 
 #endif  // ********************************************** CALLBACKMANAGER_HPP //

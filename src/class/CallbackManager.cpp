@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #include "CallbackManager.hpp"
-#include <iostream>
+#include "ErrorHandler.hpp"
 
 CallbackManager::CallbackManager()
 {
@@ -25,8 +25,6 @@ CallbackManager::CallbackManager(const CallbackManager& src) { *this = src; }
 
 CallbackManager::~CallbackManager(void) {}
 
-CallbackManager & CallbackManager::operator=(const CallbackManager& rhs)
-{ return (*this); }
 
 void CallbackManager::executeImmediate(Callback* callback)
 {
@@ -39,11 +37,13 @@ void CallbackManager::executeImmediate(Callback* callback)
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error executing immediate callback: " << e.what() << std::endl;
+        std::string errorMsg = "Error executing immediate callback: ";
+        errorMsg += e.what();
+        ErrorHandler::getInstance().logError(ERROR, CALLBACK_ERROR, errorMsg, "CallbackManager::executeImmediate");
     }
     catch (...)
     {
-        std::cerr << "Unknown error executing immediate callback" << std::endl;
+        ErrorHandler::getInstance().logError(ERROR, CALLBACK_ERROR, "Unknown error executing immediate callback", "CallbackManager::executeImmediate");
     }
     
     delete callback;

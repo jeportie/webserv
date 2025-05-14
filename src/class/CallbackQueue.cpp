@@ -10,21 +10,20 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-
-#include <iostream>
 #include "CallbackQueue.hpp"
+#include "ErrorHandler.hpp"
 
 CallbackQueue::CallbackQueue(void) {}
 
 CallbackQueue::CallbackQueue(const CallbackQueue& src)
 {
-	*this = src;
-	return;
+    *this = src;
+    return;
 }
 
 CallbackQueue::~CallbackQueue(void)
 {
-	// Clean up any remaining callbacks
+    // Clean up any remaining callbacks
     while (!_queue.empty())
     {
         Callback* callback = _queue.front();
@@ -53,17 +52,17 @@ CallbackQueue& CallbackQueue::operator=(const CallbackQueue& rhs)
         // For now, we'll just leave the queue empty
         // This is safe because we're only using assignment in the constructor
         // where the queue is already empty
-		//
-		// The implementation is simplified and doesn't actually copy 
-		// the callbacks from the source queue. 
-		// In a real implementation, you would need to decide whether to:
-		//
-		// 1. Make deep copies of each callback (clone them)
-		// 2. Transfer ownership of the callbacks (move them)
-		// 3. Share ownership of the callbacks (use reference counting)
-		//
-		// For the current use case (initializing empty queues in the constructor),
-		// the simplified implementation is sufficient because the source queues are empty.
+        //
+        // The implementation is simplified and doesn't actually copy 
+        // the callbacks from the source queue. 
+        // In a real implementation, you would need to decide whether to:
+        //
+        // 1. Make deep copies of each callback (clone them)
+        // 2. Transfer ownership of the callbacks (move them)
+        // 3. Share ownership of the callbacks (use reference counting)
+        //
+        // For the current use case (initializing empty queues in the constructor),
+        // the simplified implementation is sufficient because the source queues are empty.
     }
     return *this;
 }
@@ -99,11 +98,13 @@ void CallbackQueue::processCallbacks()
         }
         catch (const std::exception& e)
         {
-            std::cerr << "Error executing callback: " << e.what() << std::endl;
+            std::string errorMsg = "Error executing callback: ";
+            errorMsg += e.what();
+            ErrorHandler::getInstance().logError(ERROR, CALLBACK_ERROR, errorMsg, "CallbackQueue::processCallbacks");
         }
         catch (...)
         {
-            std::cerr << "Unknown error executing callback" << std::endl;
+            ErrorHandler::getInstance().logError(ERROR, CALLBACK_ERROR, "Unknown error executing callback", "CallbackQueue::processCallbacks");
         }
         
         delete callback;
