@@ -28,7 +28,8 @@ SRC = \
   src/class/Socket.cpp \
   src/class/SocketManager.cpp \
   src/class/HttpParser.cpp \
-  src/class/HttpRequest.cpp 
+  src/class/HttpRequest.cpp \
+  src/class/RequestLine.cpp 
 ### END AUTO GENERATED FILES ###
 
 # Create object for main.cpp

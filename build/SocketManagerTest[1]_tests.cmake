@@ -1,1 +1,0 @@
-set(  SocketManagerTest_TESTS)

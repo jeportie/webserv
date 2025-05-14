@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientSocket.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:16:38 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/07 23:15:21 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/14 14:11:24 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,21 @@ public:
      */
     socklen_t getClientAddrLen(void) const;
 
+    // --- Contexte de parsing HTTP ---
+    /// Accès au tampon brut où l’on accumulate les données lues
+    std::string&       getBuffer();
+    /// Indicateur : avons-nous déjà parsé les headers ?
+    bool               headersParsed() const;
+    void               setHeadersParsed(bool parsed);
+    /// Valeur Content-Length (ou 0 si chunked ou non encore extrait)
+    size_t             getContentLength() const;
+    void               setContentLength(size_t length);
+
 private:
+
+    std::string        _buffer;
+    bool               _headersParsed;
+    size_t             _contentLength;
     /**
      * @brief Copy constructor (private to prevent copying)
      * 

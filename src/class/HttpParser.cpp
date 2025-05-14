@@ -6,14 +6,17 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:17:24 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/14 11:34:13 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/14 18:02:52 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpParser.hpp"
+#include "HttpRequest.hpp"
+#include "RequestLine.hpp"
 #include <cctype>    // isspace, isdigit
 #include <sstream>   // pour stringstream si besoin
 #include <cerrno>    // errno
+#include <iostream>
 #include <cstring>   // strerror
 
 // UTILITAIRES C++98
@@ -25,12 +28,12 @@ static std::string trim(const std::string& s) {
 }
 
 // 1) parseMethod
-RequestLine::Method HttpParser::parseMethod(const std::string& token) {
-  if (token == "GET")    return RequestLine::METHOD_GET;
-  if (token == "POST")   return RequestLine::METHOD_POST;
-  if (token == "PUT")    return RequestLine::METHOD_PUT;
-  if (token == "DELETE") return RequestLine::METHOD_DELETE;
-  return RequestLine::METHOD_INVALID;
+HttpRequest::Method HttpParser::parseMethod(const std::string& token) {
+  if (token == "GET")    return HttpRequest::METHOD_GET;
+  if (token == "POST")   return HttpRequest::METHOD_POST;
+  if (token == "PUT")    return HttpRequest::METHOD_PUT;
+  if (token == "DELETE") return HttpRequest::METHOD_DELETE;
+  return HttpRequest::METHOD_INVALID;
 }
 
 // 2) parseRequestLine
@@ -49,7 +52,7 @@ RequestLine HttpParser::parseRequestLine(const std::string& line) {
   
 
   if (parts.size() != 3) {
-    rl.method = RequestLine::METHOD_INVALID;
+    rl.method = HttpRequest::METHOD_INVALID;
     return rl;
   }
 
@@ -69,8 +72,8 @@ RequestLine HttpParser::parseRequestLine(const std::string& line) {
 }
 
 // 3) parseHeaders. It can acceot multiple headers with the same name such as cookies etc.
-std::map<std::string,std::vector<std::string>> HttpParser::parseHeaders(const std::string& hdr_block) {
-  std::map<std::string,std::vector<std::string>> headers;
+std::map<std::string,std::vector<std::string> > HttpParser::parseHeaders(const std::string& hdr_block) {
+  std::map<std::string,std::vector<std::string> > headers;
   size_t start = 0, end;
   while ((end = hdr_block.find("\r\n", start)) != std::string::npos) {
     std::string line = hdr_block.substr(start, end - start);
@@ -79,6 +82,7 @@ std::map<std::string,std::vector<std::string>> HttpParser::parseHeaders(const st
     if (colon != std::string::npos) {
       std::string name  = trim(line.substr(0, colon));
       std::string value = trim(line.substr(colon + 1));
+
       // normaliser case-insensitive : ici on laisse tel quel ou à toi de transformer en lowercase
       if(name.empty() == 0 && value.empty() == 0)
         headers[name].push_back(value);

@@ -1,1 +1,0 @@
-set(  ServerTest_TESTS)

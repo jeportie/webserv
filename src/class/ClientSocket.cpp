@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientSocket.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 16:11:45 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/07 22:48:22 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/14 18:07:10 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,8 @@ ClientSocket::ClientSocket(void)
 {
     std::memset(&_clientAddr, 0, sizeof(sockaddr_in));
     _clientAddrLen = sizeof(_clientAddr);
+   _headersParsed = false;
+   _contentLength = 0;
 }
 
 /**
@@ -164,4 +166,24 @@ const struct sockaddr_in& ClientSocket::getClientAddr(void) const
 socklen_t ClientSocket::getClientAddrLen(void) const
 {
     return _clientAddrLen;
+}
+
+std::string& ClientSocket::getBuffer() {
+    return _buffer;
+}
+
+bool ClientSocket::headersParsed() const {
+    return _headersParsed;
+}
+
+void ClientSocket::setHeadersParsed(bool parsed) {
+    _headersParsed = parsed;
+}
+
+size_t ClientSocket::getContentLength() const {
+    return _contentLength;
+}
+
+void ClientSocket::setContentLength(size_t length) {
+    _contentLength = length;
 }

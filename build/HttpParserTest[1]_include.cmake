@@ -1,5 +1,0 @@
-if(EXISTS "/root/projects/WebservGit/build/HttpParserTest[1]_tests.cmake")
-  include("/root/projects/WebservGit/build/HttpParserTest[1]_tests.cmake")
-else()
-  add_test(HttpParserTest_NOT_BUILT HttpParserTest_NOT_BUILT)
-endif()

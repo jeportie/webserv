@@ -6,23 +6,29 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 01:28:02 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/13 12:26:24 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/14 18:13:57 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-// #include <gtest/gtest.h>
-// #include <gmock/gmock.h>
-// #include <sys/socket.h>
-// #include <netinet/in.h>
-// #include <arpa/inet.h>
-// #include <unistd.h>
-// #include <fcntl.h>
-// #include <errno.h>
-// #include <thread>
-// #include <chrono>
-// #include <dirent.h>  // For DIR, opendir, readdir, closedir
-// #include <sys/epoll.h>  // For epoll functions
-// #include <string.h>  // For strerror() and strlen()
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <thread>
+#include <chrono>
+#include <dirent.h>  // For DIR, opendir, readdir, closedir
+#include <sys/epoll.h>  // For epoll functions
+#include <string.h>  // For strerror() and strlen()
+#define private public
+#define protected public
+#include "../src/class/SocketManager.hpp"
+#undef private
+#undef protected
+
 
 // #include "../../src/class/SocketManager.hpp"
 // #include "../../src/class/Socket.hpp"
@@ -518,3 +524,103 @@
 //     EXPECT_NEAR(finalFdCount, initialFdCount, 2) 
 //         << "File descriptor count should return to initial value after closing sockets";
 // }
+
+
+// test/SocketManagerTest.cpp
+
+
+// Permet d’accéder aux membres privés/protégés pour les tester
+
+// Fixture qui crée un SocketManager propre à chaque test
+class SocketManagerTest : public ::testing::Test {
+protected:
+    SocketManager manager;
+    int sv[2];                  // socketpair pour simuler client<->serveur
+    ClientSocket* clientSock;   // wrapper pour fd sv[1]
+    int clientFd;
+
+    virtual void SetUp() {
+        // création de la paire de sockets
+        ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM, 0, sv))
+            << "socketpair() failed: " << strerror(errno);
+        // on considère sv[0] comme "serveur" et sv[1] comme "client"
+        clientFd     = sv[1];
+        clientSock   = new ClientSocket();
+        clientSock->setFd(clientFd);
+        manager._clientSockets[clientFd] = clientSock;
+    }
+
+    virtual void TearDown() {
+        manager.closeConnection(clientFd, /*epoll_fd*/ -1);
+        close(sv[0]);
+    }
+};
+
+// 1) readFromClient doit accumuler dans le buffer
+TEST_F(SocketManagerTest, ReadFromClientAppendsData) {
+    const char* msg = "HelloSocket";
+    write(sv[0], msg, strlen(msg));
+    close(sv[0]);
+
+    // buffer initial vide
+    EXPECT_TRUE(clientSock->getBuffer().empty());
+    // appelle readFromClient
+    EXPECT_TRUE(manager.readFromClient(clientFd));
+    // buffer doit contenir msg
+    EXPECT_EQ(clientSock->getBuffer(), std::string(msg));
+}
+
+// 2) parseClientHeaders extrait headers et vide le buffer en-têtes
+TEST_F(SocketManagerTest, ParseClientHeadersExtractsAndTrims) {
+    const char* raw =
+        "GET /foo HTTP/1.1\r\n"
+        "Host: example.com\r\n"
+        "Content-Length: 5\r\n"
+        "\r\n"
+        "ABCDE";  // reste de body
+    write(sv[0], raw, strlen(raw));
+    close(sv[0]);
+    
+    manager.readFromClient(clientFd);
+
+    // Avant parsing
+    EXPECT_FALSE(clientSock->headersParsed());
+    EXPECT_NE(clientSock->getBuffer().find("Content-Length"),
+          std::string::npos);
+
+    bool ok = manager.parseClientHeaders(clientSock);
+    EXPECT_TRUE(ok);
+    EXPECT_TRUE(clientSock->headersParsed());
+    EXPECT_EQ(clientSock->getContentLength(), size_t(5));
+
+    // Buffer doit commencer par le début du body
+    EXPECT_EQ(clientSock->getBuffer(), std::string("ABCDE"));
+}
+
+// 3) parseClientBody attend le corps complet et le place dans HttpRequest
+TEST_F(SocketManagerTest, ParseClientBodyFillsRequestBody) {
+    // Simule qu'on a déjà parsé headers et mis contentLength + buffer = body+reste
+    clientSock->setHeadersParsed(true);
+    clientSock->setContentLength(4);
+    clientSock->getBuffer() = "WXYZ123";  // 4 octets de body + "123" restant
+
+    HttpRequest req;
+    bool ok = manager.parseClientBody(clientSock, req);
+    EXPECT_TRUE(ok);
+    EXPECT_EQ(req.body, "WXYZ");
+}
+
+// 4) cleanupRequest consomme exactement ContentLength octets et reset flags
+TEST_F(SocketManagerTest, CleanupRequestTrimsBufferAndResets) {
+    clientSock->setContentLength(3);
+    clientSock->setHeadersParsed(true);
+    // buffer = "123ABC"
+    clientSock->getBuffer() = "123ABC";
+
+    manager.cleanupRequest(clientSock);
+    // doit avoir supprimé "123"
+    EXPECT_EQ(clientSock->getBuffer(), std::string("ABC"));
+    EXPECT_FALSE(clientSock->headersParsed());
+    EXPECT_EQ(clientSock->getContentLength(), size_t(0));
+}
+

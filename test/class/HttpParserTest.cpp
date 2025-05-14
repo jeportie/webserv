@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 13:54:53 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/13 17:28:15 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/14 17:09:31 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,24 +15,29 @@
 #include "../src/class/HttpParser.hpp"
 #include <thread>
 #include <chrono>
+#define private public
+#define protected public
+#include "../src/class/SocketManager.hpp"
+#undef private
+#undef protected
+
 
 // test/HttpParserTest.cpp
-#include <gtest/gtest.h>
 
 // ----------------------
 // Tests pour parseMethod
 // ----------------------
 TEST(ParseMethod, RecognizesStandardMethods) {
-    EXPECT_EQ(HttpParser::parseMethod("GET"),    RequestLine::METHOD_GET);
-    EXPECT_EQ(HttpParser::parseMethod("POST"),   RequestLine::METHOD_POST);
-    EXPECT_EQ(HttpParser::parseMethod("PUT"),    RequestLine::METHOD_PUT);
-    EXPECT_EQ(HttpParser::parseMethod("DELETE"), RequestLine::METHOD_DELETE);
+    EXPECT_EQ(HttpParser::parseMethod("GET"),    HttpRequest::METHOD_GET);
+    EXPECT_EQ(HttpParser::parseMethod("POST"),   HttpRequest::METHOD_POST);
+    EXPECT_EQ(HttpParser::parseMethod("PUT"),    HttpRequest::METHOD_PUT);
+    EXPECT_EQ(HttpParser::parseMethod("DELETE"), HttpRequest::METHOD_DELETE);
 }
 
 TEST(ParseMethod, RejectsUnknownOrEmpty) {
-    EXPECT_EQ(HttpParser::parseMethod("FETCH"),  RequestLine::METHOD_INVALID);
-    EXPECT_EQ(HttpParser::parseMethod(""),       RequestLine::METHOD_INVALID);
-    EXPECT_EQ(HttpParser::parseMethod("get"),    RequestLine::METHOD_INVALID); // case-sensitive
+    EXPECT_EQ(HttpParser::parseMethod("FETCH"),  HttpRequest::METHOD_INVALID);
+    EXPECT_EQ(HttpParser::parseMethod(""),       HttpRequest::METHOD_INVALID);
+    EXPECT_EQ(HttpParser::parseMethod("get"),    HttpRequest::METHOD_INVALID); // case-sensitive
 }
 
 // ------------------------------
@@ -40,7 +45,7 @@ TEST(ParseMethod, RejectsUnknownOrEmpty) {
 // ------------------------------
 TEST(ParseRequestLine, ValidRequestLine) {
     RequestLine rl = HttpParser::parseRequestLine("GET /foo/bar?x=1 HTTP/1.1");
-    EXPECT_EQ(rl.method,     RequestLine::METHOD_GET);
+    EXPECT_EQ(rl.method,     HttpRequest::METHOD_GET);
     EXPECT_EQ(rl.target,     "/foo/bar?x=1");
     EXPECT_EQ(rl.http_major, 1);
     EXPECT_EQ(rl.http_minor, 1);
@@ -48,7 +53,7 @@ TEST(ParseRequestLine, ValidRequestLine) {
 
 TEST(ParseRequestLine, TooFewTokens) {
     RequestLine rl = HttpParser::parseRequestLine("BADREQUEST");
-    EXPECT_EQ(rl.method,     RequestLine::METHOD_INVALID);
+    EXPECT_EQ(rl.method,     HttpRequest::METHOD_INVALID);
     EXPECT_TRUE(rl.target.empty());
     EXPECT_EQ(rl.http_major, 0);
     EXPECT_EQ(rl.http_minor, 0);
@@ -56,7 +61,7 @@ TEST(ParseRequestLine, TooFewTokens) {
 
 TEST(ParseRequestLine, BadVersionFormat) {
     RequestLine rl = HttpParser::parseRequestLine("POST / HTTP/X.Y");
-    EXPECT_EQ(rl.method,     RequestLine::METHOD_POST);
+    EXPECT_EQ(rl.method,     HttpRequest::METHOD_POST);
     EXPECT_EQ(rl.target,     "/");
     EXPECT_EQ(rl.http_major, 0);
     EXPECT_EQ(rl.http_minor, 0);
@@ -73,9 +78,9 @@ TEST(ParseHeaders, ParsesMultipleValidLines) {
         "\r\n";
     auto m = HttpParser::parseHeaders(hdrs);
     ASSERT_EQ(m.size(), 3u);
-    EXPECT_EQ(m["Host"],             "example.com");
-    EXPECT_EQ(m["Content-Type"],     "text/plain");
-    EXPECT_EQ(m["X-Custom-Header"],  "42");
+    EXPECT_EQ(m["Host"][0],             "example.com");
+    EXPECT_EQ(m["Content-Type"][0],     "text/plain");
+    EXPECT_EQ(m["X-Custom-Header"][0],  "42");
 }
 
 TEST(ParseHeaders, SkipsMalformedLines) {
@@ -89,8 +94,8 @@ TEST(ParseHeaders, SkipsMalformedLines) {
     ASSERT_EQ(m.size(), 2u);
     EXPECT_EQ(m.count("Good"),    1u);
     EXPECT_EQ(m.count("Another"), 1u);
-    EXPECT_EQ(m["Good"],          "yes");
-    EXPECT_EQ(m["Another"],       "one");
+    EXPECT_EQ(m["Good"][0],          "yes");
+    EXPECT_EQ(m["Another"][0],       "one");
 }
 
 
@@ -137,12 +142,13 @@ TEST(ReadFixedBody, RequestMoreThanAvailable) {
 
     const std::string msg = "ABC";
     ASSERT_EQ((ssize_t)msg.size(), write(sv[0], msg.c_str(), msg.size()));
+    close(sv[0]);
 
     // On demande 10 octets alors que seuls 3 sont dispo
     std::string result = HttpParser::readFixedBody(sv[1], 10);
     EXPECT_EQ("ABC", result);
 
-    close(sv[0]);
     close(sv[1]);
 }
+
 

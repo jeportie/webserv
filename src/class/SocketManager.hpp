@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocketManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:23:58 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/07 23:33:45 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/14 16:55:15 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 # include <map>
 # include <sys/epoll.h>
 # include "ServerSocket.hpp"
+#include "HttpRequest.hpp"
 # include "ClientSocket.hpp"
 
 /**
@@ -91,7 +92,21 @@ public:
     int getServerSocket(void) const;
     int getClientSocket(void) const;
 
-private:
+    void closeConnection(int  fd, int epoll_fd);
+    
+    
+    
+    
+    
+    
+    
+    private:
+
+    bool readFromClient(int fd);
+    bool parseClientHeaders(ClientSocket* client);
+    bool parseClientBody(ClientSocket* client, HttpRequest& req);
+    void handleHttpRequest(int fd, ClientSocket* client, HttpRequest& req);
+    void cleanupRequest(ClientSocket* client);
     ServerSocket				 _serverSocket;	  ///< The server socket
     std::map<int, ClientSocket*> _clientSockets;  ///< Map of client sockets by file descriptor
 
