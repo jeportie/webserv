@@ -64,7 +64,7 @@
       "id": 2,
       "title": "Implement Event Loop with poll()",
       "description": "Create a non-blocking event loop using epoll to handle multiple client connections simultaneously.",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         1
       ],
@@ -146,7 +146,7 @@
             3
           ],
           "details": "Refactor the existing implementation to use epoll_create1(), epoll_ctl(), and epoll_wait() instead of poll(). Implement proper initialization and cleanup of epoll file descriptor. Update event flags to use EPOLLIN, EPOLLOUT, etc. instead of POLLIN, POLLOUT. Implement edge-triggered notification mode (EPOLLET) for improved performance. Handle epoll-specific error conditions and edge cases.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 8,
@@ -156,7 +156,7 @@
             7
           ],
           "details": "Benchmark and optimize for epoll's specific performance characteristics. Implement batched event processing for high-throughput scenarios. Tune buffer sizes and event batch sizes for optimal performance. Compare level-triggered vs edge-triggered modes in different scenarios. Document best practices for using the epoll-based event loop.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },

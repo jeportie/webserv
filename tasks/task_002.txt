@@ -1,6 +1,6 @@
 # Task ID: 2
 # Title: Implement Event Loop with poll()
-# Status: pending
+# Status: done
 # Dependencies: 1
 # Priority: high
 # Description: Create a non-blocking event loop using epoll to handle multiple client connections simultaneously.
@@ -145,13 +145,13 @@ Implement a callback queue with proper lifecycle management. Support different c
 ### Details:
 Implement graceful degradation during resource exhaustion (too many FDs, memory pressure). Create recovery mechanisms for system call failures. Handle partial writes and reads correctly. Implement proper cleanup during shutdown sequences. Create extensive logging for debugging event loop issues. Handle edge cases like closed FDs, zombie connections, and resource leaks. Develop stress tests that simulate various failure scenarios.
 
-## 7. Implement epoll-specific functionality [pending]
+## 7. Implement epoll-specific functionality [done]
 ### Dependencies: 2.1, 2.2, 2.3
 ### Description: Update the event loop implementation to use epoll instead of poll
 ### Details:
 Refactor the existing implementation to use epoll_create1(), epoll_ctl(), and epoll_wait() instead of poll(). Implement proper initialization and cleanup of epoll file descriptor. Update event flags to use EPOLLIN, EPOLLOUT, etc. instead of POLLIN, POLLOUT. Implement edge-triggered notification mode (EPOLLET) for improved performance. Handle epoll-specific error conditions and edge cases.
 
-## 8. Optimize for epoll performance characteristics [pending]
+## 8. Optimize for epoll performance characteristics [done]
 ### Dependencies: 2.7
 ### Description: Tune the event loop implementation to take advantage of epoll's performance characteristics
 ### Details:
