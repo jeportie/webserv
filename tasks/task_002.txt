@@ -1,59 +1,107 @@
 # Task ID: 2
-# Title: Implement Event Loop with poll()
+
+# Title: Implement Event Loop with epoll()
+
 # Status: done
+
 # Dependencies: 1
+
 # Priority: high
-# Description: Create a non-blocking event loop using poll() to handle multiple client connections simultaneously.
+
+# Description: Create a non-blocking event loop using **epoll()** to handle multiple client connections simultaneously.
+
 # Details:
-Implement an EventLoop class that:
-1. Uses poll() to monitor file descriptors for read/write readiness
+
+Implement an `EventLoop` class that:
+
+1. Uses `epoll_create1()`/`epoll_wait()` to monitor file descriptors for read/write readiness
 2. Maintains a collection of active client connections
 3. Handles events for server sockets (new connections) and client sockets (data ready, write ready)
 4. Provides a clean interface for the main server loop
 
 Pseudo-code:
+
 ```cpp
 class EventLoop {
 private:
-    std::vector<struct pollfd> poll_fds;
+    int                             _epollFd;           // epoll instance FD
+    std::vector<struct epoll_event> _events;            // event buffer
     std::map<int, ClientConnection> clients;
-    SocketManager& socket_manager;
+    SocketManager&                  socket_manager;
     
 public:
-    EventLoop(SocketManager& sm) : socket_manager(sm) {}
+    EventLoop(SocketManager& sm);
+    ~EventLoop();
+
     void addServerSocket(int server_socket);
     void addClientSocket(int client_socket, ClientConnection client);
+    void modifyClientEvents(int client_socket, uint32_t events);
     void removeSocket(int socket_fd);
     void run(int timeout_ms = -1);
+
     // Event handlers
     void handleServerEvent(int server_socket);
     void handleClientReadEvent(int client_socket);
     void handleClientWriteEvent(int client_socket);
 };
 
+EventLoop::EventLoop(SocketManager& sm)
+  : socket_manager(sm),
+    _epollFd(epoll_create1(0)),
+    _events(1024)
+{
+    if (_epollFd < 0) {
+        throw std::runtime_error("Failed to create epoll instance");
+    }
+}
+
+void EventLoop::addServerSocket(int server_socket) {
+    struct epoll_event ev = {};
+    ev.events = EPOLLIN;
+    ev.data.fd = server_socket;
+    epoll_ctl(_epollFd, EPOLL_CTL_ADD, server_socket, &ev);
+}
+
+void EventLoop::addClientSocket(int client_socket, ClientConnection client) {
+    clients[client_socket] = std::move(client);
+    struct epoll_event ev = {};
+    ev.events = EPOLLIN | EPOLLET;     // edge-triggered read
+    ev.data.fd = client_socket;
+    epoll_ctl(_epollFd, EPOLL_CTL_ADD, client_socket, &ev);
+}
+
+void EventLoop::modifyClientEvents(int client_socket, uint32_t events) {
+    struct epoll_event ev = {};
+    ev.events = events;
+    ev.data.fd = client_socket;
+    epoll_ctl(_epollFd, EPOLL_CTL_MOD, client_socket, &ev);
+}
+
+void EventLoop::removeSocket(int socket_fd) {
+    epoll_ctl(_epollFd, EPOLL_CTL_DEL, socket_fd, nullptr);
+    clients.erase(socket_fd);
+}
+
 void EventLoop::run(int timeout_ms) {
-    int ready = poll(poll_fds.data(), poll_fds.size(), timeout_ms);
+    int ready = epoll_wait(_epollFd, _events.data(), _events.size(), timeout_ms);
     if (ready <= 0) return; // Timeout or error
-    
-    for (size_t i = 0; i < poll_fds.size(); ++i) {
-        if (poll_fds[i].revents == 0) continue;
-        
-        int fd = poll_fds[i].fd;
-        
-        // Check if this is a server socket
+
+    for (int i = 0; i < ready; ++i) {
+        auto &ev = _events[i];
+        int fd = ev.data.fd;
+
         if (is_server_socket(fd)) {
-            if (poll_fds[i].revents & POLLIN) {
+            if (ev.events & EPOLLIN) {
                 handleServerEvent(fd);
             }
         } else {
-            // Client socket
-            if (poll_fds[i].revents & POLLIN) {
+            if (ev.events & EPOLLIN) {
                 handleClientReadEvent(fd);
             }
-            if (poll_fds[i].revents & POLLOUT) {
+            if (ev.events & EPOLLOUT) {
                 handleClientWriteEvent(fd);
             }
-            if (poll_fds[i].revents & (POLLERR | POLLHUP | POLLNVAL)) {
+            if (ev.events & (EPOLLERR | EPOLLHUP)) {
                 removeSocket(fd);
             }
         }
@@ -61,50 +109,88 @@ void EventLoop::run(int timeout_ms) {
 }
 ```
 
-Implement the main server loop that initializes the EventLoop and runs it continuously.
+Implement the main server loop that initializes the `EventLoop` and continuously calls `run()`.
 
 # Test Strategy:
-1. Unit tests for EventLoop class methods
-2. Test with mock poll() implementation to verify correct event handling
+
+1. Unit tests for `EventLoop` class methods
+2. Test with a mock `epoll_wait()` implementation to verify correct event handling
 3. Integration test with multiple simultaneous connections
 4. Test handling of various event types (read ready, write ready, errors)
 5. Stress test with many connections to verify scalability
 6. Test timeout behavior and error conditions
 
 # Subtasks:
-## 1. Implement poll()/select() mechanism [done]
+
+## 1. Implement epoll abstraction \[done]
+
 ### Dependencies: None
-### Description: Create the core polling mechanism that will monitor file descriptors for activity
-### Details:
-Implement a cross-platform abstraction for poll()/select()/epoll/kqueue based on the target operating systems. Include performance benchmarks for different polling mechanisms. Handle system call interruptions (EINTR) and implement proper error reporting. Consider using edge-triggered vs level-triggered notifications where applicable. Optimize for large numbers of mostly-idle connections.
 
-## 2. Develop file descriptor registration system [done]
+### Description: Create the core epoll-based mechanism that will monitor file descriptors for activity
+
+### Details:
+
+* Use `epoll_create1()`, handle EINTR and errors
+* Support both level-triggered and edge-triggered modes
+* Compare performance against select()/poll() in benchmarks
+
+## 2. Develop file descriptor registration system \[done]
+
 ### Dependencies: 2.1
-### Description: Create a system to register, modify, and unregister file descriptors with the event loop
-### Details:
-Implement thread-safe methods for adding/removing file descriptors. Support different event types (read, write, error). Create efficient data structures for storing FD metadata and associated callbacks. Include validation to prevent duplicate registrations and handle invalid file descriptors. Implement proper cleanup for resources when FDs are unregistered.
 
-## 3. Build event dispatching logic [done]
+### Description: Create thread-safe methods to add, modify, and remove FDs in the epoll instance
+
+### Details:
+
+* Wrap `epoll_ctl()` for `EPOLL_CTL_ADD`, `MOD`, `DEL`
+* Validate no duplicate additions, handle invalid FDs
+* Clean up resources on removal
+
+## 3. Build event dispatching logic \[done]
+
 ### Dependencies: 2.1, 2.2
-### Description: Create the core event loop that dispatches events to appropriate handlers
-### Details:
-Implement the main event loop that processes ready events and dispatches to callbacks. Ensure proper ordering of events (e.g., prioritize certain event types). Handle high-throughput scenarios without starvation. Include metrics collection for monitoring event processing rates and latencies. Implement safeguards against callback functions that take too long to execute.
 
-## 4. Implement timeout handling [done]
+### Description: Implement the loop that calls `epoll_wait()` and dispatches callbacks
+
+### Details:
+
+* Process returned `epoll_event` array
+* Prioritize read/write events if needed
+* Integrate metrics for event processing rates
+
+## 4. Implement timeout handling \[done]
+
 ### Dependencies: 2.3
-### Description: Add support for timed events and operation timeouts
-### Details:
-Create an efficient timer wheel or priority queue for managing timeouts. Support one-shot and recurring timers with millisecond precision. Implement cancellation of pending timeouts. Handle system clock changes and time jumps. Optimize for scenarios with many timers but few expirations. Include jitter mechanisms to prevent thundering herd problems.
 
-## 5. Develop callback management system [done]
+### Description: Add support for timed operations within the epoll loop
+
+### Details:
+
+* Use `epoll_wait()` timeout parameter
+* Integrate with a timer wheel or priority queue for scheduled callbacks
+* Cancel and reschedule timers as needed
+
+## 5. Develop callback management system \[done]
+
 ### Dependencies: 2.3, 2.4
-### Description: Create a system to manage callback execution, including queuing and error handling
-### Details:
-Implement a callback queue with proper lifecycle management. Support different callback types (synchronous, deferred, prioritized). Handle exceptions in callbacks without crashing the event loop. Implement backpressure mechanisms for high load scenarios. Create debugging tools to track callback execution and timing. Support cancellation of pending callbacks.
 
-## 6. Implement error recovery and edge case handling [done]
-### Dependencies: 2.1, 2.2, 2.3, 2.4, 2.5
-### Description: Develop comprehensive error handling and recovery mechanisms for the event loop
+### Description: Manage callback registration and execution within the loop
+
 ### Details:
-Implement graceful degradation during resource exhaustion (too many FDs, memory pressure). Create recovery mechanisms for system call failures. Handle partial writes and reads correctly. Implement proper cleanup during shutdown sequences. Create extensive logging for debugging event loop issues. Handle edge cases like closed FDs, zombie connections, and resource leaks. Develop stress tests that simulate various failure scenarios.
+
+* Queue and invoke callbacks in response to epoll events
+* Handle exceptions or long-running callbacks safely
+* Support callback cancellation
+
+## 6. Implement error recovery and edge case handling \[done]
+
+### Dependencies: 2.1, 2.2, 2.3, 2.4, 2.5
+
+### Description: Provide robust error handling in epoll-based loop
+
+### Details:
+
+* Gracefully handle `EPOLLERR`, `EPOLLHUP`
+* Recover from failures of `epoll_ctl()` and `epoll_wait()`
+* Ensure cleanup on shutdown and resource exhaustion
 
