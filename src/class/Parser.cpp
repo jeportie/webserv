@@ -226,7 +226,11 @@ std::map<int, std::string> Parser::parseReturnDirective() {
 
         // Vérification si le code de retour est dans une plage valide
         if (code < 100 || code > 599)
-            throw std::runtime_error("Invalid HTTP return code: " + std::to_string(code));
+        {
+            std::ostringstream oss;
+            oss << code;
+            throw std::runtime_error("Invalid HTTP return code: " + oss.str());
+        }
 
         advance();
 
@@ -239,7 +243,7 @@ std::map<int, std::string> Parser::parseReturnDirective() {
         if (current().type != TOKEN_SEMICOLON)
             throw std::runtime_error("Expected ';' after return directive");
 
-        returnCodes.insert(std::makepair(code, url));
+        returnCodes.insert(std::make_pair(code, url));
         advance();
     }
 
@@ -285,11 +289,12 @@ std::string Parser::parseUploadStoreDirective() {
 std::map<std::string, RouteConfig> Parser::parseLocationBlocks() {
     std::map<std::string, RouteConfig> routes;
 
-    while(current().type == TOKEN_IDENTIFIER && current().value == "location") {
+    while (current().type == TOKEN_IDENTIFIER && current().value == "location") {
         advance(); // skip 'location'
 
         if (current().type != TOKEN_STRING && current().type != TOKEN_IDENTIFIER)
             throw std::runtime_error("Expected path after 'location'");
+
         std::string path = current().value;
         advance();
 
@@ -298,26 +303,53 @@ std::map<std::string, RouteConfig> Parser::parseLocationBlocks() {
         advance();
 
         RouteConfig route;
+        route.path = path;
+
         while (current().type != TOKEN_RBRACE && current().type != TOKEN_EOF) {
-            if (current().value == "root") {
+            if (current().type != TOKEN_IDENTIFIER)
+                throw std::runtime_error("Expected directive inside location block");
+
+            std::string directive = current().value;
+
+            if (directive == "root") {
                 route.root = parseRootDirective();
             }
-            else if (current().value == "autoindex") {
+            else if (directive == "autoindex") {
                 route.autoindex = parseAutoindexDirective();
             }
+            else if (directive == "allowed_methods") {
+                route.allowedMethods = parseAllowedMethodsDirective();
+            }
+            else if (directive == "default_file") {
+                route.defaultFile = parseDefaultFileDirective();
+            }
+            else if (directive == "return") {
+                route.returnCodes = parseReturnDirective();
+            }
+            else if (directive == "cgi_executor") {
+                route.cgiExecutors = parseCgiExecutorsDirective();
+            }
+            else if (directive == "upload_enable") {
+                route.uploadEnabled = parseUploadEnabledDirective();
+            }
+            else if (directive == "upload_store") {
+                route.uploadStore = parseUploadStoreDirective();
+            }
             else {
-                throw std::runtime_error("Unknown directive in location block: " + current().value);
+                throw std::runtime_error("Unknown directive in location block: " + directive);
             }
         }
 
         if (current().type != TOKEN_RBRACE)
             throw std::runtime_error("Expected '}' to close location block");
+
         advance();
         routes.insert(std::make_pair(path, route));
     }
 
     return routes;
 }
+
 
 ServerConfig Parser::parseServerBlock() {
     ServerConfig config;
@@ -346,15 +378,40 @@ ServerConfig Parser::parseServerBlock() {
         else if (current().value == "autoindex") {
             config.autoindex = parseAutoindexDirective();
         }
+       else if (current().value == "allowed_methods") {
+            config.allowedMethods = parseAllowedMethodsDirective();
+        }
+        else if (current().value == "error_page") {
+            config.error_pages = parseErrorPagesDirective();
+        }
+        else if (current().value == "client_max_body_size") {
+            config.client_max_body_size = parseClientMaxBodySizeDirective();
+        }
+        else if (current().value == "default_file") {
+            config.defaultFile = parseDefaultFileDirective();
+        }
+        else if (current().value == "cgi_executor") {
+            config.cgiExecutors = parseCgiExecutorsDirective();
+        }
+        else if (current().value == "upload_enable") {
+            config.uploadEnabled = parseUploadEnabledDirective();
+        }
+        else if (current().value == "upload_store") {
+            config.uploadStore = parseUploadStoreDirective();
+        }
         else if (current().value == "location") {
-            std::map<std::string, RouteConfig> routes = parseLocationBlocks();
-            config.routes.insert(routes.begin(), routes.end());
+            config.routes = parseLocationBlocks();
+        }
+        else if (current().value == "return") {
+
+            config.returnCodes = parseReturnDirective();
         }
         else {
             throw std::runtime_error("Unknown directive in server block: " + current().value);
         }
     }
 
+    // Vérifie qu'on ferme bien le bloc avec '}'
     if (current().type != TOKEN_RBRACE)
         throw std::runtime_error("Expected '}' to close server block");
     advance();
@@ -362,16 +419,35 @@ ServerConfig Parser::parseServerBlock() {
     return config;
 }
 
+
 RouteConfig::RouteConfig()
-    : path("/"),
+    : path(""),
+      root(""),
+      allowedMethods(),
       autoindex(false),
+      defaultFile(""),
+      returnCodes(),
+      cgiExecutors(),
       uploadEnabled(false),
-      returnCode(0)
-{}
+      uploadStore("")
+{
+}
+
 
 ServerConfig::ServerConfig()
-    : port(8080),
+    : port(8086),
       host("0.0.0.0"),
+      serverNames(),
+      root(""),
+      allowedMethods(),
       autoindex(false),
-      client_max_body_size(1000000)
-{}
+      defaultFile(""),
+      returnCodes(),
+      error_pages(),
+      client_max_body_size(0),
+      cgiExecutors(),
+      uploadEnabled(false),
+      uploadStore(""),
+      routes()
+{
+}

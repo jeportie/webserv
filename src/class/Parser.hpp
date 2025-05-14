@@ -18,7 +18,7 @@
 #include <map>
 #include <stdexcept>
 #include <cstdlib>
-
+#include <sstream>
 
 struct RouteConfig {
     std::string path; // le chemin de la route, ex: /images
@@ -26,8 +26,8 @@ struct RouteConfig {
     std::vector<std::string> allowedMethods;
     bool autoindex;
     std::string defaultFile;
+    std::map<int, std::string> returnCodes;
     std::map<std::string, std::string> cgiExecutors; // ex: ".php" => "/usr/bin/php-cgi"
-    std::map<int, std::string> returnCodeDirective;
     bool uploadEnabled;
     std::string uploadStore;
     RouteConfig();
@@ -40,8 +40,13 @@ struct ServerConfig {
     std::string root;
     std::vector<std::string> allowedMethods;
     bool autoindex;
+    std::string defaultFile;
+    std::map<int, std::string> returnCodes;
     std::map<int, std::string>      error_pages;             // ex: {404: "/errors/404.html"}
     size_t                          client_max_body_size;    // en octets
+    std::map<std::string, std::string> cgiExecutors;
+    bool uploadEnabled;
+    std::string uploadStore;
     std::map<std::string, RouteConfig> routes;
     // Autres directives comme error_pages, cgi, etc.
 
@@ -57,25 +62,25 @@ class Parser
     ~Parser();
     ServerConfig parseServerBlock();
     
+    
+        int parseListenDirective();
+        std::vector<std::string> parseServerNameDirective();
+        std::string parseRootDirective();
+        bool parseAutoindexDirective();
+        std::vector<std::string> parseAllowedMethodsDirective();
+        std::map<int, std::string> parseErrorPagesDirective();
+        size_t parseClientMaxBodySizeDirective();
+        std::string parseDefaultFileDirective();
+        std::map<int, std::string> parseReturnDirective();
+        std::map<std::string, std::string> parseCgiExecutorsDirective();
+        bool parseUploadEnabledDirective();
+        std::string parseUploadStoreDirective();
+        std::map<std::string, RouteConfig> parseLocationBlocks();
+        const Token& current() const;
+        void advance();
     private :   
     Lexer& _lexer;
     Token _current;
-
-    int parseListenDirective();
-    std::vector<std::string> parseServerNameDirective();
-    std::string parseRootDirective();
-    bool parseAutoindexDirective();
-    std::vector<std::string> parseAllowedMethodsDirective();
-    std::map<int, std::string> parseErrorPagesDirective();
-    std::map<std::string, std::string> parseCgiExecutorsDirective();
-    size_t parseClientMaxBodySizeDirective();
-    std::string parseDefaultFileDirective();
-    bool parseUploadEnableDirective();
-    std::string parseUploadStoreDirective();
-    std::pair<int, std::string> parseReturnCodeDirective();
-    std::map<std::string, RouteConfig> parseLocationBlocks();
-    const Token& current() const;
-    void advance();
 };
 
 #endif
