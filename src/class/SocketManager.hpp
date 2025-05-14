@@ -6,7 +6,7 @@
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:23:58 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/13 15:54:59 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/14 13:52:48 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 # include <map>
 # include <sys/epoll.h>
 # include <queue>
+# include "CallbackManager.hpp"
 # include "ServerSocket.hpp"
 # include "ClientSocket.hpp"
 # include "Timer.hpp"
@@ -128,6 +129,44 @@ public:
      */
     void safeRegisterToEpoll(int epoll_fd);
 
+	/**
+	* @brief Static callback function for logging new connections
+	* 
+	* @param fd The file descriptor of the new connection
+	* @param data Pointer to the ClientSocket instance
+	*/
+	static void logNewConnection(int fd, void* data);
+
+    /**
+     * @brief Adds a callback to be executed immediately
+     * 
+     * @param callback The callback to execute
+     */
+    void executeImmediate(Callback* callback);
+
+    /**
+     * @brief Adds a callback to be executed later
+     * 
+     * @param callback The callback to execute
+     * @param priority The priority of the callback
+     */
+    void executeDeferred(Callback* callback, CallbackManager::Priority priority = CallbackManager::NORMAL);
+
+    /**
+     * @brief Processes all deferred callbacks
+     * 
+     * Executes all deferred callbacks in priority order.
+     */
+    void processDeferredCallbacks();
+
+    /**
+     * @brief Cancels all callbacks for a specific file descriptor
+     * 
+     * @param fd The file descriptor to cancel callbacks for
+     * @return int Number of callbacks cancelled
+     */
+    int cancelCallbacksForFd(int fd);
+
     int getServerSocket(void) const;
     int getClientSocket(void) const;
 
@@ -137,6 +176,7 @@ private:
     int							 _serverSocketFd; ///< Server socket file descriptor
     int							 _clientSocketFd; ///< Client socket file descriptor (most recent)
     std::priority_queue<Timer>  _timerQueue;      ///< Priority queue of timers
+    CallbackManager				_callbackManager;  ///< Callback manager
 };
 
 #endif  // ************************************************ SOCKETMANAGER_HPP //

@@ -1,6 +1,6 @@
 # Task ID: 2
 # Title: Implement Event Loop with poll()
-# Status: in-progress
+# Status: done
 # Dependencies: 1
 # Priority: high
 # Description: Create a non-blocking event loop using poll() to handle multiple client connections simultaneously.
@@ -96,13 +96,13 @@ Implement the main event loop that processes ready events and dispatches to call
 ### Details:
 Create an efficient timer wheel or priority queue for managing timeouts. Support one-shot and recurring timers with millisecond precision. Implement cancellation of pending timeouts. Handle system clock changes and time jumps. Optimize for scenarios with many timers but few expirations. Include jitter mechanisms to prevent thundering herd problems.
 
-## 5. Develop callback management system [pending]
+## 5. Develop callback management system [done]
 ### Dependencies: 2.3, 2.4
 ### Description: Create a system to manage callback execution, including queuing and error handling
 ### Details:
 Implement a callback queue with proper lifecycle management. Support different callback types (synchronous, deferred, prioritized). Handle exceptions in callbacks without crashing the event loop. Implement backpressure mechanisms for high load scenarios. Create debugging tools to track callback execution and timing. Support cancellation of pending callbacks.
 
-## 6. Implement error recovery and edge case handling [pending]
+## 6. Implement error recovery and edge case handling [done]
 ### Dependencies: 2.1, 2.2, 2.3, 2.4, 2.5
 ### Description: Develop comprehensive error handling and recovery mechanisms for the event loop
 ### Details:

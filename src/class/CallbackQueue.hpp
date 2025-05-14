@@ -6,7 +6,7 @@
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 09:41:36 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/14 09:51:50 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/14 13:59:52 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,12 @@
 # include <queue>
 # include "Callback.hpp"
 
+/**
+ * @brief Queue for managing callbacks
+ * 
+ * This class manages a queue of callbacks, allowing them to be
+ * executed in order and providing error handling.
+ */
 class CallbackQueue
 {
 public:
@@ -23,11 +29,19 @@ public:
 	~CallbackQueue(void);
 
     /**
+     * @brief Assignment operator
+     * 
+     * @param rhs The right-hand side object to assign from
+     * @return CallbackQueue& Reference to this object
+     */
+    CallbackQueue& operator=(const CallbackQueue& rhs);
+
+    /**
      * @brief Add a callback to the queue
      * 
      * @param callback The callback to add
      */
-	void	addCallback(Callback* callback);
+	bool	addCallback(Callback* callback);
 
     /**
      * @brief Process all callbacks in the queue
@@ -62,9 +76,7 @@ public:
 private:
 	std::queue<Callback*> _queue; // Queue of Callbacks
 	
-	// Prevent copying
     CallbackQueue(const CallbackQueue& src);
-    CallbackQueue& operator=(const CallbackQueue& rhs);
 };
 
 

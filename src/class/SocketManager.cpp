@@ -6,7 +6,7 @@
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/13 15:50:21 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/14 13:47:46 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 #include <vector>
 #include "SocketManager.hpp"
 #include "Callback.hpp"
+#include "ErrorHandler.hpp"
 #include "../../include/webserv.h"
 
 SocketManager::SocketManager(void)
@@ -84,6 +85,9 @@ void SocketManager::eventLoop(int epoll_fd, int timeout_ms)
     {
         // Process any expired timers
         processTimers();
+
+        // Process any pending callbacks
+        processDeferredCallbacks();
         
         // Calculate timeout for epoll_wait based on next timer expiration
         int wait_timeout = timeout_ms;
@@ -104,6 +108,13 @@ void SocketManager::eventLoop(int epoll_fd, int timeout_ms)
                 }
             }
         }
+
+        // If there are pending callbacks, don't wait too long
+        if (_callbackManager.hasPendingCallbacks() && (wait_timeout == -1 || wait_timeout > 100))
+        {
+            wait_timeout = 100; // Check for callbacks at least every 100ms
+        }
+
         int n = epoll_wait(epoll_fd, events.data(), MAXEVENTS, wait_timeout);
         if (n < 0)
 		{
@@ -129,8 +140,11 @@ void SocketManager::eventLoop(int epoll_fd, int timeout_ms)
                         _clientSockets[_clientSocketFd] = client;
                         // Add a timeout for idle connections (60 seconds)
                         // We need to use a static function for C++98 compatibility
-                        Callback* timeoutCallback = new Callback(&SocketManager::handleTimeout, _clientSocketFd, this);
+                        Callback* timeoutCallback = new Callback(&SocketManager::handleTimeout, _clientSocketFd, this, "timeout_handler");
                         addTimer(60, timeoutCallback);
+                        // Schedule a callback to log the new connection
+                        Callback* logCallback = new Callback(&SocketManager::logNewConnection, _clientSocketFd, client, "connection_logger");
+                        executeDeferred(logCallback, CallbackManager::HIGH);
                     }
                 }
                 catch (const std::exception& e)
@@ -154,6 +168,94 @@ void SocketManager::eventLoop(int epoll_fd, int timeout_ms)
                 cleanupClientSocket(fd, epoll_fd);
             }
         }
+    }
+}
+
+/**
+ * @brief Static callback function for logging new connections
+ * 
+ * @param fd The file descriptor of the new connection
+ * @param data Pointer to the ClientSocket instance
+ */
+void SocketManager::logNewConnection(int fd, void* data)
+{
+    ClientSocket* client = static_cast<ClientSocket*>(data);
+    std::cout << "New connection from " << client->getClientIP() 
+              << ":" << client->getClientPort() 
+              << " (fd=" << fd << ")" << std::endl;
+}
+
+/**
+ * @brief Adds a callback to be executed immediately
+ * 
+ * @param callback The callback to execute
+ */
+void SocketManager::executeImmediate(Callback* callback)
+{
+    _callbackManager.executeImmediate(callback);
+}
+
+/**
+ * @brief Adds a callback to be executed later
+ * 
+ * @param callback The callback to execute
+ * @param priority The priority of the callback
+ */
+void SocketManager::executeDeferred(Callback* callback, CallbackManager::Priority priority)
+{
+    _callbackManager.executeDeferred(callback, priority);
+}
+
+/**
+ * @brief Processes all deferred callbacks
+ * 
+ * Executes all deferred callbacks in priority order.
+ */
+void SocketManager::processDeferredCallbacks()
+{
+    _callbackManager.processDeferredCallbacks();
+}
+
+/**
+ * @brief Cancels all callbacks for a specific file descriptor
+ * 
+ * @param fd The file descriptor to cancel callbacks for
+ * @return int Number of callbacks cancelled
+ */
+int SocketManager::cancelCallbacksForFd(int fd)
+{
+    return _callbackManager.cancelCallbacksForFd(fd);
+}
+
+/**
+ * @brief Cleans up resources for a client socket
+ * 
+ * @param fd The client socket file descriptor
+ * @param epoll_fd The epoll file descriptor
+ */
+void SocketManager::cleanupClientSocket(int fd, int epoll_fd)
+{
+    // Cancel any timers for this client
+    cancelTimer(fd);
+    
+    // Cancel any callbacks for this client
+    cancelCallbacksForFd(fd);
+    
+    // Clean up the client socket
+    if (fd != _serverSocketFd)
+    {
+        std::map<int, ClientSocket*>::iterator it = _clientSockets.find(fd);
+        if (it != _clientSockets.end())
+        {
+            delete it->second;
+            _clientSockets.erase(it);
+        }
+        // Remove from epoll
+        if (epoll_fd >= 0)
+        {
+            epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
+        }
+        close(fd);
     }
 }
 
@@ -252,37 +354,6 @@ void SocketManager::processTimers()
         // Callback is owned by the Timer, which will be destroyed when it goes out of scope
     }
 }
-
-/**
- * @brief Cleans up resources for a client socket
- * 
- * @param fd The client socket file descriptor
- * @param epoll_fd The epoll file descriptor
- */
-void SocketManager::cleanupClientSocket(int fd, int epoll_fd)
-{
-    // Cancel any timers for this client
-    cancelTimer(fd);
-    
-    // Clean up the client socket
-    if (fd != _serverSocketFd)
-    {
-        std::map<int, ClientSocket*>::iterator it = _clientSockets.find(fd);
-        if (it != _clientSockets.end())
-        {
-            delete it->second;
-            _clientSockets.erase(it);
-        }
-        // Remove from epoll
-        if (epoll_fd >= 0)
-        {
-            epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
-        }
-        close(fd);
-    }
-}
-
-
 
 /**
  * @brief Handles communication with a client
