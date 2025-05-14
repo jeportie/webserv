@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:03:17 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/13 16:22:46 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/14 19:47:44 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ struct HttpRequest {
     std::string                           raw_query;
     int                                   http_major;
     int                                   http_minor;
-    std::map<std::string, std::string>    headers;
+    std::map<std::string,std::vector<std::string> >    headers;
     std::string                           body;
     std::map<std::string, std::string>    query_params;
     std::map<std::string, std::string>    form_data;

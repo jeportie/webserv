@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:16:38 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/14 14:11:24 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/14 19:46:23 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,9 @@
 # include <netinet/in.h>
 # include <sys/socket.h>
 # include <string>
+#include <vector>
+#include <RequestLine.hpp>
+
 
 /**
  * @brief Client socket class that represents a connected client
@@ -87,13 +90,20 @@ public:
     void               setHeadersParsed(bool parsed);
     /// Valeur Content-Length (ou 0 si chunked ou non encore extrait)
     size_t             getContentLength() const;
+    std::map<std::string,std::vector<std::string> > getParsedHeaders() const;
+    RequestLine        getRequestLine() const;
     void               setContentLength(size_t length);
+    void               setRequestLine(RequestLine rl);
+    void               setParsedHeaders(std::map<std::string,std::vector<std::string>> hdrs);
 
 private:
 
-    std::string        _buffer;
-    bool               _headersParsed;
-    size_t             _contentLength;
+    std::string                                     _buffer;
+    bool                                            _headersParsed;
+    size_t                                          _contentLength;
+    RequestLine                                     _requestLine;
+    std::map<std::string,std::vector<std::string>>  _parsedHeaders;
+
     /**
      * @brief Copy constructor (private to prevent copying)
      * 

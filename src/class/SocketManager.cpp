@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/14 18:02:43 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/14 19:50:15 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -344,6 +344,7 @@ void SocketManager::safeRegisterToEpoll(int epoll_fd)
         // découpe Request-Line & headers
         std::string hdr_block = buf.substr(0, hdr_end + 2); // je veux garder les /r/n
         //pour que mon parser de header le comprenne comme un header d'ou le +2
+        //extract the first line the requestline
         size_t      line_end  = hdr_block.find("\r\n");
         std::string firstLine = hdr_block.substr(0, line_end);
     
@@ -359,6 +360,9 @@ void SocketManager::safeRegisterToEpoll(int epoll_fd)
     
         client->setContentLength(contentLen);
         client->setHeadersParsed(true);
+        client->setRequestLine(rl);
+        client->setParsedHeaders(hdrs);
+
     
         // on garde rl dans ClientSocket si besoin…
         buf.erase(0, hdr_end + 4);
@@ -376,11 +380,16 @@ void SocketManager::safeRegisterToEpoll(int epoll_fd)
     
         // construire la requête
         // (à adapter selon vos getters sur ClientSocket)
+        RequestLine rl = client->getRequestLine();
+        req.method = rl.method;
+        req.http_major = rl.http_major;
+        req.http_minor = rl.http_minor;
+        req.headers = client->getParsedHeaders();
         req.body = buf.substr(0, needed);
         // compléter req.method, req.path, req.headers, req.query_params…#include "HttpRequest.hpp"
+        
     
         // par exemple :
-        // req.method = client->getStoredRequestLine().method;
     
         return true;
     }

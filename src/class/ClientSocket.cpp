@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 16:11:45 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/14 18:07:10 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/14 19:43:57 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,6 +184,26 @@ size_t ClientSocket::getContentLength() const {
     return _contentLength;
 }
 
+RequestLine         ClientSocket::getRequestLine() const
+{
+       return _requestLine; 
+}
+
+std::map<std::string,std::vector<std::string> > ClientSocket::getParsedHeaders() const
+{
+    return (_parsedHeaders);
+}
+
 void ClientSocket::setContentLength(size_t length) {
     _contentLength = length;
 }
+
+void ClientSocket::setRequestLine(RequestLine rl)
+{
+      _requestLine = rl;
+}
+void ClientSocket::setParsedHeaders(std::map<std::string,std::vector<std::string> > hdrs)
+{
+    _parsedHeaders = hdrs;
+}
+
