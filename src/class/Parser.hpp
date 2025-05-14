@@ -29,9 +29,7 @@ struct RouteConfig {
     std::map<std::string, std::string> cgiExecutors; // ex: ".php" => "/usr/bin/php-cgi"
     bool uploadEnabled;
     std::string uploadStore;
-    int returnCode; // pour les redirections
-    std::string returnUrl;
-
+    std::map<int, std::string> returnCodeDirective;
     RouteConfig();
 };
 
@@ -74,8 +72,7 @@ class Parser
     std::map<std::string, std::string> parseCgiExecutorsDirective();
     bool parseUploadEnableDirective();
     std::string parseUploadStoreDirective();
-    int parseReturnCodeDirective();
-    std::string parseReturnUrlDirective();
+    std::pair<int, std::string> parseReturnCodeDirective();
     std::map<std::string, RouteConfig> parseLocationBlocks();
     const Token& current() const;
     void advance();

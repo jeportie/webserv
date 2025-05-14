@@ -189,6 +189,64 @@ std::string Parser::parseDefaultFileDirective()
     return filename;
 }
 
+std::map<std::string, std::string> Parser::parseCgiExecutorsDirective() {
+    advance(); // skip 'cgi_executor'
+
+    if ((current().type != TOKEN_STRING && current().type != TOKEN_IDENTIFIER) || current().value[0] != '.')
+        throw std::runtime_error("Expected extension starting with '.' after 'cgi_executor'");
+    
+    std::string extension = current().value;
+    advance();
+
+    if (current().type != TOKEN_STRING && current().type != TOKEN_IDENTIFIER)
+        throw std::runtime_error("Expected path to CGI executable after extension");
+
+    std::string executable = current().value;
+    advance();
+
+    if (current().type != TOKEN_SEMICOLON)
+        throw std::runtime_error("Expected ';' after cgi_executor directive");
+    advance();
+
+    std::map<std::string, std::string> result;
+    result.insert(std::make_pair(extension, executable));
+    return result;
+}
+
+std::map<int, std::string> Parser::parseReturnDirective() {
+    advance(); // skip 'return'
+    
+    // Vérifier si le token suivant est un nombre, sinon lever une exception
+    if (current().type != TOKEN_NUMBER)
+    throw std::runtime_error("Expected return code (number) after 'return'");
+
+    std::map<int, std::string> returnCodes;
+    while (current().type == TOKEN_NUMBER) {
+        int code = std::atoi(current().value.c_str());
+
+        // Vérification si le code de retour est dans une plage valide
+        if (code < 100 || code > 599)
+            throw std::runtime_error("Invalid HTTP return code: " + std::to_string(code));
+
+        advance();
+
+        if (current().type != TOKEN_STRING && current().type != TOKEN_IDENTIFIER)
+            throw std::runtime_error("Expected return URL after code");
+
+        std::string url = current().value;
+        advance();
+
+        if (current().type != TOKEN_SEMICOLON)
+            throw std::runtime_error("Expected ';' after return directive");
+
+        returnCodes.insert(std::makepair(code, url));
+        advance();
+    }
+
+    return returnCodes;
+}
+
+
 
 std::map<std::string, RouteConfig> Parser::parseLocationBlocks() {
     std::map<std::string, RouteConfig> routes;
