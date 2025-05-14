@@ -1,4 +1,4 @@
-# Install script for directory: /project
+# Install script for directory: /root/projects/WebservGit
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/project/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/root/projects/WebservGit/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

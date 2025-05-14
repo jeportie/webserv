@@ -1,1 +1,1 @@
-set( ServerTest_TESTS)
+set(  ServerTest_TESTS)

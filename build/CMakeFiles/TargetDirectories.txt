@@ -1,8 +1,8 @@
-/project/build/CMakeFiles/UnitTester.dir
-/project/build/CMakeFiles/HttpParserTest.dir
-/project/build/CMakeFiles/ServerTest.dir
-/project/build/CMakeFiles/SocketManagerTest.dir
-/project/build/CMakeFiles/TmpClassTest.dir
-/project/build/CMakeFiles/test.dir
-/project/build/CMakeFiles/edit_cache.dir
-/project/build/CMakeFiles/rebuild_cache.dir
+/root/projects/WebservGit/build/CMakeFiles/UnitTester.dir
+/root/projects/WebservGit/build/CMakeFiles/HttpParserTest.dir
+/root/projects/WebservGit/build/CMakeFiles/ServerTest.dir
+/root/projects/WebservGit/build/CMakeFiles/SocketManagerTest.dir
+/root/projects/WebservGit/build/CMakeFiles/TmpClassTest.dir
+/root/projects/WebservGit/build/CMakeFiles/test.dir
+/root/projects/WebservGit/build/CMakeFiles/edit_cache.dir
+/root/projects/WebservGit/build/CMakeFiles/rebuild_cache.dir

@@ -1,5 +1,5 @@
-if(EXISTS "/project/build/SocketManagerTest[1]_tests.cmake")
-  include("/project/build/SocketManagerTest[1]_tests.cmake")
+if(EXISTS "/root/projects/WebservGit/build/SocketManagerTest[1]_tests.cmake")
+  include("/root/projects/WebservGit/build/SocketManagerTest[1]_tests.cmake")
 else()
   add_test(SocketManagerTest_NOT_BUILT SocketManagerTest_NOT_BUILT)
 endif()

@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:17:24 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/13 17:31:41 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/14 11:34:13 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,10 +68,9 @@ RequestLine HttpParser::parseRequestLine(const std::string& line) {
   return rl;
 }
 
-// 3) parseHeaders
-std::map<std::string, std::string>
-HttpParser::parseHeaders(const std::string& hdr_block) {
-  std::map<std::string, std::string> headers;
+// 3) parseHeaders. It can acceot multiple headers with the same name such as cookies etc.
+std::map<std::string,std::vector<std::string>> HttpParser::parseHeaders(const std::string& hdr_block) {
+  std::map<std::string,std::vector<std::string>> headers;
   size_t start = 0, end;
   while ((end = hdr_block.find("\r\n", start)) != std::string::npos) {
     std::string line = hdr_block.substr(start, end - start);
@@ -82,7 +81,7 @@ HttpParser::parseHeaders(const std::string& hdr_block) {
       std::string value = trim(line.substr(colon + 1));
       // normaliser case-insensitive : ici on laisse tel quel ou à toi de transformer en lowercase
       if(name.empty() == 0 && value.empty() == 0)
-        headers[name] = value;
+        headers[name].push_back(value);
     }
     start = end + 2;
   }

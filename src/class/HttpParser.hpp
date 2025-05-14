@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:17:22 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/13 15:51:29 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/14 11:33:44 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ public:
   static RequestLine parseRequestLine(const std::string& line);
 
   // 3) Parse un bloc d’en-têtes (séparé par "\r\n\r\n") en map<nom,valeur>
-  static std::map<std::string, std::string>
+  static std::map<std::string,std::vector<std::string>>
   parseHeaders(const std::string& hdr_block);
 
   // 4) Lit exactement ‘length’ octets du socket (Content-Length)

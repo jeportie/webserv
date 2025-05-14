@@ -1,1 +1,1 @@
-set( TmpClassTest_TESTS)
+set(  TmpClassTest_TESTS)

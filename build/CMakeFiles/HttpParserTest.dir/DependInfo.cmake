@@ -8,14 +8,14 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/project/src/class/ClientSocket.cpp" "CMakeFiles/HttpParserTest.dir/src/class/ClientSocket.cpp.o" "gcc" "CMakeFiles/HttpParserTest.dir/src/class/ClientSocket.cpp.o.d"
-  "/project/src/class/HttpParser.cpp" "CMakeFiles/HttpParserTest.dir/src/class/HttpParser.cpp.o" "gcc" "CMakeFiles/HttpParserTest.dir/src/class/HttpParser.cpp.o.d"
-  "/project/src/class/HttpRequest.cpp" "CMakeFiles/HttpParserTest.dir/src/class/HttpRequest.cpp.o" "gcc" "CMakeFiles/HttpParserTest.dir/src/class/HttpRequest.cpp.o.d"
-  "/project/src/class/RequestLine.cpp" "CMakeFiles/HttpParserTest.dir/src/class/RequestLine.cpp.o" "gcc" "CMakeFiles/HttpParserTest.dir/src/class/RequestLine.cpp.o.d"
-  "/project/src/class/ServerSocket.cpp" "CMakeFiles/HttpParserTest.dir/src/class/ServerSocket.cpp.o" "gcc" "CMakeFiles/HttpParserTest.dir/src/class/ServerSocket.cpp.o.d"
-  "/project/src/class/Socket.cpp" "CMakeFiles/HttpParserTest.dir/src/class/Socket.cpp.o" "gcc" "CMakeFiles/HttpParserTest.dir/src/class/Socket.cpp.o.d"
-  "/project/src/class/SocketManager.cpp" "CMakeFiles/HttpParserTest.dir/src/class/SocketManager.cpp.o" "gcc" "CMakeFiles/HttpParserTest.dir/src/class/SocketManager.cpp.o.d"
-  "/project/test/class/HttpParserTest.cpp" "CMakeFiles/HttpParserTest.dir/test/class/HttpParserTest.cpp.o" "gcc" "CMakeFiles/HttpParserTest.dir/test/class/HttpParserTest.cpp.o.d"
+  "/root/projects/WebservGit/src/class/ClientSocket.cpp" "CMakeFiles/HttpParserTest.dir/src/class/ClientSocket.cpp.o" "gcc" "CMakeFiles/HttpParserTest.dir/src/class/ClientSocket.cpp.o.d"
+  "/root/projects/WebservGit/src/class/HttpParser.cpp" "CMakeFiles/HttpParserTest.dir/src/class/HttpParser.cpp.o" "gcc" "CMakeFiles/HttpParserTest.dir/src/class/HttpParser.cpp.o.d"
+  "/root/projects/WebservGit/src/class/HttpRequest.cpp" "CMakeFiles/HttpParserTest.dir/src/class/HttpRequest.cpp.o" "gcc" "CMakeFiles/HttpParserTest.dir/src/class/HttpRequest.cpp.o.d"
+  "/root/projects/WebservGit/src/class/RequestLine.cpp" "CMakeFiles/HttpParserTest.dir/src/class/RequestLine.cpp.o" "gcc" "CMakeFiles/HttpParserTest.dir/src/class/RequestLine.cpp.o.d"
+  "/root/projects/WebservGit/src/class/ServerSocket.cpp" "CMakeFiles/HttpParserTest.dir/src/class/ServerSocket.cpp.o" "gcc" "CMakeFiles/HttpParserTest.dir/src/class/ServerSocket.cpp.o.d"
+  "/root/projects/WebservGit/src/class/Socket.cpp" "CMakeFiles/HttpParserTest.dir/src/class/Socket.cpp.o" "gcc" "CMakeFiles/HttpParserTest.dir/src/class/Socket.cpp.o.d"
+  "/root/projects/WebservGit/src/class/SocketManager.cpp" "CMakeFiles/HttpParserTest.dir/src/class/SocketManager.cpp.o" "gcc" "CMakeFiles/HttpParserTest.dir/src/class/SocketManager.cpp.o.d"
+  "/root/projects/WebservGit/test/class/HttpParserTest.cpp" "CMakeFiles/HttpParserTest.dir/test/class/HttpParserTest.cpp.o" "gcc" "CMakeFiles/HttpParserTest.dir/test/class/HttpParserTest.cpp.o.d"
   )
 
 # Targets to which this target links.
