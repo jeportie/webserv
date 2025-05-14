@@ -27,9 +27,9 @@ struct RouteConfig {
     bool autoindex;
     std::string defaultFile;
     std::map<std::string, std::string> cgiExecutors; // ex: ".php" => "/usr/bin/php-cgi"
+    std::map<int, std::string> returnCodeDirective;
     bool uploadEnabled;
     std::string uploadStore;
-    std::map<int, std::string> returnCodeDirective;
     RouteConfig();
 };
 
@@ -67,9 +67,9 @@ class Parser
     bool parseAutoindexDirective();
     std::vector<std::string> parseAllowedMethodsDirective();
     std::map<int, std::string> parseErrorPagesDirective();
+    std::map<std::string, std::string> parseCgiExecutorsDirective();
     size_t parseClientMaxBodySizeDirective();
     std::string parseDefaultFileDirective();
-    std::map<std::string, std::string> parseCgiExecutorsDirective();
     bool parseUploadEnableDirective();
     std::string parseUploadStoreDirective();
     std::pair<int, std::string> parseReturnCodeDirective();

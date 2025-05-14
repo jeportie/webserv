@@ -246,6 +246,40 @@ std::map<int, std::string> Parser::parseReturnDirective() {
     return returnCodes;
 }
 
+bool Parser::parseUploadEnabledDirective() {
+    advance(); // skip 'upload_enable'
+
+    if (current().type != TOKEN_IDENTIFIER)
+        throw std::runtime_error("Expected 'on' or 'off' after 'upload_enable'");
+
+    std::string value = current().value;
+    advance();
+
+    if (value != "on" && value != "off")
+        throw std::runtime_error("Invalid value for 'upload_enable': " + value);
+
+    if (current().type != TOKEN_SEMICOLON)
+        throw std::runtime_error("Expected ';' after 'upload_enable' directive");
+    advance();
+
+    return value == "on";
+}
+
+std::string Parser::parseUploadStoreDirective() {
+    advance(); // skip 'upload_store'
+
+    if (current().type != TOKEN_STRING && current().type != TOKEN_IDENTIFIER)
+        throw std::runtime_error("Expected path after 'upload_store'");
+
+    std::string path = current().value;
+    advance();
+
+    if (current().type != TOKEN_SEMICOLON)
+        throw std::runtime_error("Expected ';' after 'upload_store' directive");
+    advance();
+
+    return path;
+}
 
 
 std::map<std::string, RouteConfig> Parser::parseLocationBlocks() {
