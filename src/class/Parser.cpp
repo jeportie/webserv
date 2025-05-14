@@ -89,6 +89,106 @@ bool Parser::parseAutoindexDirective() {
     throw std::runtime_error("Invalid value for autoindex: " + value);
 }
 
+std::vector<std::string> Parser::parseAllowedMethodsDirective() {
+    advance(); // skip 'allowed_methods'
+    std::vector<std::string> methods;
+    while (current().type == TOKEN_IDENTIFIER) {
+        methods.push_back(current().value);
+        advance();
+    }
+    if (current().type != TOKEN_SEMICOLON)
+        throw std::runtime_error("Expected ';' after allowed_methods directive");
+    advance();
+    return methods;
+}
+
+std::map<int, std::string> Parser::parseErrorPagesDirective() {
+    advance(); // skip 'error_page'
+    std::map<int, std::string> pages;
+
+    while (current().type == TOKEN_NUMBER) {
+        int code = std::atoi(current().value.c_str());
+        advance();
+
+        if (current().type != TOKEN_STRING && current().type != TOKEN_IDENTIFIER)
+            throw std::runtime_error("Expected error page path after code");
+
+        std::string path = current().value;
+        advance();
+
+        pages.insert(std::make_pair(code, path));
+    }
+
+    if (current().type != TOKEN_SEMICOLON)
+        throw std::runtime_error("Expected ';' after error_page directive");
+    advance();
+
+    return pages;
+}
+
+size_t Parser::parseClientMaxBodySizeDirective() {
+    advance(); // skip 'client_max_body_size'
+
+    if (current().type != TOKEN_NUMBER && current().type != TOKEN_IDENTIFIER)
+        throw std::runtime_error("Expected number or size with suffix after client_max_body_size");
+
+    std::string raw = current().value;
+    advance();
+
+    // Extraire la partie numérique et le suffixe
+    std::string numberPart;
+    char suffix = '\0';
+
+    for (size_t i = 0; i < raw.length(); ++i) {
+        if (std::isdigit(raw[i]))
+            numberPart += raw[i];
+        else {
+            suffix = std::tolower(raw[i]);
+            break;
+        }
+    }
+
+    if (numberPart.empty())
+        throw std::runtime_error("Invalid client_max_body_size value");
+
+    long base = std::atol(numberPart.c_str());
+    if (base < 0)
+        throw std::runtime_error("client_max_body_size cannot be negative");
+
+    size_t multiplier = 1;
+    if (suffix == 'k')
+        multiplier = 1024;
+    else if (suffix == 'm')
+        multiplier = 1024 * 1024;
+    else if (suffix == 'g')
+        multiplier = 1024 * 1024 * 1024;
+    else if (suffix != '\0')
+        throw std::runtime_error("Invalid suffix for client_max_body_size (use k, m, g)");
+
+    if (current().type != TOKEN_SEMICOLON)
+        throw std::runtime_error("Expected ';' after client_max_body_size directive");
+    advance();
+
+    return static_cast<size_t>(base) * multiplier;
+}
+
+std::string Parser::parseDefaultFileDirective()
+{
+    advance(); // skip 'default_file'
+
+    if (current().type != TOKEN_STRING && current().type != TOKEN_IDENTIFIER)
+        throw std::runtime_error("Expected a file name after 'default_file'");
+
+    std::string filename = current().value;
+    advance();
+
+    if (current().type != TOKEN_SEMICOLON)
+        throw std::runtime_error("Expected ';' after default_file value");
+    advance();
+
+    return filename;
+}
+
 
 std::map<std::string, RouteConfig> Parser::parseLocationBlocks() {
     std::map<std::string, RouteConfig> routes;
@@ -178,7 +278,7 @@ RouteConfig::RouteConfig()
 {}
 
 ServerConfig::ServerConfig()
-    : port(80),
+    : port(8080),
       host("0.0.0.0"),
       autoindex(false),
       client_max_body_size(1000000)

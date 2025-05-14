@@ -22,9 +22,9 @@
 
 struct RouteConfig {
     std::string path; // le chemin de la route, ex: /images
+    std::string root;
     std::vector<std::string> allowedMethods;
     bool autoindex;
-    std::string root;
     std::string defaultFile;
     std::map<std::string, std::string> cgiExecutors; // ex: ".php" => "/usr/bin/php-cgi"
     bool uploadEnabled;
@@ -62,11 +62,21 @@ class Parser
     private :   
     Lexer& _lexer;
     Token _current;
+
     int parseListenDirective();
     std::vector<std::string> parseServerNameDirective();
-    std::map<std::string, RouteConfig> parseLocationBlocks();
     std::string parseRootDirective();
     bool parseAutoindexDirective();
+    std::vector<std::string> parseAllowedMethodsDirective();
+    std::map<int, std::string> parseErrorPagesDirective();
+    size_t parseClientMaxBodySizeDirective();
+    std::string parseDefaultFileDirective();
+    std::map<std::string, std::string> parseCgiExecutorsDirective();
+    bool parseUploadEnableDirective();
+    std::string parseUploadStoreDirective();
+    int parseReturnCodeDirective();
+    std::string parseReturnUrlDirective();
+    std::map<std::string, RouteConfig> parseLocationBlocks();
     const Token& current() const;
     void advance();
 };
