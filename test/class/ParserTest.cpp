@@ -237,7 +237,7 @@ TEST(ParserTest, ParseUploadStoreDirective) {
 TEST(ParserTest, ParseLocationBlocks) {
     std::string input =
         "location /images/ { root /data/images; autoindex on; allowed_methods GET POST; "
-        "default_file index.html; return_code 404 /errors/404.html; "
+        "default_file index.html; return 404 /errors/404.html; "
         "cgi_executor .php /usr/bin/php-cgi; upload_enable on; upload_store /var/uploads; }";
     Lexer lexer(input);
     Parser parser(lexer);
@@ -272,7 +272,7 @@ TEST(ParserTest, ParseServerBlock) {
         "server { listen 8080; server_name example.com; root /var/www; autoindex on; "
         "allowed_methods GET POST; error_page 404 /errors/404.html; "
         "location /img/ { root /data/img; autoindex off; allowed_methods GET; "
-        "return_code 301 /moved; cgi_executor .php /usr/bin/php-cgi; "
+        "return 301 /moved; cgi_executor .php /usr/bin/php-cgi; "
         "upload_enable off; upload_store /tmp/uploads; } }";
 
     Lexer lexer(input);
