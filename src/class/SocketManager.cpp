@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/14 19:50:15 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/15 10:46:55 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -329,7 +329,6 @@ void SocketManager::safeRegisterToEpoll(int epoll_fd)
     }
     return true;
 }
-    
     // 2) cherche et parse les headers si pas déjà fait
     bool SocketManager::parseClientHeaders(ClientSocket* client)
     {
