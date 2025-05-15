@@ -1,21 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   SocketManagerTest.cpp                              :+:      :+:    :+:   */
+/*   ServerSocketTest.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/05/15 15:02:45 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/15 15:03:12 by jeportie         ###   ########.fr       */
+/*   Created: 2025/05/15 15:15:00 by jeportie          #+#    #+#             */
+/*   Updated: 2025/05/15 15:15:00 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <gtest/gtest.h>
-#include "../../src/class/SocketManager.hpp"
+#include "../../src/class/ServerSocket.hpp"
 
-TEST(SocketManagerTest, DefaultConstructor)
+TEST(ServerSocketTest, DefaultConstructor)
 {
-    SocketManager manager;
-    EXPECT_EQ(manager.getServerSocket(), -1);
-    EXPECT_EQ(manager.getClientSocket(), -1);
+    ServerSocket socket;
+    EXPECT_FALSE(socket.isValid());
+    EXPECT_FALSE(socket.isNonBlocking());
+    EXPECT_EQ(socket.getFd(), -1);
 }

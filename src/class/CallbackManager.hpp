@@ -77,7 +77,7 @@ private:
     std::map<Priority, CallbackQueue> _deferredCallbacks;  // Queues for different priority levels
     
     // Prevent copying
-    CallbackManager(const CallbackManager& src);
+    // CallbackManager(const CallbackManager& src);
 };
 
 #endif  // ********************************************** CALLBACKMANAGER_HPP //

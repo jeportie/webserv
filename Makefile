@@ -28,10 +28,10 @@ SRC = \
   src/class/Timer.cpp \
   src/class/ServerSocket.cpp \
   src/class/ClientSocket.cpp \
-  src/class/CallbackQueue.cpp \
-  src/class/Callback.cpp \
   src/class/SocketManager.cpp \
-  src/class/CallbackManager.cpp 
+  src/class/CallbackManager.cpp \
+  src/class/CallbackQueue.cpp \
+  src/class/Callback.cpp 
 ### END AUTO GENERATED FILES ###
 
 # Create object for main.cpp

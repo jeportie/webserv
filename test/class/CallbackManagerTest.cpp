@@ -1,21 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   SocketManagerTest.cpp                              :+:      :+:    :+:   */
+/*   CallbackManagerTest.cpp                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/05/15 15:02:45 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/15 15:03:12 by jeportie         ###   ########.fr       */
+/*   Created: 2025/05/15 15:35:00 by jeportie          #+#    #+#             */
+/*   Updated: 2025/05/15 15:35:00 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <gtest/gtest.h>
-#include "../../src/class/SocketManager.hpp"
+#include "../../src/class/CallbackManager.hpp"
 
-TEST(SocketManagerTest, DefaultConstructor)
+TEST(CallbackManagerTest, DefaultConstructor)
 {
-    SocketManager manager;
-    EXPECT_EQ(manager.getServerSocket(), -1);
-    EXPECT_EQ(manager.getClientSocket(), -1);
+    CallbackManager manager;
+    EXPECT_FALSE(manager.hasPendingCallbacks());
 }

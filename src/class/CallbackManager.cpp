@@ -21,7 +21,7 @@ CallbackManager::CallbackManager()
     _deferredCallbacks[LOW] = CallbackQueue();
 }
 
-CallbackManager::CallbackManager(const CallbackManager& src) { *this = src; }
+// CallbackManager::CallbackManager(const CallbackManager& src) { *this = src; }
 
 CallbackManager::~CallbackManager(void) {}
 
