@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:17:22 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/14 16:06:07 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/15 11:11:11 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,27 +24,53 @@
 
 
 
+
+
+
+
+#include <string>
+#include <map>
+#include <vector>
+
+#include "HttpRequest.hpp"   // contient enum Method, struct RequestLine, struct HttpRequest
+
+
 // === Parser HTTP (tout static, pas d’état interne) ===
-class HttpParser {
+class HttpParser
+{
 public:
+    // 1) Méthode HTTP
+    static HttpRequest::Method
+    parseMethod(const std::string& token);
 
-  // 1) Convertit un token ("GET", "POST", ...) en HttpRequest::Method
-  static HttpRequest::Method parseMethod(const std::string& token);
+    // 2) Request-Line complète
+    static RequestLine
+    parseRequestLine(const std::string& line);
 
-  // 2) Découpe "METHOD target HTTP/x.y" en RequestLine
-  static RequestLine parseRequestLine(const std::string& line);
+    // 3) Toutes les lignes d’en-têtes (avant "\r\n\r\n")
+    //    map<nom, liste de valeurs>
+    static std::map<std::string,std::vector<std::string> >
+    parseHeaders(const std::string& hdr_block);
 
-  // 3) Parse un bloc d’en-têtes (séparé par "\r\n\r\n") en map<nom,valeur>
-  static std::map<std::string,std::vector<std::string> >
-  parseHeaders(const std::string& hdr_block);
+    std::string HttpParser::readFixedBody(int sockfd, size_t length);
 
-  // 4) Lit exactement ‘length’ octets du socket (Content-Length)
-  static std::string readFixedBody(int sockfd, size_t length);
+    // 4) Sépare target en path + raw_query
+    static void
+    splitTarget(const std::string& target,
+                std::string&      outPath,
+                std::string&      outRawQuery);
 
-  // à venir : chunked, query params, form data, security...
+    // 5) Paramètres de requête (query string) : map<clé, valeur>
+    static std::map<std::string,std::string>
+    parseQueryParams(const std::string& raw_query);
+
+    // 6) Form data x-www-form-urlencoded : map<clé, valeur>
+    static std::map<std::string,std::string>
+    parseFormUrlencoded(const std::string& body);
 };
 
-#endif 
+#endif // HTTPPARSER_HPP
+
 
 // L'utilisation des Static ici est motive par le concept de realiser une boite a outils.
 // Un parser n'a pas besoin d'avoir une instance. C'est simplement une "usine" 

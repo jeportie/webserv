@@ -6,26 +6,20 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:17:24 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/14 18:02:52 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/15 12:04:19 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpParser.hpp"
 #include "HttpRequest.hpp"
 #include "RequestLine.hpp"
+#include "HttpParser_utils.cpp"
 #include <cctype>    // isspace, isdigit
 #include <sstream>   // pour stringstream si besoin
 #include <cerrno>    // errno
 #include <iostream>
 #include <cstring>   // strerror
 
-// UTILITAIRES C++98
-static std::string trim(const std::string& s) {
-  size_t b = 0, e = s.size();
-  while (b < e && isspace(s[b])) ++b;
-  while (e > b && isspace(s[e-1])) --e;
-  return s.substr(b, e - b);
-}
 
 // 1) parseMethod
 HttpRequest::Method HttpParser::parseMethod(const std::string& token) {
@@ -106,3 +100,58 @@ std::string HttpParser::readFixedBody(int sockfd, size_t length) {
   }
   return body;
 }
+
+
+// 4) splitTarget
+void HttpParser::splitTarget(const std::string& target, std::string& outPath, std::string& outRawQuery)
+{
+    size_t pos = target.find('?');
+    if (pos == std::string::npos) {
+        outPath     = target;
+        outRawQuery.clear();
+    } else {
+        outPath     = target.substr(0, pos);
+        outRawQuery = target.substr(pos+1);
+    }
+}
+
+// 5) parseQueryParams
+std::map<std::string,std::string>
+HttpParser::parseQueryParams(const std::string& raw_query)
+{
+    std::map<std::string,std::string> params;
+    size_t start = 0, end;
+    while ((end = raw_query.find('&', start)) != std::string::npos) {
+        std::string token = raw_query.substr(start, end - start);
+        std::string key, val;
+        splitKeyVal(token, key, val);
+        params[key] = val;
+        start = end + 1;
+    }
+    if (start < raw_query.size()) {
+        std::string token = raw_query.substr(start);
+        std::string key, val;
+        splitKeyVal(token, key, val);
+        params[key] = val;
+    }
+    return params;
+}
+
+// parseFormUrlencoded : 
+// Dans le cas de l'envoi d'un formulaire HTTP en
+// "application/x-www-form-urlencoded", le corps de la requête
+// utilise exactement la même syntaxe que la query string :
+// - une suite de paires clé=valeur séparées par '&'
+// - les espaces sont encodés en '+'
+// - les caractères spéciaux sont encodés en "%HH"
+// Plutôt que de dupliquer la logique de découpage et de décodage,
+// on réutilise donc directement le même parser (parseQueryParams),
+// garantissant cohérence et maintenance simplifiée.
+
+std::map<std::string,std::string>
+HttpParser::parseFormUrlencoded(const std::string& body)
+{
+    return parseQueryParams(body);
+}
+
+

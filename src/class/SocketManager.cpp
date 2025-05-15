@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/15 10:46:55 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/15 12:13:09 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -381,15 +381,14 @@ void SocketManager::safeRegisterToEpoll(int epoll_fd)
         // (à adapter selon vos getters sur ClientSocket)
         RequestLine rl = client->getRequestLine();
         req.method = rl.method;
+        req.path =
         req.http_major = rl.http_major;
         req.http_minor = rl.http_minor;
         req.headers = client->getParsedHeaders();
         req.body = buf.substr(0, needed);
-        // compléter req.method, req.path, req.headers, req.query_params…#include "HttpRequest.hpp"
-        
-    
-        // par exemple :
-    
+        HttpParser::splitTarget(rl.target, req.path, req.raw_query);
+        req.query_params = HttpParser::parseQueryParams(req.raw_query);
+        req.form_data = HttpParser::parseFormUrlencoded(req.body);
         return true;
     }
     
