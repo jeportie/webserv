@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:17:22 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/15 11:11:11 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/15 17:42:38 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,8 +52,6 @@ public:
     static std::map<std::string,std::vector<std::string> >
     parseHeaders(const std::string& hdr_block);
 
-    std::string HttpParser::readFixedBody(int sockfd, size_t length);
-
     // 4) Sépare target en path + raw_query
     static void
     splitTarget(const std::string& target,
@@ -68,6 +66,13 @@ public:
     static std::map<std::string,std::string>
     parseFormUrlencoded(const std::string& body);
 };
+
+std::string urlDecode(const std::string &s);
+void	splitKeyVal(const std::string &token, std::string &key,
+		std::string &val);
+std::string trim(const std::string &s);
+        
+
 
 #endif // HTTPPARSER_HPP
 

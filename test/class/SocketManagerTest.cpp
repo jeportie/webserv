@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 01:28:02 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/14 18:13:57 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/15 18:32:50 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -547,6 +547,11 @@ protected:
         clientFd     = sv[1];
         clientSock   = new ClientSocket();
         clientSock->setFd(clientFd);
+        clientSock->setHeadersParsed(false);
+        clientSock->setContentLength(0);
+        clientSock->setChunked(false);
+        clientSock->setChunkSize(0);
+
         manager._clientSockets[clientFd] = clientSock;
     }
 
@@ -623,4 +628,82 @@ TEST_F(SocketManagerTest, CleanupRequestTrimsBufferAndResets) {
     EXPECT_FALSE(clientSock->headersParsed());
     EXPECT_EQ(clientSock->getContentLength(), size_t(0));
 }
+
+
+TEST_F(SocketManagerTest, ParseClientBody_ContentLengthIncomplete) {
+    // absence de chunked, Content-Length=10, mais buffer contient 5 octets
+    clientSock->setChunked(false);
+    clientSock->setContentLength(10);
+    clientSock->getBuffer() = "12345";
+
+    HttpRequest req;
+    bool ok = manager.parseClientBody(clientSock, req);
+    EXPECT_FALSE(ok);
+    EXPECT_TRUE(req.body.empty());
+}
+
+TEST_F(SocketManagerTest, ParseClientBody_ChunkedSingleChunk) {
+    // un seul chunk de 4 octets: "Test"
+    const char* chunked =
+        "4\r\n"
+        "Test\r\n"
+        "0\r\n"
+        "\r\n";
+    clientSock->setChunked(true);
+    clientSock->setChunkSize(0);
+    clientSock->getBuffer() = chunked;
+
+    HttpRequest req;
+    bool ok = manager.parseClientBody(clientSock, req);
+    EXPECT_TRUE(ok);
+    EXPECT_EQ(req.body, "Test");
+    EXPECT_TRUE(clientSock->getBuffer().empty());
+}
+
+TEST_F(SocketManagerTest, ParseClientBody_ChunkedMultipleChunks) {
+    // deux chunks: "Ab" + "Cde"
+    const char* chunked =
+        "2\r\n"
+        "Ab\r\n"
+        "3\r\n"
+        "Cde\r\n"
+        "0\r\n"
+        "\r\n";
+    clientSock->setChunked(true);
+    clientSock->setChunkSize(0);
+    clientSock->getBuffer() = chunked;
+
+    HttpRequest req;
+    bool ok = manager.parseClientBody(clientSock, req);
+    EXPECT_TRUE(ok);
+    EXPECT_EQ(req.body, "AbCde");
+    EXPECT_TRUE(clientSock->getBuffer().empty());
+}
+
+TEST_F(SocketManagerTest, ParseClientBody_ChunkedIncompleteHeader) {
+    // header chunker tronqué
+    clientSock->setChunked(true);
+    clientSock->setChunkSize(0);
+    clientSock->getBuffer() = "A";  // pas de \r\n
+
+    HttpRequest req;
+    bool ok = manager.parseClientBody(clientSock, req);
+    EXPECT_FALSE(ok);
+    EXPECT_TRUE(req.body.empty());
+}
+
+TEST_F(SocketManagerTest, ParseClientBody_ChunkedIncompleteData) {
+    // taille 4, mais seulement 2 octets + CRLF partiel
+    clientSock->setChunked(true);
+    clientSock->setChunkSize(0);
+    clientSock->getBuffer() =
+        "4\r\n"
+        "XY";  // pas assez de data ni CRLF
+
+    HttpRequest req;
+    bool ok = manager.parseClientBody(clientSock, req);
+    EXPECT_FALSE(ok);
+    EXPECT_TRUE(req.body.empty());
+}
+
 

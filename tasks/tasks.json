@@ -244,7 +244,7 @@
           "description": "Parse the HTTP request line to extract method, URI, and HTTP version",
           "dependencies": [],
           "details": "Create a function to parse the first line of an HTTP request. Extract the HTTP method (GET, POST, etc.), the request URI, and the HTTP version. Handle malformed request lines by returning appropriate error codes. Consider edge cases like whitespace handling, unsupported HTTP methods, and invalid HTTP versions. Implement validation for maximum URI length to prevent buffer overflow attacks.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -254,7 +254,7 @@
             1
           ],
           "details": "Create a function to parse HTTP headers into a key-value map. Handle folded headers according to RFC specifications. Implement case-insensitive header name comparison. Validate header format and reject malformed headers. Set limits on header count and individual header size to prevent DoS attacks. Extract critical headers like Content-Length, Content-Type, and Transfer-Encoding for later processing stages.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -264,7 +264,7 @@
             2
           ],
           "details": "Implement a function to read and parse request bodies when Content-Length header is present. Validate that Content-Length is a valid non-negative integer. Enforce maximum body size limits to prevent memory exhaustion. Handle timeouts for slow uploads. Implement proper buffer management for efficient memory usage. Detect and handle premature connection closures during body reading.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,

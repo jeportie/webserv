@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 13:54:53 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/14 17:09:31 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/15 17:47:02 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,55 +100,55 @@ TEST(ParseHeaders, SkipsMalformedLines) {
 
 
 
-TEST(ReadFixedBody, BasicRead) {
-    int sv[2];
-    // Création de la paire de sockets UNIX
-    ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM, 0, sv))
-        << "socketpair() a échoué : " << strerror(errno);
+// TEST(ReadFixedBody, BasicRead) {
+//     int sv[2];
+//     // Création de la paire de sockets UNIX
+//     ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM, 0, sv))
+//         << "socketpair() a échoué : " << strerror(errno);
 
-    const std::string msg = "HelloWorld";
-    // On envoie 10 octets, mais on ne lira que 5
-    ssize_t sent = write(sv[0], msg.c_str(), msg.size());
-    ASSERT_EQ((ssize_t)msg.size(), sent)
-        << "Écriture incomplète sur la socket";
+//     const std::string msg = "HelloWorld";
+//     // On envoie 10 octets, mais on ne lira que 5
+//     ssize_t sent = write(sv[0], msg.c_str(), msg.size());
+//     ASSERT_EQ((ssize_t)msg.size(), sent)
+//         << "Écriture incomplète sur la socket";
 
-    // Lecture de 5 octets
-    std::string result = HttpParser::readFixedBody(sv[1], 5);
-    EXPECT_EQ("Hello", result);
+//     // Lecture de 5 octets
+//     std::string result = HttpParser::readFixedBody(sv[1], 5);
+//     EXPECT_EQ("Hello", result);
 
-    // Nettoyage
-    close(sv[0]);
-    close(sv[1]);
-}
+//     // Nettoyage
+//     close(sv[0]);
+//     close(sv[1]);
+// }
 
-// Test cas où length = 0 : doit renvoyer une chaîne vide sans blocage
-TEST(ReadFixedBody, ZeroLength) {
-    int sv[2];
-    ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM, 0, sv))
-        << "socketpair() a échoué : " << strerror(errno);
+// // Test cas où length = 0 : doit renvoyer une chaîne vide sans blocage
+// TEST(ReadFixedBody, ZeroLength) {
+//     int sv[2];
+//     ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM, 0, sv))
+//         << "socketpair() a échoué : " << strerror(errno);
 
-    std::string result = HttpParser::readFixedBody(sv[1], 0);
-    EXPECT_TRUE(result.empty());
+//     std::string result = HttpParser::readFixedBody(sv[1], 0);
+//     EXPECT_TRUE(result.empty());
 
-    close(sv[0]);
-    close(sv[1]);
-}
+//     close(sv[0]);
+//     close(sv[1]);
+// }
 
-// Test où on demande plus d’octets que ce qui a été envoyé
-TEST(ReadFixedBody, RequestMoreThanAvailable) {
-    int sv[2];
-    ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM, 0, sv))
-        << "socketpair() a échoué : " << strerror(errno);
+// // Test où on demande plus d’octets que ce qui a été envoyé
+// TEST(ReadFixedBody, RequestMoreThanAvailable) {
+//     int sv[2];
+//     ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM, 0, sv))
+//         << "socketpair() a échoué : " << strerror(errno);
 
-    const std::string msg = "ABC";
-    ASSERT_EQ((ssize_t)msg.size(), write(sv[0], msg.c_str(), msg.size()));
-    close(sv[0]);
+//     const std::string msg = "ABC";
+//     ASSERT_EQ((ssize_t)msg.size(), write(sv[0], msg.c_str(), msg.size()));
+//     close(sv[0]);
 
-    // On demande 10 octets alors que seuls 3 sont dispo
-    std::string result = HttpParser::readFixedBody(sv[1], 10);
-    EXPECT_EQ("ABC", result);
+//     // On demande 10 octets alors que seuls 3 sont dispo
+//     std::string result = HttpParser::readFixedBody(sv[1], 10);
+//     EXPECT_EQ("ABC", result);
 
-    close(sv[1]);
-}
+//     close(sv[1]);
+// }
 
 

@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/15 12:13:09 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/15 18:29:56 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,13 +20,14 @@
 #include <unistd.h>
 #include <vector>
 // #include "SocketManager.hpp"
-#include "HttpRequest.hpp"
 #include "HttpParser.hpp"
+#include "HttpRequest.hpp"
 #include "RequestLine.hpp"
-#include <unistd.h>
-#include <iostream>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
+#include <unistd.h>
+#include <sstream>
 
 SocketManager::SocketManager(void) : _serverSocketFd(-1), _clientSocketFd(-1)
 {
@@ -218,16 +219,7 @@ void SocketManager::eventLoop(int epoll_fd)
 //
 // 5. **Fixed epoll_ctl call**: The original code was missing the epoll_fd parameter in the epoll_ctl call when removing a client socket from epoll.
 
-
-#include "SocketManager.hpp"
-#include <unistd.h>
-#include <iostream>
-#include <cstdlib>
-#include <cstring>
-
 // … init_connect(), eventLoop(), closeConnection() déjà en place …
-
-
 
 /**
  * @brief Sets the server socket to non-blocking mode
@@ -246,16 +238,16 @@ int SocketManager::setNonBlockingServer(int fd)
  * @param epoll_fd The epoll file descriptor
  * @param op The operation to perform (EPOLL_CTL_ADD, EPOLL_CTL_MOD,
 	EPOLL_CTL_DEL)
-    * @param fd The file descriptor to register
-    * @param event The epoll_event structure
-    * @return int 0 on success, -1 on error
-    */
-   int SocketManager::safeEpollCtlClient(int epoll_fd, int op, int fd,
+	* @param fd The file descriptor to register
+	* @param event The epoll_event structure
+	* @return int 0 on success, -1 on error
+	*/
+int SocketManager::safeEpollCtlClient(int epoll_fd, int op, int fd,
 	struct epoll_event *event)
-    {
-        if (epoll_ctl(epoll_fd, op, fd, event) < 0)
-        {
-		std::cerr << "[Error] epoll_ctl failed (epoll_fd=" << epoll_fd << ", fd=" << fd << ", op=" << op << "): " << strerror(errno) << std::endl;
+{
+	if (epoll_ctl(epoll_fd, op, fd, event) < 0)
+	{
+		std::cerr << "[Error] epoll_ctl failed (epoll_fd=" << epoll_fd << ", fd=" << fd << ",op=" << op << "): " << strerror(errno) << std::endl;
 		return (-1);
 	}
 	return (0);
@@ -268,153 +260,195 @@ int SocketManager::setNonBlockingServer(int fd)
  */
 void SocketManager::safeRegisterToEpoll(int epoll_fd)
 {
-    struct epoll_event	ev;
-    
+	struct epoll_event	ev;
+
 	ev.events = EPOLLIN;
 	ev.data.fd = _serverSocketFd;
 	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, _serverSocketFd, &ev) == -1)
-    throw std::runtime_error("Failed to add server socket to epoll: "
-        + std::string(strerror(errno)));
-    }
-    
-    int SocketManager::getServerSocket(void) const
-    {
-        return (_serverSocketFd);
-    }
-    
-    int SocketManager::getClientSocket(void) const
-    {
-        return (_clientSocketFd);
-    }
+		throw std::runtime_error("Failed to add server socket to epoll: "
+			+ std::string(strerror(errno)));
+}
 
-    void SocketManager::communication(int fd)
-    {
-        ClientSocket* client = _clientSockets[fd];
-        HttpRequest     req;
-    
-        // 1) Lecture
-        if (!readFromClient(fd))
-            return;
-    
-        // 2) Headers
-        if (!parseClientHeaders(client))
-            return;
-    
-        // 3) Body
-        if (!parseClientBody(client, req))
-            return;
-    
-        // 4) Traitement
-        handleHttpRequest(fd, client, req);
-    
-        // 5) Préparation pour requête suivante
-        cleanupRequest(client);
-    }
-    
-    // 1) lit tout ce qui est dispo et l'accumule
-    bool SocketManager::readFromClient(int fd)
+int SocketManager::getServerSocket(void) const
+{
+	return (_serverSocketFd);
+}
+
+int SocketManager::getClientSocket(void) const
+{
+	return (_clientSocketFd);
+}
+
+void SocketManager::communication(int fd)
+{
+	ClientSocket	*client;
+	HttpRequest		req;
+
+	client = _clientSockets[fd];
+	// 1) Lecture
+	if (!readFromClient(fd))
+		return ;
+	// 2) Headers
+	if (!parseClientHeaders(client))
+		return ;
+	// 3) Body
+	if (!parseClientBody(client, req))
+		return ;
+	// 4) Traitement
+	handleHttpRequest(fd, client, req);
+	// 5) Préparation pour requête suivante
+	cleanupRequest(client);
+}
+
+bool SocketManager::readFromClient(int fd)
 {
     ClientSocket* client = _clientSockets[fd];
     std::string&   buf    = client->getBuffer();
     char           tmp[4096];
 
     while (true) {
-        ssize_t n = read(fd, tmp, sizeof(tmp));
+        ssize_t n = ::read(fd, tmp, sizeof(tmp));
         if (n > 0) {
             buf.append(tmp, n);
             continue;
         }
-        // n <= 0 : EOF ou plus rien à lire → on sort de la boucle
+        // n <= 0 : soit EOF (n==0), soit plus de données pour l'instant (n<0/EAGAIN)
         break;
     }
     return true;
 }
-    // 2) cherche et parse les headers si pas déjà fait
-    bool SocketManager::parseClientHeaders(ClientSocket* client)
-    {
-        if (client->headersParsed())
-            return true;
-    
-        std::string& buf = client->getBuffer();
-        size_t hdr_end = buf.find("\r\n\r\n"); // pointe sur le premier /r
-        if (hdr_end == std::string::npos)
-            return false;
-    
-        // découpe Request-Line & headers
-        std::string hdr_block = buf.substr(0, hdr_end + 2); // je veux garder les /r/n
-        //pour que mon parser de header le comprenne comme un header d'ou le +2
-        //extract the first line the requestline
-        size_t      line_end  = hdr_block.find("\r\n");
-        std::string firstLine = hdr_block.substr(0, line_end);
-    
-        RequestLine rl = HttpParser::parseRequestLine(firstLine);
-        std::string rest  = hdr_block.substr(line_end + 2);
-        std::map<std::string,std::vector<std::string> > hdrs =
-            HttpParser::parseHeaders(rest);
-    
-        // extraire Content-Length
-        size_t contentLen = 0;
-        if (hdrs.count("Content-Length") && !hdrs["Content-Length"].empty())
-            contentLen = atoi(hdrs["Content-Length"][0].c_str());
-    
-        client->setContentLength(contentLen);
-        client->setHeadersParsed(true);
-        client->setRequestLine(rl);
-        client->setParsedHeaders(hdrs);
 
-    
-        // on garde rl dans ClientSocket si besoin…
-        buf.erase(0, hdr_end + 4);
-        return true;
-    }
-    
-    // 3) attend le corps complet, le remplit dans HttpRequest
-    bool SocketManager::parseClientBody(ClientSocket* client, HttpRequest& req)
-    {
-        size_t needed = client->getContentLength();
-        std::string& buf = client->getBuffer();
-    
-        if (buf.size() < needed)
-            return false;
-    
-        // construire la requête
-        // (à adapter selon vos getters sur ClientSocket)
-        RequestLine rl = client->getRequestLine();
-        req.method = rl.method;
-        req.path =
-        req.http_major = rl.http_major;
-        req.http_minor = rl.http_minor;
-        req.headers = client->getParsedHeaders();
-        req.body = buf.substr(0, needed);
-        HttpParser::splitTarget(rl.target, req.path, req.raw_query);
-        req.query_params = HttpParser::parseQueryParams(req.raw_query);
-        req.form_data = HttpParser::parseFormUrlencoded(req.body);
-        return true;
-    }
-    
-    // 4) traitement métier et envoi de la réponse
-    void SocketManager::handleHttpRequest(int fd, ClientSocket* client, HttpRequest& req)
-    {
-        // votre code d’écriture de réponse ici
-        (void) fd;
-        (void) client;
-        (void) req;
-    }
-    
-    // 5) remise à zéro du contexte pour pipelining
-    void SocketManager::cleanupRequest(ClientSocket* client)
-    {
-        std::string& buf = client->getBuffer();
-        buf.erase(0, client->getContentLength());
-        client->setHeadersParsed(false);
-        client->setContentLength(0);
-    }
 
-    void SocketManager::closeConnection(int fd, int epoll_fd)
+
+// 2) cherche et parse les headers si pas déjà fait
+bool SocketManager::parseClientHeaders(ClientSocket *client)
 {
-    if (epoll_fd >= 0)
-        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
-    delete _clientSockets[fd];
-    _clientSockets.erase(fd);
-    close(fd);
+	size_t		line_end;
+	RequestLine	rl;
+	size_t		contentLen;
+
+	if (client->headersParsed())
+		return (true);
+	std::string &buf = client->getBuffer();
+	size_t hdr_end = buf.find("\r\n\r\n"); // pointe sur le premier /r
+	if (hdr_end == std::string::npos)
+		return (false);
+	// découpe Request-Line & headers
+	std::string hdr_block = buf.substr(0, hdr_end + 2); // je veux garder les /r/n
+	// pour que mon parser de header le comprenne comme un header d'ou le +2
+	// extract the first line the requestline
+	line_end = hdr_block.find("\r\n");
+	std::string firstLine = hdr_block.substr(0, line_end);
+	rl = HttpParser::parseRequestLine(firstLine);
+	std::string rest = hdr_block.substr(line_end + 2);
+	std::map<std::string,
+		std::vector<std::string> > hdrs = HttpParser::parseHeaders(rest);
+	// extraire Content-Length
+	contentLen = 0;
+	if (hdrs.count("Content-Length") && !hdrs["Content-Length"].empty())
+		contentLen = atoi(hdrs["Content-Length"][0].c_str());
+	client->setContentLength(contentLen);
+	client->setHeadersParsed(true);
+	client->setRequestLine(rl);
+	client->setParsedHeaders(hdrs);
+	// on garde rl dans ClientSocket si besoin…
+	buf.erase(0, hdr_end + 4);
+	return (true);
+}
+
+static size_t hexToSize(const std::string& hex) {
+    size_t result = 0;
+    std::istringstream iss(hex);
+    iss >> std::hex >> result;
+    return result;
+}
+// 3) attend le corps complet, le remplit dans HttpRequest
+bool SocketManager::parseClientBody(ClientSocket *client, HttpRequest &req)
+{
+	size_t		needed;
+	RequestLine	rl;
+
+	std::string &buf = client->getBuffer();
+    std::cout << "XXXXXXXXXX" << client->isChunked() << std::endl;
+	if (!client->isChunked())
+	{
+		needed = client->getContentLength();
+		// on verifie qu'on a bien N octet, donc un body complet,
+		// sinon on ressort et on attend que l'event de cette socket
+		//  soit EPOLLIN a nouveau pour signifier qu'il y a "du nouveau a lire"
+		if (buf.size() < needed)
+			return (false);
+		// Je store le body dans la requete, et je l'Erase du buffer.
+		req.body = buf.substr(0, needed);
+		buf.erase(0, needed);
+	}
+    // Chunck mode
+    // Mode chunked
+    while (true) {
+        // 1) Lire la taille du chunk si nécessaire
+        if (client->getChunkSize() == 0) {
+            size_t pos = buf.find("\r\n");
+            if (pos == std::string::npos)
+                return false; // pas encore la ligne de taille
+            std::string line = buf.substr(0, pos);
+            size_t chunkLen = hexToSize(line);
+            client->setChunkSize(chunkLen);
+            buf.erase(0, pos + 2);
+            if (chunkLen == 0) {
+                // chunk terminal : ignorer les trailers
+                size_t end = buf.find("\r\n\r\n");
+                if (end == std::string::npos)
+                    return false;
+                buf.erase(0, end + 4);
+                return true;
+            }
+        }
+        
+        // 2) Lire le corps du chunk
+    needed = client->getChunkSize();
+        if (buf.size() < needed + 2)
+            return false; // pas tout reçu (data + CRLF)
+        req.body.append(buf.substr(0, needed));
+        buf.erase(0, needed + 2); // delete consomme data + CRLF
+        client->setChunkSize(0);
+        // boucle pour le chunk suivant
+    }
+	rl = client->getRequestLine();
+	req.method = rl.method;
+	req.path = req.http_major = rl.http_major;
+	req.http_minor = rl.http_minor;
+	req.headers = client->getParsedHeaders();
+	HttpParser::splitTarget(rl.target, req.path, req.raw_query);
+	req.query_params = HttpParser::parseQueryParams(req.raw_query);
+	req.form_data = HttpParser::parseFormUrlencoded(req.body);
+	return (true);
+}
+
+// 4) traitement métier et envoi de la réponse
+void SocketManager::handleHttpRequest(int fd, ClientSocket *client,
+	HttpRequest &req)
+{
+	// votre code d’écriture de réponse ici
+	(void)fd;
+	(void)client;
+	(void)req;
+}
+
+// 5) remise à zéro du contexte pour pipelining
+void SocketManager::cleanupRequest(ClientSocket *client)
+{
+	std::string &buf = client->getBuffer();
+	buf.erase(0, client->getContentLength());
+	client->setHeadersParsed(false);
+	client->setContentLength(0);
+}
+
+void SocketManager::closeConnection(int fd, int epoll_fd)
+{
+	delete	_clientSockets[fd];
+
+	if (epoll_fd >= 0)
+		epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
+	_clientSockets.erase(fd);
+	close(fd);
 }

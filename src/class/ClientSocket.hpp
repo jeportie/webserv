@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:16:38 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/14 19:46:23 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/15 16:54:27 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 # include <sys/socket.h>
 # include <string>
 #include <vector>
-#include <RequestLine.hpp>
+#include "RequestLine.hpp"
 
 
 /**
@@ -94,7 +94,11 @@ public:
     RequestLine        getRequestLine() const;
     void               setContentLength(size_t length);
     void               setRequestLine(RequestLine rl);
-    void               setParsedHeaders(std::map<std::string,std::vector<std::string>> hdrs);
+    void               setParsedHeaders(std::map<std::string,std::vector<std::string> > hdrs);
+    bool               isChunked() const;
+    void               setChunked(bool);
+    size_t             getChunkSize() const;
+    void               setChunkSize(size_t);
 
 private:
 
@@ -102,7 +106,9 @@ private:
     bool                                            _headersParsed;
     size_t                                          _contentLength;
     RequestLine                                     _requestLine;
-    std::map<std::string,std::vector<std::string>>  _parsedHeaders;
+    std::map<std::string,std::vector<std::string> >  _parsedHeaders;
+    bool                                            _chunked;         // mode chunked activé
+    size_t                                          _chunkSize;       // taille restante du chunk courant
 
     /**
      * @brief Copy constructor (private to prevent copying)

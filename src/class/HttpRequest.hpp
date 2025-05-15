@@ -6,12 +6,13 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:03:17 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/14 19:47:44 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/15 17:37:14 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <string>
 #include <map>
+#include <vector>
 
 #ifndef HTTPREQUEST_HPP
 #define HTTPREQUEST_HPP

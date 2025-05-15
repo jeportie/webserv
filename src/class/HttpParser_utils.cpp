@@ -6,12 +6,13 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 11:45:44 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/15 12:03:52 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/15 17:36:34 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <cctype>  // isspace, isdigit
-#include <cerrno>  // errno
+#include <cctype> // isspace, isdigit
+#include <cerrno> // errno
+#include <cstdlib>
 #include <cstring> // strerror
 #include <iostream>
 #include <sstream> // pour stringstream si besoin
@@ -19,13 +20,13 @@
 // Utility : décodage %xx dans une chaîne
 std::string urlDecode(const std::string &s)
 {
-	int		i;
+	size_t	i;
+	i = 0;
 	char	buf[3] = {s[i + 1], s[i + 2], '\0'};
 	char	decoded;
 
-	i = 0;
 	std::string out;
-	for (size_t i = 0; i < s.size(); ++i)
+	for (i = 0; i < s.size(); ++i)
 	{
 		if (s[i] == '%' && i + 2 < s.size() && isxdigit(s[i + 1])
 			&& isxdigit(s[i + 2]))
@@ -65,13 +66,12 @@ void	splitKeyVal(const std::string &token, std::string &key,
 	}
 }
 
-static std::string trim(const std::string &s)
+std::string trim(const std::string &s)
 {
 	size_t	b;
-    size_t  e;
+	size_t	e;
 
-	b = 0,
-	b = 0, e = s.size();
+	b = 0, b = 0, e = s.size();
 	while (b < e && isspace(s[b]))
 		++b;
 	while (e > b && isspace(s[e - 1]))

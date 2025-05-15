@@ -85,19 +85,19 @@ Implement a ClientConnection class that buffers incoming data and uses the HTTPR
 7. Test with malformed requests to verify error handling
 
 # Subtasks:
-## 1. Implement Request Line Parsing [pending]
+## 1. Implement Request Line Parsing [done]
 ### Dependencies: None
 ### Description: Parse the HTTP request line to extract method, URI, and HTTP version
 ### Details:
 Create a function to parse the first line of an HTTP request. Extract the HTTP method (GET, POST, etc.), the request URI, and the HTTP version. Handle malformed request lines by returning appropriate error codes. Consider edge cases like whitespace handling, unsupported HTTP methods, and invalid HTTP versions. Implement validation for maximum URI length to prevent buffer overflow attacks.
 
-## 2. Implement Header Parsing [pending]
+## 2. Implement Header Parsing [done]
 ### Dependencies: 4.1
 ### Description: Parse HTTP headers into a structured format with validation
 ### Details:
 Create a function to parse HTTP headers into a key-value map. Handle folded headers according to RFC specifications. Implement case-insensitive header name comparison. Validate header format and reject malformed headers. Set limits on header count and individual header size to prevent DoS attacks. Extract critical headers like Content-Length, Content-Type, and Transfer-Encoding for later processing stages.
 
-## 3. Implement Content-Length Body Handling [pending]
+## 3. Implement Content-Length Body Handling [done]
 ### Dependencies: 4.2
 ### Description: Parse request bodies with Content-Length header
 ### Details:

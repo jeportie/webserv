@@ -6,14 +6,13 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:17:24 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/15 12:04:19 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/15 17:40:26 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpParser.hpp"
 #include "HttpRequest.hpp"
 #include "RequestLine.hpp"
-#include "HttpParser_utils.cpp"
 #include <cctype>    // isspace, isdigit
 #include <sstream>   // pour stringstream si besoin
 #include <cerrno>    // errno
@@ -86,20 +85,20 @@ std::map<std::string,std::vector<std::string> > HttpParser::parseHeaders(const s
   return headers;
 }
 
-// 4) readFixedBody
-std::string HttpParser::readFixedBody(int sockfd, size_t length) {
-  std::string body;
-  body.reserve(length);
-  char buf[1024];
-  size_t total = 0;
-  while (total < length) {
-    ssize_t r = read(sockfd, buf, std::min(sizeof(buf), length - total));
-    if (r <= 0 || r == 0) break; // client fermé ou erreur, ou r == 0 --> plus rien a lire (non bloquant)
-    body.append(buf, r);
-    total += r;
-  }
-  return body;
-}
+// // 4) readFixedBody
+// std::string HttpParser::readFixedBody(int sockfd, size_t length) {
+//   std::string body;
+//   body.reserve(length);
+//   char buf[1024];
+//   size_t total = 0;
+//   while (total < length) {
+//     ssize_t r = read(sockfd, buf, std::min(sizeof(buf), length - total));
+//     if (r <= 0 || r == 0) break; // client fermé ou erreur, ou r == 0 --> plus rien a lire (non bloquant)
+//     body.append(buf, r);
+//     total += r;
+//   }
+//   return body;
+// }
 
 
 // 4) splitTarget
