@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 15:32:24 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/16 11:11:33 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/16 15:13:56 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,12 +44,13 @@ class Parser
         size_t parseClientMaxBodySizeDirective();
         std::string parseDefaultFileDirective();
         std::map<int, std::string> parseReturnDirective();
-        std::map<std::string, std::string> parseCgiExecutorsDirective();
+        std::pair<std::string, std::string> parseCgiExecutorsDirective();
         bool parseUploadEnabledDirective();
         std::string parseUploadStoreDirective();
         std::map<std::string, RouteConfig> parseLocationBlocks();
         const Token& current() const;
         void advance();
+        
     private :   
     Lexer& _lexer;
     Token _current;

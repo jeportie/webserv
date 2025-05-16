@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/16 10:34:09 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/16 10:34:32 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/16 15:15:11 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ RouteConfig::RouteConfig()
       autoindex(false),
       defaultFile(""),
       returnCodes(),
-      cgiExecutors(),
+      cgiExecutor(),
       uploadEnabled(false),
       uploadStore("")
 {

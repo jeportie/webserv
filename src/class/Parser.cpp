@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 16:21:43 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/16 12:11:20 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/16 15:24:17 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -222,7 +222,7 @@ std::string Parser::parseDefaultFileDirective()
     return filename;
 }
 
-std::map<std::string, std::string> Parser::parseCgiExecutorsDirective() {
+std::pair<std::string, std::string> Parser::parseCgiExecutorsDirective() {
     advance(); // skip 'cgi_executor'
 
     if ((current().type != TOKEN_STRING && current().type != TOKEN_IDENTIFIER) || current().value[0] != '.')
@@ -241,8 +241,9 @@ std::map<std::string, std::string> Parser::parseCgiExecutorsDirective() {
         throw std::runtime_error("Expected ';' after cgi_executor directive");
     advance();
 
-    std::map<std::string, std::string> result;
-    result.insert(std::make_pair(extension, executable));
+    std::pair<std::string, std::string> result;
+    result.first = extension;
+    result.second = executable;
     return result;
 }
 
@@ -360,7 +361,7 @@ std::map<std::string, RouteConfig> Parser::parseLocationBlocks() {
                 route.returnCodes = parseReturnDirective();
             }
             else if (directive == "cgi_executor") {
-                route.cgiExecutors = parseCgiExecutorsDirective();
+                route.cgiExecutor = parseCgiExecutorsDirective();
             }
             else if (directive == "upload_enable") {
                 route.uploadEnabled = parseUploadEnabledDirective();
@@ -426,7 +427,7 @@ ServerConfig Parser::parseServerBlock() {
             config.defaultFile = parseDefaultFileDirective();
         }
         else if (current().value == "cgi_executor") {
-            config.cgiExecutors = parseCgiExecutorsDirective();
+            config.cgiExecutor = parseCgiExecutorsDirective();
         }
         else if (current().value == "upload_enable") {
             config.uploadEnabled = parseUploadEnabledDirective();

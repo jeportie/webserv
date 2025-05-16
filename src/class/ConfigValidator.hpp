@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/16 10:19:05 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/16 10:40:41 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/16 15:22:46 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,18 +14,15 @@
 # define CONFIG_VALIDATOR_HPP
 
 # include "ServerConfig.hpp"
-
+# include <set>
 class ConfigValidator
 {
    public:
     ConfigValidator();
     ~ConfigValidator();
     void validate(const std::vector<ServerConfig>& servers);
-
-   private :
-   void validateServer(const ServerConfig& config);
-   void validateRoute(const RouteConfig& route);
+    void validateServer(const ServerConfig& config);
+    void validateRoute(const RouteConfig& route);
     
 };
-
 #endif

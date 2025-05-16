@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 17:09:54 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/16 10:50:04 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/16 15:29:11 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,7 +114,7 @@ TEST(ParserTest, ParseListenDirectiveInvalidPort) {
         parser.parseListenDirective(host, port);
         FAIL() << "Expected exception due to invalid port";
     } catch (const std::exception& e) {
-        EXPECT_STREQ(e.what(), "Invalid port in 'listen' directive");
+        EXPECT_STREQ(e.what(), "Expected port number after ':' in 'listen' directive");
     }
 }
 
@@ -259,9 +259,8 @@ TEST(ParserTest, ParseCgiExecutorsDirective) {
     Parser parser(lexer);
 
     try {
-        std::map<std::string, std::string> cgiExecutors = parser.parseCgiExecutorsDirective();
-        EXPECT_EQ(cgiExecutors.size(), 1);
-        EXPECT_EQ(cgiExecutors[".php"], "/usr/bin/php-cgi");
+        std::pair<std::string, std::string> cgiExecutors = parser.parseCgiExecutorsDirective();
+        EXPECT_EQ(cgiExecutors.second, "/usr/bin/php-cgi");
     } catch (const std::exception& e) {
         FAIL() << "Exception thrown in ParseCgiExecutorsDirective: " << e.what();
     }
@@ -328,8 +327,7 @@ TEST(ParserTest, ParseLocationBlocks) {
         EXPECT_EQ(route.defaultFile, "index.html");
         EXPECT_EQ(route.returnCodes.size(), 1);
         EXPECT_EQ(route.returnCodes[404], "/errors/404.html");
-        EXPECT_EQ(route.cgiExecutors.size(), 1);
-        EXPECT_EQ(route.cgiExecutors[".php"], "/usr/bin/php-cgi");
+        EXPECT_EQ(route.cgiExecutor.second, "/usr/bin/php-cgi");
         EXPECT_TRUE(route.uploadEnabled);
         EXPECT_EQ(route.uploadStore, "/var/uploads");
         
@@ -374,8 +372,7 @@ TEST(ParserTest, ParseServerBlock) {
         EXPECT_EQ(route.allowedMethods[0], "GET");
         EXPECT_EQ(route.returnCodes.size(), 1);
         EXPECT_EQ(route.returnCodes[301], "/moved");
-        EXPECT_EQ(route.cgiExecutors.size(), 1);
-        EXPECT_EQ(route.cgiExecutors[".php"], "/usr/bin/php-cgi");
+        EXPECT_EQ(route.cgiExecutor.second, "/usr/bin/php-cgi");
         EXPECT_FALSE(route.uploadEnabled);
         EXPECT_EQ(route.uploadStore, "/tmp/uploads");
 
