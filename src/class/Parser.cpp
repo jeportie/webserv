@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 16:21:43 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/16 16:20:01 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/16 16:55:03 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -446,3 +446,32 @@ ServerConfig Parser::parseServerBlock() {
 
     return config;
 }
+
+
+std::map<std::string, std::vector<ServerConfig> > Parser::parseConfigFile() {
+    std::map<std::string, std::vector<ServerConfig> > serversByHostPort;
+
+    while (current().type != TOKEN_EOF) {
+        if (current().type == TOKEN_IDENTIFIER && current().value == "server") {
+            ServerConfig config = parseServerBlock();
+
+            // Valeur par défaut si aucun nom n’est spécifié
+            if (config.serverNames.empty()) {
+                config.serverNames.push_back("default");
+            }
+
+            std::ostringstream keyStream;
+            keyStream << config.host << ":" << config.port;
+            std::string key = keyStream.str();
+
+            // Ajoute ce ServerConfig à la liste associée à ce host:port
+            serversByHostPort[key].push_back(config);
+        } else {
+            throw std::runtime_error("Only 'server' blocks are allowed at top level");
+        }
+    }
+
+    return serversByHostPort;
+}
+
+

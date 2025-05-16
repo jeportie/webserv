@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 15:32:24 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/16 15:13:56 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/16 16:46:29 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,9 @@ class Parser
     Parser(Lexer& lexer);
     ~Parser();
     ServerConfig parseServerBlock();
+    std::map<std::string, std::vector<ServerConfig> > parseConfigFile();
     
-    
+      // mis en public pour les tets unitaire mais possibilite de le mettre en private
         void parseListenDirective(std::string &host, int&port);
         std::vector<std::string> parseServerNameDirective();
         std::string parseRootDirective();

@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 17:09:54 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/16 15:29:11 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/16 16:56:18 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -381,4 +381,166 @@ TEST(ParserTest, ParseServerBlock) {
     }
 }
 
+
+TEST(ParserTest, ParseConfigFileSingleServer) {
+    std::string input = 
+        "server { "
+        "listen 127.0.0.1:8080; "
+        "server_name example.com; "
+        "}";
+
+    Lexer lexer(input);
+    Parser parser(lexer);
+
+    try {
+        std::map<std::string, std::vector<ServerConfig> > result = parser.parseConfigFile();
+
+        EXPECT_EQ(result.size(), 1);
+
+        std::map<std::string, std::vector<ServerConfig> >::iterator it = result.find("127.0.0.1:8080");
+        ASSERT_NE(it, result.end());
+        EXPECT_EQ(it->second.size(), 1);
+
+        ServerConfig& config = it->second[0];
+        EXPECT_EQ(config.port, 8080);
+        EXPECT_EQ(config.host, "127.0.0.1");
+        ASSERT_EQ(config.serverNames.size(), 1);
+        EXPECT_EQ(config.serverNames[0], "example.com");
+
+    } catch (const std::exception& e) {
+        FAIL() << "Exception thrown in ParseConfigFileSingleServer: " << e.what();
+    }
+}
+
+TEST(ParserTest, ParseConfigFileMultipleServersSameHostPort) {
+    std::string input = 
+        "server { listen 0.0.0.0:80; server_name site1.com; } "
+        "server { listen 0.0.0.0:80; server_name site2.com; }";
+
+    Lexer lexer(input);
+    Parser parser(lexer);
+
+    try {
+        std::map<std::string, std::vector<ServerConfig> > result = parser.parseConfigFile();
+
+        EXPECT_EQ(result.size(), 1);
+
+        std::map<std::string, std::vector<ServerConfig> >::iterator it = result.find("0.0.0.0:80");
+        ASSERT_NE(it, result.end());
+        EXPECT_EQ(it->second.size(), 2);
+
+        EXPECT_EQ(it->second[0].serverNames[0], "site1.com");
+        EXPECT_EQ(it->second[1].serverNames[0], "site2.com");
+
+    } catch (const std::exception& e) {
+        FAIL() << "Exception thrown in ParseConfigFileMultipleServersSameHostPort: " << e.what();
+    }
+}
+
+TEST(ParserTest, ParseConfigFileNoServerBlockThrows) {
+    std::string input = "listen 80;";
+
+    Lexer lexer(input);
+    Parser parser(lexer);
+
+    try {
+        parser.parseConfigFile();
+        FAIL() << "Expected std::runtime_error not thrown";
+    } catch (const std::runtime_error& e) {
+        SUCCEED();
+    } catch (...) {
+        FAIL() << "Expected std::runtime_error but caught different exception";
+    }
+}
+
+TEST(ParserTest, ParseConfigFileServerWithNoNameUsesDefault) {
+    std::string input = 
+        "server { listen 192.168.0.1:9090; }";
+
+    Lexer lexer(input);
+    Parser parser(lexer);
+
+    try {
+        std::map<std::string, std::vector<ServerConfig> > result = parser.parseConfigFile();
+
+        EXPECT_EQ(result.size(), 1);
+
+        std::map<std::string, std::vector<ServerConfig> >::iterator it = result.find("192.168.0.1:9090");
+        ASSERT_NE(it, result.end());
+        EXPECT_EQ(it->second.size(), 1);
+
+        ServerConfig& config = it->second[0];
+        ASSERT_EQ(config.serverNames.size(), 1);
+        EXPECT_EQ(config.serverNames[0], "default");
+
+    } catch (const std::exception& e) {
+        FAIL() << "Exception thrown in ParseConfigFileServerWithNoNameUsesDefault: " << e.what();
+    }
+}
+
+TEST(ParserTest, ParseConfigFileMultipleServersDifferentHostPortsAndNames) {
+    std::string input =
+        "server { listen 192.168.1.10:8080; server_name siteA.com; } "
+        "server { listen 192.168.1.11:8081; server_name siteB.com; } "
+        "server { listen 192.168.1.12:8081; server_name siteA.com; }";  // même nom que siteA.com mais host:port différent
+
+    Lexer lexer(input);
+    Parser parser(lexer);
+
+    try {
+        std::map<std::string, std::vector<ServerConfig> > result = parser.parseConfigFile();
+
+        // Il doit y avoir 3 clés différentes car host:port tous différents
+        EXPECT_EQ(result.size(), 3);
+
+        // Vérifie chaque serveur individuellement
+        std::map<std::string, std::vector<ServerConfig> >::iterator it;
+
+        it = result.find("192.168.1.10:8080");
+        ASSERT_NE(it, result.end());
+        EXPECT_EQ(it->second.size(), 1);
+        EXPECT_EQ(it->second[0].serverNames[0], "siteA.com");
+
+        it = result.find("192.168.1.11:8081");
+        ASSERT_NE(it, result.end());
+        EXPECT_EQ(it->second.size(), 1);
+        EXPECT_EQ(it->second[0].serverNames[0], "siteB.com");
+
+        it = result.find("192.168.1.12:8081");
+        ASSERT_NE(it, result.end());
+        EXPECT_EQ(it->second.size(), 1);
+        EXPECT_EQ(it->second[0].serverNames[0], "siteA.com");  // même nom que premier serveur mais host:port différent
+
+    } catch (const std::exception& e) {
+        FAIL() << "Exception thrown in ParseConfigFileMultipleServersDifferentHostPortsAndNames: " << e.what();
+    }
+}
+
+TEST(ParserTest, ParseConfigFileDifferentHostPortsSameServerName) {
+    std::string input =
+        "server { listen 10.0.0.1:80; server_name sameName.com; } "
+        "server { listen 10.0.0.2:8080; server_name sameName.com; } "
+        "server { listen 10.0.0.3:443; server_name sameName.com; }";
+
+    Lexer lexer(input);
+    Parser parser(lexer);
+
+    try {
+        std::map<std::string, std::vector<ServerConfig> > result = parser.parseConfigFile();
+
+        // Trois host:port différents, donc 3 clés dans la map
+        EXPECT_EQ(result.size(), 3);
+
+        // Vérifier que chaque serveur a le même server_name "sameName.com"
+        for (std::map<std::string, std::vector<ServerConfig> >::iterator it = result.begin();
+             it != result.end(); ++it) {
+            EXPECT_EQ(it->second.size(), 1);
+            EXPECT_EQ(it->second[0].serverNames.size(), 1);
+            EXPECT_EQ(it->second[0].serverNames[0], "sameName.com");
+        }
+
+    } catch (const std::exception& e) {
+        FAIL() << "Exception thrown in ParseConfigFileDifferentHostPortsSameServerName: " << e.what();
+    }
+}
 
