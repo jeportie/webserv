@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 16:11:45 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/15 18:31:37 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/16 17:18:38 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <cstring>
 #include <iostream>
 #include <sstream>
+#include <cstdlib>
 
 /**
  * @brief Default constructor
@@ -24,15 +25,24 @@
  * The address structure is zeroed out and the address length is set to the
  * size of the structure.
  */
-ClientSocket::ClientSocket(void) : Socket()
+ClientSocket::ClientSocket()
+  : Socket()
+  , _clientAddrLen(sizeof(_clientAddr))
+  , _buffer()
+  , _headersParsed(false)
+  , _bodyMode(BODY_NONE)
+  , _contentLength(0)
+  , _requestLine()
+  , _parsedHeaders()
+  , _chunked(false)
+  , _chunkSize(0)
+  , _bodyAccumulator()
 {
-	std::memset(&_clientAddr, 0, sizeof(sockaddr_in));
-	_clientAddrLen = sizeof(_clientAddr);
-	_headersParsed = false;
-	_contentLength = 0;
-	_chunked = false;
-	_chunkSize = 0;
+    // On initialise _clientAddr après l’appel à Socket()
+    std::memset(&_clientAddr, 0, sizeof(_clientAddr));
 }
+
+
 
 /**
  * @brief Destructor
@@ -214,7 +224,7 @@ void ClientSocket::setParsedHeaders(std::map<std::string,
 	_parsedHeaders = hdrs;
 }
 
-bool ClientSocket::isChunked() const
+bool ClientSocket::getChunked() const
 {
 	return (_chunked);
 }
@@ -230,3 +240,68 @@ void ClientSocket::setChunkSize(size_t s)
 {
 	_chunkSize = s;
 }
+std::string& ClientSocket::getBodyAccumulator()
+{
+    return _bodyAccumulator;
+}
+
+void ClientSocket::clearBodyAccumulator()
+{
+    _bodyAccumulator.clear();
+}
+
+BodyMode ClientSocket::getBodyMode() const
+{
+	return (_bodyMode);
+}
+void    ClientSocket::setBodyMode(BodyMode mode)
+{
+	_bodyMode = mode;
+}
+
+void ClientSocket::determineBodyMode()
+{
+    // Initialisation par défaut : pas de corps
+    _bodyMode = BODY_NONE;
+    _chunked = false;
+    _contentLength = 0;
+	
+    // Recherche "chunked" dans Transfer-Encoding
+    if (_parsedHeaders.count("Transfer-Encoding")) {
+        const std::vector<std::string>& list = _parsedHeaders["Transfer-Encoding"];
+        for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
+            std::string lower = *it;
+            // conversion en minuscules
+            for (std::string::size_type i = 0; i < lower.size(); ++i)
+                lower[i] = static_cast<char>(std::tolower(lower[i]));
+            if (lower == "chunked") {
+                _bodyMode = BODY_CHUNKED;
+                _chunked = true;
+                return;
+            }
+        }
+    }
+    // Sinon, Content-Length
+    if (_parsedHeaders.count("Content-Length") && !_parsedHeaders["Content-Length"].empty()) {
+        _bodyMode = BODY_CONTENT_LENGTH;
+        _contentLength = std::atoi(_parsedHeaders["Content-Length"][0].c_str());
+    }
+}
+
+void ClientSocket::resetParserState()
+{
+    // On ne ferme pas la socket ici, on ne s’occupe que du parsing
+    _buffer.clear();
+    _headersParsed = false;
+    _bodyMode      = BODY_NONE;
+    _contentLength = 0;
+    _requestLine   = RequestLine();         // remet à défaut
+    _parsedHeaders.clear();
+
+    _chunked        = false;
+    _chunkSize      = 0;
+    _bodyAccumulator.clear();
+}
+
+
+// SocketManager.cpp.cpp

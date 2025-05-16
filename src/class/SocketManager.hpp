@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:23:58 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/14 16:55:15 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/16 15:38:08 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,8 @@ public:
      * 
      * @param fd The client socket file descriptor
      */
-    void communication(int fd);
+    bool communication(int fd);
+
 
     /**
      * @brief Runs the event loop
@@ -101,11 +102,12 @@ public:
     
     
     private:
-
+    
     bool readFromClient(int fd);
     bool parseClientHeaders(ClientSocket* client);
-    bool parseClientBody(ClientSocket* client, HttpRequest& req);
-    void handleHttpRequest(int fd, ClientSocket* client, HttpRequest& req);
+    bool parseClientBody(ClientSocket* client);
+    HttpRequest buildHttpRequest(ClientSocket* client);
+    void handleHttpRequest(int fd, HttpRequest& req);
     void cleanupRequest(ClientSocket* client);
     ServerSocket				 _serverSocket;	  ///< The server socket
     std::map<int, ClientSocket*> _clientSockets;  ///< Map of client sockets by file descriptor

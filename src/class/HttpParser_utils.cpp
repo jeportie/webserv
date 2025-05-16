@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 11:45:44 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/15 17:36:34 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/16 14:13:34 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,3 +78,5 @@ std::string trim(const std::string &s)
 		--e;
 	return (s.substr(b, e - b));
 }
+
+

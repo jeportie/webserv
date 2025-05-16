@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:17:24 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/15 17:40:26 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/16 17:53:05 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ HttpRequest::Method HttpParser::parseMethod(const std::string& token) {
   if (token == "PUT")    return HttpRequest::METHOD_PUT;
   if (token == "DELETE") return HttpRequest::METHOD_DELETE;
   return HttpRequest::METHOD_INVALID;
+  
 }
 
 // 2) parseRequestLine
@@ -43,12 +44,12 @@ RequestLine HttpParser::parseRequestLine(const std::string& line) {
   // ce qu'il y a apres le dernier espace. 
   parts.push_back(line.substr(pos));
   
-
+  
   if (parts.size() != 3) {
     rl.method = HttpRequest::METHOD_INVALID;
     return rl;
   }
-
+  
   rl.method = parseMethod(parts[0]);
   rl.target = parts[1];
 
@@ -64,26 +65,38 @@ RequestLine HttpParser::parseRequestLine(const std::string& line) {
   return rl;
 }
 
-// 3) parseHeaders. It can acceot multiple headers with the same name such as cookies etc.
-std::map<std::string,std::vector<std::string> > HttpParser::parseHeaders(const std::string& hdr_block) {
-  std::map<std::string,std::vector<std::string> > headers;
-  size_t start = 0, end;
-  while ((end = hdr_block.find("\r\n", start)) != std::string::npos) {
-    std::string line = hdr_block.substr(start, end - start);
-    if (line.empty()) break; // fin des en-têtes
-    size_t colon = line.find(':');
-    if (colon != std::string::npos) {
-      std::string name  = trim(line.substr(0, colon));
-      std::string value = trim(line.substr(colon + 1));
+std::map<std::string,std::vector<std::string> >
+HttpParser::parseHeaders(const std::string& hdr_block)
+{
+    std::map<std::string,std::vector<std::string> > headers;
+    size_t start = 0, end;
 
-      // normaliser case-insensitive : ici on laisse tel quel ou à toi de transformer en lowercase
-      if(name.empty() == 0 && value.empty() == 0)
-        headers[name].push_back(value);
+    // Pour simplifier, on s’assure que hdr_block se termine par "\r\n"
+    std::string block = hdr_block;
+    if (block.size() < 2 || block.substr(block.size() - 2) != "\r\n")
+        block += "\r\n";
+
+    while ((end = block.find("\r\n", start)) != std::string::npos)
+    {
+        std::string line = block.substr(start, end - start);
+        if (line.empty())
+            break;  // on est arrivé à la ligne vide qui sépare Request-Line / headers / body
+
+        size_t colon = line.find(':');
+        if (colon != std::string::npos)
+        {
+            std::string name  = trim(line.substr(0, colon));
+            std::string value = trim(line.substr(colon + 1));
+            if (!name.empty() && !value.empty())
+                headers[name].push_back(value);
+        }
+
+        start = end + 2;
     }
-    start = end + 2;
-  }
-  return headers;
+
+    return headers;
 }
+
 
 // // 4) readFixedBody
 // std::string HttpParser::readFixedBody(int sockfd, size_t length) {

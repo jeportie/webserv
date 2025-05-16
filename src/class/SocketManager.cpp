@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/15 18:29:56 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/16 17:55:19 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -279,37 +279,17 @@ int SocketManager::getClientSocket(void) const
 	return (_clientSocketFd);
 }
 
-void SocketManager::communication(int fd)
-{
-	ClientSocket	*client;
-	HttpRequest		req;
-
-	client = _clientSockets[fd];
-	// 1) Lecture
-	if (!readFromClient(fd))
-		return ;
-	// 2) Headers
-	if (!parseClientHeaders(client))
-		return ;
-	// 3) Body
-	if (!parseClientBody(client, req))
-		return ;
-	// 4) Traitement
-	handleHttpRequest(fd, client, req);
-	// 5) Préparation pour requête suivante
-	cleanupRequest(client);
-}
 
 bool SocketManager::readFromClient(int fd)
 {
-    ClientSocket* client = _clientSockets[fd];
+	ClientSocket* client = _clientSockets[fd];
     std::string&   buf    = client->getBuffer();
     char           tmp[4096];
-
+	
     while (true) {
-        ssize_t n = ::read(fd, tmp, sizeof(tmp));
+		ssize_t n = ::read(fd, tmp, sizeof(tmp));
         if (n > 0) {
-            buf.append(tmp, n);
+			buf.append(tmp, n);
             continue;
         }
         // n <= 0 : soit EOF (n==0), soit plus de données pour l'instant (n<0/EAGAIN)
@@ -321,134 +301,180 @@ bool SocketManager::readFromClient(int fd)
 
 
 // 2) cherche et parse les headers si pas déjà fait
-bool SocketManager::parseClientHeaders(ClientSocket *client)
-{
-	size_t		line_end;
-	RequestLine	rl;
-	size_t		contentLen;
 
+bool SocketManager::parseClientHeaders(ClientSocket* client)
+{
 	if (client->headersParsed())
-		return (true);
-	std::string &buf = client->getBuffer();
-	size_t hdr_end = buf.find("\r\n\r\n"); // pointe sur le premier /r
-	if (hdr_end == std::string::npos)
-		return (false);
-	// découpe Request-Line & headers
-	std::string hdr_block = buf.substr(0, hdr_end + 2); // je veux garder les /r/n
-	// pour que mon parser de header le comprenne comme un header d'ou le +2
-	// extract the first line the requestline
-	line_end = hdr_block.find("\r\n");
-	std::string firstLine = hdr_block.substr(0, line_end);
-	rl = HttpParser::parseRequestLine(firstLine);
-	std::string rest = hdr_block.substr(line_end + 2);
-	std::map<std::string,
-		std::vector<std::string> > hdrs = HttpParser::parseHeaders(rest);
-	// extraire Content-Length
-	contentLen = 0;
-	if (hdrs.count("Content-Length") && !hdrs["Content-Length"].empty())
-		contentLen = atoi(hdrs["Content-Length"][0].c_str());
-	client->setContentLength(contentLen);
-	client->setHeadersParsed(true);
+	return true;
+	
+    std::string& buf = client->getBuffer();
+    size_t hdr_end = buf.find("\r\n\r\n");
+    if (hdr_end == std::string::npos)
+	return false;
+	
+    std::string hdr_block = buf.substr(0, hdr_end);
+    size_t line_end = hdr_block.find("\r\n");
+    std::string firstLine = hdr_block.substr(0, line_end);
+	
+    // Request-Line
+	std::cout << firstLine << std::endl;
+    RequestLine rl = HttpParser::parseRequestLine(firstLine);
 	client->setRequestLine(rl);
-	client->setParsedHeaders(hdrs);
-	// on garde rl dans ClientSocket si besoin…
-	buf.erase(0, hdr_end + 4);
-	return (true);
+
+    // Headers
+    std::string rest = hdr_block.substr(line_end + 2);
+    std::map<std::string, std::vector<std::string> > hdrs = HttpParser::parseHeaders(rest);
+    client->setParsedHeaders(hdrs);
+    client->setHeadersParsed(true);
+    buf.erase(0, hdr_end + 4);
+	
+    // Délégation au client pour détermination du mode de body
+    client->determineBodyMode();
+    return true;
 }
 
-static size_t hexToSize(const std::string& hex) {
+
+
+static size_t hexToSize(const std::string& hex)
+{
     size_t result = 0;
     std::istringstream iss(hex);
     iss >> std::hex >> result;
     return result;
 }
-// 3) attend le corps complet, le remplit dans HttpRequest
-bool SocketManager::parseClientBody(ClientSocket *client, HttpRequest &req)
-{
-	size_t		needed;
-	RequestLine	rl;
 
-	std::string &buf = client->getBuffer();
-    std::cout << "XXXXXXXXXX" << client->isChunked() << std::endl;
-	if (!client->isChunked())
-	{
-		needed = client->getContentLength();
-		// on verifie qu'on a bien N octet, donc un body complet,
-		// sinon on ressort et on attend que l'event de cette socket
-		//  soit EPOLLIN a nouveau pour signifier qu'il y a "du nouveau a lire"
-		if (buf.size() < needed)
-			return (false);
-		// Je store le body dans la requete, et je l'Erase du buffer.
-		req.body = buf.substr(0, needed);
-		buf.erase(0, needed);
-	}
-    // Chunck mode
-    // Mode chunked
-    while (true) {
-        // 1) Lire la taille du chunk si nécessaire
-        if (client->getChunkSize() == 0) {
-            size_t pos = buf.find("\r\n");
-            if (pos == std::string::npos)
-                return false; // pas encore la ligne de taille
-            std::string line = buf.substr(0, pos);
-            size_t chunkLen = hexToSize(line);
-            client->setChunkSize(chunkLen);
-            buf.erase(0, pos + 2);
-            if (chunkLen == 0) {
-                // chunk terminal : ignorer les trailers
-                size_t end = buf.find("\r\n\r\n");
-                if (end == std::string::npos)
-                    return false;
-                buf.erase(0, end + 4);
-                return true;
+bool SocketManager::parseClientBody(ClientSocket* client)
+{
+	std::string& buf = client->getBuffer();
+    BodyMode mode = client->getBodyMode();
+	
+    if (mode == BODY_CONTENT_LENGTH) {
+		size_t needed = client->getContentLength();
+        if (buf.size() < needed) return false;
+        // leave body in buffer until buildHttpRequest
+        return true;
+    } else if (mode == BODY_CHUNKED) {
+		// chunked state machine, append to internal temporary storage
+        while (true) {
+			if (client->getChunkSize() == 0) {
+				size_t pos = buf.find("\r\n");
+                if (pos == std::string::npos) return false;
+                size_t chunkLen = hexToSize(buf.substr(0, pos));
+                client->setChunkSize(chunkLen);
+                buf.erase(0, pos + 2);
+                if (chunkLen == 0) {
+					size_t end = buf.find("\r\n");
+                    if (end == std::string::npos) return false;
+                    buf.erase(0, end + 2);
+                    break;
+                }
             }
+            size_t needed = client->getChunkSize();
+            if (buf.size() < needed + 2) return false;
+            client->getBodyAccumulator().append(buf.substr(0, needed));
+            buf.erase(0, needed + 2);
+            client->setChunkSize(0);
         }
-        
-        // 2) Lire le corps du chunk
-    needed = client->getChunkSize();
-        if (buf.size() < needed + 2)
-            return false; // pas tout reçu (data + CRLF)
-        req.body.append(buf.substr(0, needed));
-        buf.erase(0, needed + 2); // delete consomme data + CRLF
-        client->setChunkSize(0);
-        // boucle pour le chunk suivant
+        return true;
     }
-	rl = client->getRequestLine();
-	req.method = rl.method;
-	req.path = req.http_major = rl.http_major;
-	req.http_minor = rl.http_minor;
-	req.headers = client->getParsedHeaders();
-	HttpParser::splitTarget(rl.target, req.path, req.raw_query);
-	req.query_params = HttpParser::parseQueryParams(req.raw_query);
-	req.form_data = HttpParser::parseFormUrlencoded(req.body);
-	return (true);
+    // No body
+    return true;
 }
 
-// 4) traitement métier et envoi de la réponse
-void SocketManager::handleHttpRequest(int fd, ClientSocket *client,
-	HttpRequest &req)
+HttpRequest SocketManager::buildHttpRequest(ClientSocket* client)
 {
-	// votre code d’écriture de réponse ici
-	(void)fd;
-	(void)client;
-	(void)req;
+	HttpRequest req;
+    // fill body
+    if (client->getBodyMode() == BODY_CONTENT_LENGTH) {
+		req.body = client->getBuffer().substr(0, client->getContentLength());
+        client->getBuffer().erase(0, client->getContentLength());
+    } else if (client->getBodyMode() == BODY_CHUNKED) {
+		req.body = client->getBodyAccumulator();
+        client->clearBodyAccumulator();
+    }
+	
+    // fill request-line and headers
+    RequestLine rl = client->getRequestLine();
+    req.method     = rl.method;
+    req.http_major = rl.http_major;
+    req.http_minor = rl.http_minor;
+    HttpParser::splitTarget(rl.target, req.path, req.raw_query);
+    req.headers      = client->getParsedHeaders();
+    req.query_params = HttpParser::parseQueryParams(req.raw_query);
+    req.form_data    = HttpParser::parseFormUrlencoded(req.body);
+    return req;
 }
 
-// 5) remise à zéro du contexte pour pipelining
-void SocketManager::cleanupRequest(ClientSocket *client)
+void SocketManager::cleanupRequest(ClientSocket* client)
 {
-	std::string &buf = client->getBuffer();
-	buf.erase(0, client->getContentLength());
-	client->setHeadersParsed(false);
-	client->setContentLength(0);
+	client->resetParserState();
 }
 
+/**
+ * @brief Closes a client connection, removing it from epoll and cleaning up resources
+ *
+ * @param fd The client socket file descriptor to close
+ * @param epoll_fd The epoll instance file descriptor; if >=0, the socket will be deregistered
+ */
 void SocketManager::closeConnection(int fd, int epoll_fd)
 {
-	delete	_clientSockets[fd];
+    // 1) Deregister from epoll if applicable
+    if (epoll_fd >= 0) {
+        if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) {
+            // Log error but continue cleanup
+            std::cerr << "epoll_ctl DEL failed for fd " << fd
+                      << ": " << strerror(errno) << std::endl;
+        }
+    }
 
-	if (epoll_fd >= 0)
-		epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
-	_clientSockets.erase(fd);
-	close(fd);
+    // 2) Delete the ClientSocket object
+    std::map<int, ClientSocket*>::iterator it = _clientSockets.find(fd);
+    if (it != _clientSockets.end()) {
+        delete it->second;
+        _clientSockets.erase(it);
+    }
+
+    // 3) Close the file descriptor
+    if (close(fd) == -1) {
+        std::cerr << "close() failed for fd " << fd
+                  << ": " << strerror(errno) << std::endl;
+    }
 }
+
+bool SocketManager::communication(int fd)
+{
+	ClientSocket* client = _clientSockets[fd];
+
+	// 1) Lire toutes les données disponibles
+	if (!readFromClient(fd))
+		return false;
+
+	// 2) Parser les en-têtes si ce n'est pas déjà fait
+	if (!parseClientHeaders(client))
+		return false;
+
+	// 3) Parser ou accumuler le corps (mode Content-Length ou chunked)
+	if (!parseClientBody(client))
+		return false;
+
+	// 4) Construire l'objet HttpRequest complet
+	HttpRequest req = buildHttpRequest(client);
+
+	// 5) Passer la requête au handler
+	// handleHttpRequest(fd, req);
+
+	// 6) Nettoyer pour la requête suivante (pipeline ou fermeture)
+	cleanupRequest(client);
+	
+	// Si le client a demandé explicitement la fermeture…
+    if (req.headers.count("Connection") &&
+        req.headers["Connection"][0] == "close")
+	{
+        return false;  // plus de traitement sur cette socket
+		// closeConnection(fd, epoll_fd); REPLACER DASN EVENT LOOOP
+	}
+    return true;  // on garde la connexion ouverte
+}
+
+
+

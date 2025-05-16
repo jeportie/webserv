@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:16:38 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/15 16:54:27 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/16 16:13:59 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,11 @@
 #include <vector>
 #include "RequestLine.hpp"
 
+enum BodyMode {
+    BODY_NONE,
+    BODY_CONTENT_LENGTH,
+    BODY_CHUNKED
+};
 
 /**
  * @brief Client socket class that represents a connected client
@@ -94,21 +99,35 @@ public:
     RequestLine        getRequestLine() const;
     void               setContentLength(size_t length);
     void               setRequestLine(RequestLine rl);
+    BodyMode            getBodyMode() const;
+    void                setBodyMode(BodyMode mode);
+    void                determineBodyMode();
+
+
+
+    std::string&       getBodyAccumulator();
+    void               clearBodyAccumulator();
+    void               resetParserState();
     void               setParsedHeaders(std::map<std::string,std::vector<std::string> > hdrs);
-    bool               isChunked() const;
+    bool               getChunked() const;
     void               setChunked(bool);
     size_t             getChunkSize() const;
     void               setChunkSize(size_t);
+    
 
 private:
 
+    socklen_t _clientAddrLen;        ///< Length of client address structure
+    struct sockaddr_in _clientAddr;  ///< Client address structure
     std::string                                     _buffer;
     bool                                            _headersParsed;
+    BodyMode                                        _bodyMode;
     size_t                                          _contentLength;
     RequestLine                                     _requestLine;
     std::map<std::string,std::vector<std::string> >  _parsedHeaders;
     bool                                            _chunked;         // mode chunked activé
     size_t                                          _chunkSize;       // taille restante du chunk courant
+    std::string                                     _bodyAccumulator;
 
     /**
      * @brief Copy constructor (private to prevent copying)
@@ -125,8 +144,6 @@ private:
      */
     ClientSocket& operator=(const ClientSocket& rhs);
 
-    struct sockaddr_in _clientAddr;  ///< Client address structure
-    socklen_t _clientAddrLen;        ///< Length of client address structure
 };
 
 #endif  // ************************************************* CLIENTSOCKET_HPP //
