@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 16:31:54 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/16 15:11:49 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/16 16:23:46 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 /* config validator doit verifier :
 
 
--verifier que l'IP est valide (inet_addr) ? 
 -verifier que les chemins dans upload store root et cgi executor sont valide 
 -les blocs locations dans le meme server ne doivent pas avoir exactement le meme chemin (collision)
 */
@@ -116,6 +115,17 @@ void ConfigValidator::validateServer(const ServerConfig& config)
         }
     }
 
+    for (std::map<int, std::string>::const_iterator it = config.error_pages.begin(); it != config.error_pages.end(); ++it)
+    {
+        if (it->first < 100 || it->first > 599)
+            throw std::runtime_error("Invalid HTTP status code in error_page");
+    }
+
+    for (std::map<std::string, RouteConfig>::const_iterator it = config.routes.begin(); it != config.routes.end(); ++it) 
+    {
+        validateRoute(it->second);
+    }
+
     
 }
 
@@ -124,10 +134,12 @@ void ConfigValidator::validateRoute(const RouteConfig& route) {
     if (route.path.empty())
         throw std::runtime_error("Route path is required");
 
-    if (route.root.empty())
-        throw std::runtime_error("Route root is required");
+    if (route.root.empty() && route.returnCodes.empty())
+        throw std::runtime_error("Each route must have either a root or a return directive");
 
-    // Exemples supplémentaires :
+    if (!route.root.empty() && !route.returnCodes.empty())
+        throw std::runtime_error("A route cannot have both root and return directives at the same time");
+
     if (route.uploadEnabled && route.uploadStore.empty())
         throw std::runtime_error("upload_store must be set if upload is enabled");
 
@@ -136,12 +148,22 @@ void ConfigValidator::validateRoute(const RouteConfig& route) {
         if (it->second.empty())
             throw std::runtime_error("return_url must not be empty for return_code");
     }
+    
     if (!route.cgiExecutor.first.empty() && route.cgiExecutor.second.find('/') != 0)
         throw std::runtime_error("cgi_executor must be an absolute path");
+    
     if (!route.defaultFile.empty() && route.defaultFile.find('/') == 0)
         throw std::runtime_error("default_file must be a relative filename (not starting with /)");
 
-    if (route.autoindex && !route.defaultFile.empty())
-        throw std::runtime_error("Cannot enable autoindex and define default_file at the same time");
+    if (route.defaultFile.find('/') != std::string::npos)
+        throw std::runtime_error("default_file must not contain '/'");
 
+    for (std::map<int, std::string>::const_iterator it = route.returnCodes.begin(); it != route.returnCodes.end(); ++it)
+    {
+        if (it->first < 100 || it->first > 599)
+            throw std::runtime_error("Invalid HTTP status code");
+    }
+
+
+    
 }

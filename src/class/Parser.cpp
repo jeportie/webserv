@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 16:21:43 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/16 15:24:17 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/16 16:20:01 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -257,15 +257,7 @@ std::map<int, std::string> Parser::parseReturnDirective() {
     std::map<int, std::string> returnCodes;
     while (current().type == TOKEN_NUMBER) {
         int code = std::atoi(current().value.c_str());
-
-        // Vérification si le code de retour est dans une plage valide
-        if (code < 100 || code > 599)
-        {
-            std::ostringstream oss;
-            oss << code;
-            throw std::runtime_error("Invalid HTTP return code: " + oss.str());
-        }
-
+        
         advance();
 
         if (current().type != TOKEN_STRING && current().type != TOKEN_IDENTIFIER)
