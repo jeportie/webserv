@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 17:09:54 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/13 17:10:37 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/16 10:50:04 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,18 +35,89 @@ TEST(ParserTest, AdvanceAndCurrent) {
     }
 }
 
-TEST(ParserTest, ParseListenDirective) {
+TEST(ParserTest, ParseListenDirectiveWithHostAndPort) {
+    std::string input = "listen 127.0.0.1:8080;";
+    Lexer lexer(input);
+    Parser parser(lexer);
+
+    std::string host;
+    int port = 0;
+
+    try {
+        parser.parseListenDirective(host, port);
+        EXPECT_EQ(host, "127.0.0.1");
+        EXPECT_EQ(port, 8080);
+    } catch (const std::exception& e) {
+        FAIL() << "Exception thrown in ParseListenDirectiveWithHostAndPort: " << e.what();
+    }
+}
+
+TEST(ParserTest, ParseListenDirectiveWithPortOnly) {
     std::string input = "listen 8080;";
     Lexer lexer(input);
     Parser parser(lexer);
 
+    std::string host;
+    int port = 0;
+
     try {
-        int port = parser.parseListenDirective();
+        parser.parseListenDirective(host, port);
+        EXPECT_EQ(host, "0.0.0.0");  // default host
         EXPECT_EQ(port, 8080);
     } catch (const std::exception& e) {
-        FAIL() << "Exception thrown in ParseListenDirective: " << e.what();
+        FAIL() << "Exception thrown in ParseListenDirectiveWithPortOnly: " << e.what();
     }
 }
+
+TEST(ParserTest, ParseListenDirectiveWithHostOnly) {
+    std::string input = "listen localhost;";
+    Lexer lexer(input);
+    Parser parser(lexer);
+
+    std::string host;
+    int port = 0;
+
+    try {
+        parser.parseListenDirective(host, port);
+        EXPECT_EQ(host, "localhost");
+        EXPECT_EQ(port, 80);  // default port
+    } catch (const std::exception& e) {
+        FAIL() << "Exception thrown in ParseListenDirectiveWithHostOnly: " << e.what();
+    }
+}
+
+TEST(ParserTest, ParseListenDirectiveMissingSemicolon) {
+    std::string input = "listen 127.0.0.1:8080";
+    Lexer lexer(input);
+    Parser parser(lexer);
+
+    std::string host;
+    int port = 0;
+
+    try {
+        parser.parseListenDirective(host, port);
+        FAIL() << "Expected exception due to missing semicolon";
+    } catch (const std::exception& e) {
+        EXPECT_STREQ(e.what(), "Expected ';' after listen directive");
+    }
+}
+
+TEST(ParserTest, ParseListenDirectiveInvalidPort) {
+    std::string input = "listen 127.0.0.1:abc;";
+    Lexer lexer(input);
+    Parser parser(lexer);
+
+    std::string host;
+    int port = 0;
+
+    try {
+        parser.parseListenDirective(host, port);
+        FAIL() << "Expected exception due to invalid port";
+    } catch (const std::exception& e) {
+        EXPECT_STREQ(e.what(), "Invalid port in 'listen' directive");
+    }
+}
+
 
 TEST(ParserTest, ParseServerNameDirective) {
     std::string input = "server_name example.com www.example.com;";

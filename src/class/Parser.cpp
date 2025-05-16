@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 16:21:43 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/13 18:25:50 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/16 11:56:11 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,18 +27,51 @@ void Parser::advance() {
     _current = _lexer.nextToken();
 }
 
-int Parser::parseListenDirective() {
+void Parser::parseListenDirective(std::string& host, int& port) {
     advance(); // skip 'listen'
-    if (current().type != TOKEN_NUMBER)
-        throw std::runtime_error("Expected port number after 'listen'");
-    int port = std::atoi(current().value.c_str());
 
+    if (current().type != TOKEN_NUMBER && current().type != TOKEN_IDENTIFIER && current().type != TOKEN_STRING)
+        throw std::runtime_error("Expected host or port after 'listen'");
+
+    std::string hostCandidate = current().value;
     advance();
+
+    // Si le token suivant est une string avec des points, on suppose que c'est une IP continue
+    if (current().type == TOKEN_STRING) {
+        hostCandidate +=  current().value;
+        advance();
+    }
+
+    // Si ':' alors on attend un port
+    if (current().type == TOKEN_COLON) {
+        host = hostCandidate;
+        advance(); // skip ':'
+
+        if (current().type != TOKEN_NUMBER)
+            throw std::runtime_error("Expected port number after ':' in 'listen' directive");
+
+        port = std::atoi(current().value.c_str());
+        advance();
+    } else {
+        // Sinon, c’est soit juste un port (ex: `listen 8080;`)
+        // soit un host (ex: `listen localhost;`)
+        if (std::isdigit(hostCandidate[0])) {
+            port = std::atoi(hostCandidate.c_str());
+            host = "0.0.0.0"; // par défaut
+        } else {
+            host = hostCandidate;
+            port = 80; // par défaut
+        }
+    }
+
     if (current().type != TOKEN_SEMICOLON)
-        throw std::runtime_error("Expected ';' after listen port");
-    advance();
-    return port;
+        throw std::runtime_error("Expected ';' after listen directive");
+
+    advance(); // skip ';'
 }
+
+
+
 
 
 std::vector<std::string> Parser::parseServerNameDirective() {
@@ -367,7 +400,7 @@ ServerConfig Parser::parseServerBlock() {
             throw std::runtime_error("Unexpected token in server block: " + current().value);
 
         if (current().value == "listen") {
-            config.port = parseListenDirective();
+            parseListenDirective(config.host, config.port);
         }
         else if (current().value == "server_name") {
             config.serverNames = parseServerNameDirective();
@@ -417,37 +450,4 @@ ServerConfig Parser::parseServerBlock() {
     advance();
 
     return config;
-}
-
-
-RouteConfig::RouteConfig()
-    : path(""),
-      root(""),
-      allowedMethods(),
-      autoindex(false),
-      defaultFile(""),
-      returnCodes(),
-      cgiExecutors(),
-      uploadEnabled(false),
-      uploadStore("")
-{
-}
-
-
-ServerConfig::ServerConfig()
-    : port(8086),
-      host("0.0.0.0"),
-      serverNames(),
-      root(""),
-      allowedMethods(),
-      autoindex(false),
-      defaultFile(""),
-      returnCodes(),
-      error_pages(),
-      client_max_body_size(0),
-      cgiExecutors(),
-      uploadEnabled(false),
-      uploadStore(""),
-      routes()
-{
 }

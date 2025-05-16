@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 17:07:10 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/13 18:17:16 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/16 11:27:06 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -200,7 +200,7 @@ Token Lexer::nextToken()
         if (std::isalpha(c))
         {
             return parseIdentifier();
-        }
+        } 
         else if (std::isdigit(c))
         {
             return parseNumber();
