@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 16:31:54 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/16 16:23:46 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/16 16:37:47 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,8 +80,11 @@ void ConfigValidator::validate(const std::vector<ServerConfig>& servers)
 
 void ConfigValidator::validateServer(const ServerConfig& config)
 {
-    if (config.listenIsSet == false || config.rootIsSet == false)
-        throw std::runtime_error("listen and root directive are mandatory in server config");
+    if (!config.listenIsSet)
+        throw std::runtime_error("Missing required directive: listen");
+
+    if (!config.rootIsSet)
+        throw std::runtime_error("Missing required directive: root");
     if (config.port <= 0 || config.port > 65535)
         throw std::runtime_error("Invalid port number in server config");
     if (config.host.empty())
@@ -163,7 +166,5 @@ void ConfigValidator::validateRoute(const RouteConfig& route) {
         if (it->first < 100 || it->first > 599)
             throw std::runtime_error("Invalid HTTP status code");
     }
-
-
     
 }
