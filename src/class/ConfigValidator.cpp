@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 16:31:54 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/16 10:50:23 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/16 12:13:42 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,34 @@ void ConfigValidator::validate(const std::vector<ServerConfig>& servers)
 
 void ConfigValidator::validateServer(const ServerConfig& config)
 {
-    if (config.port <= 0)
-        throw std::runtime_error("Invalid or missing 'listen' directive");
+    if (listenIsSet == false || rootIsSet == false)
+        throw std::runtime_error("listen and root directive are mandatory in server config")
+    if (config.port <= 0 || config.port > 65535)
+        throw std::runtime_error("Invalid port number in server config");
+        if (config.host.empty())
+        throw std::runtime_error("Host must be defined in server config");
+
+    if (config.root.empty())
+        throw std::runtime_error("Root directory must be defined in server config");
+
+    if (config.client_max_body_size == 0)
+        throw std::runtime_error("client_max_body_size must be greater than 0");
+}
+
+
+void ConfigValidator::validateRouteConfig(const RouteConfig& route) {
+    if (route.path.empty())
+        throw std::runtime_error("Route path is required");
+
+    if (route.root.empty())
+        throw std::runtime_error("Route root is required");
+
+    // Exemples supplémentaires :
+    if (route.uploadEnabled && route.uploadStore.empty())
+        throw std::runtime_error("upload_store must be set if upload is enabled");
+
+    for (std::map<int, std::string>::const_iterator it = route.returnCodeDirective.begin(); it != route.returnCodeDirective.end(); ++it) {
+        if (it->second.empty())
+            throw std::runtime_error("return_url must not be empty for return_code " + std::to_string(it->first));
+    }
 }

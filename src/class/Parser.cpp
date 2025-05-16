@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 16:21:43 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/16 11:56:11 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/16 12:11:20 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -401,12 +401,14 @@ ServerConfig Parser::parseServerBlock() {
 
         if (current().value == "listen") {
             parseListenDirective(config.host, config.port);
+            config.listenIsSet = true;
         }
         else if (current().value == "server_name") {
             config.serverNames = parseServerNameDirective();
         }
         else if (current().value == "root") {
             config.root = parseRootDirective();
+            config.rootIsSet = true;
         }
         else if (current().value == "autoindex") {
             config.autoindex = parseAutoindexDirective();

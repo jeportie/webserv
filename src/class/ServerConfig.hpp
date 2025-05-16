@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/16 10:27:50 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/16 11:18:47 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/16 12:10:36 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,11 @@ struct ServerConfig {
     bool uploadEnabled;
     std::string uploadStore;
     std::map<std::string, RouteConfig> routes;
+    bool listenIsSet;
+    bool rootIsSet;
     // Autres directives comme error_pages, cgi, etc.
-
+    
+    
     ServerConfig();
 };
 
