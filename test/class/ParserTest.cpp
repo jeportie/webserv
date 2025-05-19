@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 17:09:54 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/19 11:16:45 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/19 12:51:42 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,6 +147,50 @@ TEST(ParserTest, ParseRootDirective) {
     }
 }
 
+TEST(ParserTest, ParseAllowedMethodsDirective) {
+    std::string input = "allowed_methods GET POST;";
+    Lexer lexer(input);
+    Parser parser(lexer);
+    
+    try {
+        std::vector<std::string> allowedMethods = parser.parseAllowedMethodsDirective();
+        EXPECT_EQ(allowedMethods.size(), 2);
+        EXPECT_EQ(allowedMethods[0], "GET");
+        EXPECT_EQ(allowedMethods[1], "POST");
+    } catch (const std::exception& e) {
+        FAIL() << "Exception thrown in ParseAllowedMethodsDirective: " << e.what();
+    }
+}
+
+TEST(ParserTest, ParseErrorPagesDirective) {
+    std::string input = "error_page 404 /errors/404.html 500 /errors/500.html;";
+    Lexer lexer(input);
+    Parser parser(lexer);
+    
+    try {
+        std::map<int, std::string> errorPages = parser.parseErrorPagesDirective();
+        EXPECT_EQ(errorPages.size(), 2);
+        EXPECT_EQ(errorPages[404], "/errors/404.html");
+        EXPECT_EQ(errorPages[500], "/errors/500.html");
+    } catch (const std::exception& e) {
+        FAIL() << "Exception thrown in ParseErrorPagesDirective: " << e.what();
+    }
+}
+
+TEST(ParserTest, ParseClientMaxBodySizeDirective) {
+    std::string input = "client_max_body_size 1048576;";
+    Lexer lexer(input);
+    Parser parser(lexer);
+    
+    try {
+        size_t clientMaxBodySize = parser.parseClientMaxBodySizeDirective();
+        EXPECT_EQ(clientMaxBodySize, 1048576);
+    } catch (const std::exception& e) {
+        FAIL() << "Exception thrown in ParseClientMaxBodySizeDirective: " << e.what();
+    }
+}
+
+
 TEST(ParserTest, ParseAutoindexDirective) {
     std::string input = "autoindex on;";
     Lexer lexer(input);
@@ -171,54 +215,11 @@ TEST(ParserTest, ParseAutoindexDirective) {
     }
 }
 
-TEST(ParserTest, ParseAllowedMethodsDirective) {
-    std::string input = "allowed_methods GET POST;";
-    Lexer lexer(input);
-    Parser parser(lexer);
-
-    try {
-        std::vector<std::string> allowedMethods = parser.parseAllowedMethodsDirective();
-        EXPECT_EQ(allowedMethods.size(), 2);
-        EXPECT_EQ(allowedMethods[0], "GET");
-        EXPECT_EQ(allowedMethods[1], "POST");
-    } catch (const std::exception& e) {
-        FAIL() << "Exception thrown in ParseAllowedMethodsDirective: " << e.what();
-    }
-}
-
-TEST(ParserTest, ParseErrorPagesDirective) {
-    std::string input = "error_page 404 /errors/404.html 500 /errors/500.html;";
-    Lexer lexer(input);
-    Parser parser(lexer);
-
-    try {
-        std::map<int, std::string> errorPages = parser.parseErrorPagesDirective();
-        EXPECT_EQ(errorPages.size(), 2);
-        EXPECT_EQ(errorPages[404], "/errors/404.html");
-        EXPECT_EQ(errorPages[500], "/errors/500.html");
-    } catch (const std::exception& e) {
-        FAIL() << "Exception thrown in ParseErrorPagesDirective: " << e.what();
-    }
-}
-
-TEST(ParserTest, ParseClientMaxBodySizeDirective) {
-    std::string input = "client_max_body_size 1048576;";
-    Lexer lexer(input);
-    Parser parser(lexer);
-
-    try {
-        size_t clientMaxBodySize = parser.parseClientMaxBodySizeDirective();
-        EXPECT_EQ(clientMaxBodySize, 1048576);
-    } catch (const std::exception& e) {
-        FAIL() << "Exception thrown in ParseClientMaxBodySizeDirective: " << e.what();
-    }
-}
-
 TEST(ParserTest, ParseDefaultFileDirective) {
     std::string input = "default_file index.html;";
     Lexer lexer(input);
     Parser parser(lexer);
-
+    
     try {
         std::string defaultFile = parser.parseDefaultFileDirective();
         EXPECT_EQ(defaultFile, "index.html");

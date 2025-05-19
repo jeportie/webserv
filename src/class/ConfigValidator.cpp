@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 16:31:54 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/19 11:44:23 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/19 13:15:24 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,7 +125,6 @@ void ConfigValidator::validateServer(const ServerConfig& config)
         validateRoute(it->second);
     }
 
-    
 }
 
 
@@ -139,30 +138,24 @@ void ConfigValidator::validateRoute(const RouteConfig& route) {
     if (!route.root.empty() && !route.returnCodes.empty())
         throw std::runtime_error("A route cannot have both root and return directives at the same time");
 
-    if (route.uploadEnabled && route.uploadStore.empty())
-        throw std::runtime_error("upload_store must be set if upload is enabled");
-
-    for (std::map<int, std::string>::const_iterator it = route.returnCodes.begin(); it != route.returnCodes.end(); ++it)
-    {
-        if (it->second.empty())
-            throw std::runtime_error("return_url must not be empty for return_code");
-    }
-    
-    if (!route.cgiExecutor.first.empty() && route.cgiExecutor.second.find('/') != 0)
-        throw std::runtime_error("cgi_executor must be an absolute path");
-    
     if (!route.defaultFile.empty() && route.defaultFile.find('/') == 0)
-        throw std::runtime_error("default_file must be a relative filename (not starting with /)");
+    throw std::runtime_error("default_file must be a relative filename (not starting with /)");
+
 
     if (route.defaultFile.find('/') != std::string::npos)
-        throw std::runtime_error("default_file must not contain '/'");
+    throw std::runtime_error("default_file must not contain '/'");
 
     for (std::map<int, std::string>::const_iterator it = route.returnCodes.begin(); it != route.returnCodes.end(); ++it)
     {
         if (it->first < 100 || it->first > 599)
             throw std::runtime_error("Invalid HTTP status code");
         if (it->second.empty())
-            throw std::runtime_error("return code directive must not be empty");
+            throw std::runtime_error("return_url must not be empty for return_code");
     }
+    if (!route.cgiExecutor.first.empty() && route.cgiExecutor.second.find('/') != 0)
+        throw std::runtime_error("cgi_executor must be an absolute path");
+    
+    if (route.uploadEnabled && route.uploadStore.empty())
+        throw std::runtime_error("upload_store must be set if upload is enabled");
     
 }
