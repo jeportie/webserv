@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 16:11:45 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/16 17:18:38 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/19 12:28:46 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
+#include <HttpException.hpp>
+#include "HttpLimits.hpp"
 
 /**
  * @brief Default constructor
@@ -278,6 +280,8 @@ void ClientSocket::determineBodyMode()
                 _bodyMode = BODY_CHUNKED;
                 _chunked = true;
                 return;
+			if (lower != "chunked" && lower != "identity")
+        		throw HttpException(501, "Not Implemented");
             }
         }
     }
@@ -285,6 +289,8 @@ void ClientSocket::determineBodyMode()
     if (_parsedHeaders.count("Content-Length") && !_parsedHeaders["Content-Length"].empty()) {
         _bodyMode = BODY_CONTENT_LENGTH;
         _contentLength = std::atoi(_parsedHeaders["Content-Length"][0].c_str());
+	if (_contentLength > MAX_BODY_SIZE)
+    	throw HttpException(413, "Payload Too Large");
     }
 }
 

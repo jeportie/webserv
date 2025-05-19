@@ -103,25 +103,25 @@ Create a function to parse HTTP headers into a key-value map. Handle folded head
 ### Details:
 Implement a function to read and parse request bodies when Content-Length header is present. Validate that Content-Length is a valid non-negative integer. Enforce maximum body size limits to prevent memory exhaustion. Handle timeouts for slow uploads. Implement proper buffer management for efficient memory usage. Detect and handle premature connection closures during body reading.
 
-## 4. Implement Chunked Transfer Encoding [pending]
+## 4. Implement Chunked Transfer Encoding [done]
 ### Dependencies: 4.2
 ### Description: Support HTTP chunked transfer encoding for request bodies
 ### Details:
 Create a parser for chunked transfer encoding according to HTTP specifications. Parse each chunk's size header and data. Handle chunk extensions (though they can be ignored). Process the final zero-length chunk and optional trailers. Implement timeout handling for slow chunk transfers. Set maximum chunk size and total body size limits. Validate chunk size format and handle malformed chunk headers appropriately.
 
-## 5. Implement Form Data Parsing [pending]
+## 5. Implement Form Data Parsing [done]
 ### Dependencies: 4.3, 4.4
 ### Description: Parse application/x-www-form-urlencoded and multipart/form-data request bodies
 ### Details:
 Create parsers for both URL-encoded and multipart form data. For URL-encoded: decode percent-encoded characters, handle key-value pairs, and support nested parameters. For multipart: parse boundary delimiters, extract part headers including Content-Disposition, handle file uploads with proper temp file management, and implement memory-efficient streaming for large files. Set limits on form field count, field name length, and field value size.
 
-## 6. Implement Query Parameter Extraction [pending]
+## 6. Implement Query Parameter Extraction [done]
 ### Dependencies: 4.1
 ### Description: Extract and parse query parameters from request URIs
 ### Details:
 Create a function to extract and parse query parameters from the request URI. Handle URL decoding of parameter names and values. Support array parameters (same name with multiple values). Implement nested parameter parsing if using bracket notation. Set limits on query string length, parameter count, and individual parameter size. Properly handle malformed query strings and return appropriate errors.
 
-## 7. Implement Security Validation [pending]
+## 7. Implement Security Validation [in-progress]
 ### Dependencies: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6
 ### Description: Add comprehensive security checks for HTTP requests
 ### Details:

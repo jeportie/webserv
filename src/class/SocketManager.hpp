@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:23:58 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/16 15:38:08 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/19 11:35:29 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,6 +114,8 @@ public:
 
     int							 _serverSocketFd; ///< Server socket file descriptor
     int							 _clientSocketFd; ///< Client socket file descriptor (most recent)
+
+    
 };
 
 #endif  // ************************************************ SOCKETMANAGER_HPP //

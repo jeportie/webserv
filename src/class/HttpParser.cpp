@@ -6,11 +6,12 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:17:24 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/16 17:53:05 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/19 12:44:58 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpParser.hpp"
+#include "HttpParser_utils.hpp"
 #include "HttpRequest.hpp"
 #include "RequestLine.hpp"
 #include <cctype>    // isspace, isdigit
@@ -18,6 +19,8 @@
 #include <cerrno>    // errno
 #include <iostream>
 #include <cstring>   // strerror
+#include "HttpException.hpp"
+#include "HttpLimits.hpp"
 
 
 // 1) parseMethod
@@ -45,12 +48,12 @@ RequestLine HttpParser::parseRequestLine(const std::string& line) {
   parts.push_back(line.substr(pos));
   
   
-  if (parts.size() != 3) {
-    rl.method = HttpRequest::METHOD_INVALID;
-    return rl;
-  }
-  
+  if (parts.size() != 3)
+    throw HttpException(400, "Bad Request");
+    
   rl.method = parseMethod(parts[0]);
+  if (rl.method == HttpRequest::METHOD_INVALID)
+    throw HttpException(405, "Method Not Allowed");
   rl.target = parts[1];
 
   // Version HTTP/x.y
@@ -61,6 +64,8 @@ RequestLine HttpParser::parseRequestLine(const std::string& line) {
   } else {
     rl.http_major = rl.http_minor = 0;
   }
+  if (!(rl.http_major == '1' && ( rl.http_minor == '0' || rl.http_minor == '1')))
+    throw HttpException(505, "HTTP Version Not Supported");
 
   return rl;
 }
@@ -87,13 +92,25 @@ HttpParser::parseHeaders(const std::string& hdr_block)
         {
             std::string name  = trim(line.substr(0, colon));
             std::string value = trim(line.substr(colon + 1));
+            if (name.length() > MAX_FIELD_NAME || value.length() > MAX_FIELD_VALUE)
+              throw HttpException(431, "Request Header Fields Too Large");
+            if (containsCtl(name) || containsCtl(value))
+              throw HttpException(400, "Bad Request");
             if (!name.empty() && !value.empty())
                 headers[name].push_back(value);
+            else
+              throw HttpException(400, "Bad Request");
         }
+        else
+          throw HttpException(400, "Bad Request");
 
         start = end + 2;
     }
+    if (name.length() > MAX_FIELD_NAME || value.length() > MAX_FIELD_VALUE)
+      throw HttpException(431, "Request Header Fields Too Large");
 
+    if (containsCtl(name) || containsCtl(value))
+      throw HttpException(400, "Bad Request");
     return headers;
 }
 

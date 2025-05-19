@@ -274,7 +274,7 @@
             2
           ],
           "details": "Create a parser for chunked transfer encoding according to HTTP specifications. Parse each chunk's size header and data. Handle chunk extensions (though they can be ignored). Process the final zero-length chunk and optional trailers. Implement timeout handling for slow chunk transfers. Set maximum chunk size and total body size limits. Validate chunk size format and handle malformed chunk headers appropriately.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -285,7 +285,7 @@
             4
           ],
           "details": "Create parsers for both URL-encoded and multipart form data. For URL-encoded: decode percent-encoded characters, handle key-value pairs, and support nested parameters. For multipart: parse boundary delimiters, extract part headers including Content-Disposition, handle file uploads with proper temp file management, and implement memory-efficient streaming for large files. Set limits on form field count, field name length, and field value size.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
@@ -295,7 +295,7 @@
             1
           ],
           "details": "Create a function to extract and parse query parameters from the request URI. Handle URL decoding of parameter names and values. Support array parameters (same name with multiple values). Implement nested parameter parsing if using bracket notation. Set limits on query string length, parameter count, and individual parameter size. Properly handle malformed query strings and return appropriate errors.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 7,
@@ -310,7 +310,7 @@
             6
           ],
           "details": "Implement security validations across all parsing stages. Detect and reject oversized requests before they consume resources. Validate protocol compliance strictly. Implement protection against HTTP request smuggling attacks by validating Content-Length and Transfer-Encoding headers. Add detection for NULL byte injection in headers and URI. Implement rate limiting for parsing complex requests. Create sanitization for header values to prevent header injection. Add logging for suspicious requests that might indicate attack attempts.",
-          "status": "pending"
+          "status": "in-progress"
         }
       ]
     },

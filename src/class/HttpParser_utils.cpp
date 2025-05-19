@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 11:45:44 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/16 14:13:34 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/19 12:13:17 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,18 @@ std::string trim(const std::string &s)
 	while (e > b && isspace(s[e - 1]))
 		--e;
 	return (s.substr(b, e - b));
+}
+
+bool containsCtl(const std::string& s)
+{
+    for (size_t i = 0; i < s.size(); ++i)
+    {
+        unsigned char c = static_cast<unsigned char>(s[i]);
+        // C0 controls (0x00–0x1F) et DEL (0x7F)
+        if (c < 0x20 || c == 0x7F)
+            return true;
+    }
+    return false;
 }
 
 

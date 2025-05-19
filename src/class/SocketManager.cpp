@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/16 17:55:19 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/19 12:51:38 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,9 @@
 #include <iostream>
 #include <unistd.h>
 #include <sstream>
+#include "HttpException.hpp"
+#include "HttpLimits.hpp"
+
 
 SocketManager::SocketManager(void) : _serverSocketFd(-1), _clientSocketFd(-1)
 {
@@ -324,6 +327,8 @@ bool SocketManager::parseClientHeaders(ClientSocket* client)
     // Headers
     std::string rest = hdr_block.substr(line_end + 2);
     std::map<std::string, std::vector<std::string> > hdrs = HttpParser::parseHeaders(rest);
+	if (hdrs.size() > MAX_HEADER_COUNT)
+    	throw HttpException(431, "Request Header Fields Too Large");
     client->setParsedHeaders(hdrs);
     client->setHeadersParsed(true);
     buf.erase(0, hdr_end + 4);
@@ -340,6 +345,11 @@ static size_t hexToSize(const std::string& hex)
     size_t result = 0;
     std::istringstream iss(hex);
     iss >> std::hex >> result;
+	if (result == SIZE_MAX)
+    	throw HttpException(400, "Bad Request");                     // taille invalide
+
+	if (result > MAX_CHUNK_SIZE)
+    	throw HttpException(413, "Payload Too Large");               // chunk trop gros
     return result;
 }
 
@@ -360,6 +370,8 @@ bool SocketManager::parseClientBody(ClientSocket* client)
 				size_t pos = buf.find("\r\n");
                 if (pos == std::string::npos) return false;
                 size_t chunkLen = hexToSize(buf.substr(0, pos));
+				if (buf.size() + chunkLen > MAX_BODY_SIZE)
+    				throw HttpException(413, "Payload Too Large");
                 client->setChunkSize(chunkLen);
                 buf.erase(0, pos + 2);
                 if (chunkLen == 0) {
@@ -446,32 +458,42 @@ bool SocketManager::communication(int fd)
 	ClientSocket* client = _clientSockets[fd];
 
 	// 1) Lire toutes les données disponibles
-	if (!readFromClient(fd))
-		return false;
-
-	// 2) Parser les en-têtes si ce n'est pas déjà fait
-	if (!parseClientHeaders(client))
-		return false;
-
-	// 3) Parser ou accumuler le corps (mode Content-Length ou chunked)
-	if (!parseClientBody(client))
-		return false;
-
-	// 4) Construire l'objet HttpRequest complet
-	HttpRequest req = buildHttpRequest(client);
-
-	// 5) Passer la requête au handler
-	// handleHttpRequest(fd, req);
-
-	// 6) Nettoyer pour la requête suivante (pipeline ou fermeture)
-	cleanupRequest(client);
-	
-	// Si le client a demandé explicitement la fermeture…
-    if (req.headers.count("Connection") &&
-        req.headers["Connection"][0] == "close")
+	try
 	{
-        return false;  // plus de traitement sur cette socket
-		// closeConnection(fd, epoll_fd); REPLACER DASN EVENT LOOOP
+		
+		if (!readFromClient(fd))
+		return false;
+		
+		// 2) Parser les en-têtes si ce n'est pas déjà fait
+		if (!parseClientHeaders(client))
+		return false;
+		
+		// 3) Parser ou accumuler le corps (mode Content-Length ou chunked)
+		if (!parseClientBody(client))
+		return false;
+		
+		// 4) Construire l'objet HttpRequest complet
+		HttpRequest req = buildHttpRequest(client);
+		
+		// 5) Passer la requête au handler
+		// handleHttpRequest(fd, req);
+		
+		// 6) Nettoyer pour la requête suivante (pipeline ou fermeture)
+		cleanupRequest(client);
+		// Si le client a demandé explicitement la fermeture…
+		if (req.headers.count("Connection") &&
+		req.headers["Connection"][0] == "close")
+		{
+			return false;  // plus de traitement sur cette socket
+			// closeConnection(fd, epoll_fd); REPLACER DASN EVENT LOOOP
+		}
+	}
+	catch(const HttpException& he)
+	{
+		  // Erreur de la requête (4xx / 5xx) :
+        sendErrorResponse(fd, he.status(), he.what());
+        // closeConnection(fd, epoll_fd);       // retire de epoll, delete ClientSocket, close(fd)
+        return false;                        // on arrête là pour ce fd
 	}
     return true;  // on garde la connexion ouverte
 }
