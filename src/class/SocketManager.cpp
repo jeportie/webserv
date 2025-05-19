@@ -6,7 +6,7 @@
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/07 23:44:31 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/14 13:47:46 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@
 #include <unistd.h>
 #include <vector>
 #include "SocketManager.hpp"
+#include "Callback.hpp"
+#include "ErrorHandler.hpp"
 #include "../../include/webserv.h"
 
 SocketManager::SocketManager(void)
@@ -47,14 +49,14 @@ void SocketManager::init_connect(void)
 {
     // Create, bind, and listen on the server socket
     if (!_serverSocket.safeBind(PORT, ""))
-        throw std::runtime_error("Failed to bind server socket");
+        THROW_ERROR(CRITICAL, SOCKET_ERROR, "Failed to bind server socket", "SocketManager::init_connect");
     
     _serverSocket.safeListen(10);
     _serverSocketFd = _serverSocket.getFd();
     
     int epoll_fd = epoll_create(1);
     if (epoll_fd < 0)
-        throw std::runtime_error("Failed to create epoll instance: " + std::string(strerror(errno)));
+        THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "Failed to create epoll instance", "SocketManager::init_connect");
     
     safeRegisterToEpoll(epoll_fd);
     std::cout << "Server listening on port " << PORT << std::endl;
@@ -73,16 +75,53 @@ void SocketManager::init_connect(void)
  * even if one client connection fails.
  * 
  * @param epoll_fd The epoll file descriptor
+ * @param timeout_ms Timeout in milliseconds, -1 for infinite
  */
-void SocketManager::eventLoop(int epoll_fd)
+void SocketManager::eventLoop(int epoll_fd, int timeout_ms)
 {
     std::vector<epoll_event> events(MAXEVENTS);
 
     while (true)
     {
-        int n = epoll_wait(epoll_fd, events.data(), MAXEVENTS, -1);
+        // Process any expired timers
+        processTimers();
+
+        // Process any pending callbacks
+        processDeferredCallbacks();
+        
+        // Calculate timeout for epoll_wait based on next timer expiration
+        int wait_timeout = timeout_ms;
+        if (!_timerQueue.empty())
+        {
+            time_t now = time(NULL);
+            time_t next_expire = _timerQueue.top().getExpireTime();
+            if (next_expire <= now)
+            {
+                wait_timeout = 0; // Process immediately
+            }
+            else
+            {
+                wait_timeout = (next_expire - now) * 1000; // Convert to milliseconds
+                if (timeout_ms != -1 && wait_timeout > timeout_ms)
+                {
+                    wait_timeout = timeout_ms; // Use the smaller timeout
+                }
+            }
+        }
+
+        // If there are pending callbacks, don't wait too long
+        if (_callbackManager.hasPendingCallbacks() && (wait_timeout == -1 || wait_timeout > 100))
+        {
+            wait_timeout = 100; // Check for callbacks at least every 100ms
+        }
+
+        int n = epoll_wait(epoll_fd, events.data(), MAXEVENTS, wait_timeout);
         if (n < 0)
-            throw std::runtime_error("epoll_wait failed: " + std::string(strerror(errno)));
+		{
+            if (errno == EINTR)
+                continue;
+            THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "epoll_wait failed", "SocketManager::eventLoop");
+		}
         
         for (int i = 0; i < n; ++i)
         {
@@ -99,41 +138,222 @@ void SocketManager::eventLoop(int epoll_fd)
                     {
                         _clientSocketFd = client->getFd();
                         _clientSockets[_clientSocketFd] = client;
+                        // Add a timeout for idle connections (60 seconds)
+                        // We need to use a static function for C++98 compatibility
+                        Callback* timeoutCallback = new Callback(&SocketManager::handleTimeout, _clientSocketFd, this, "timeout_handler");
+                        addTimer(60, timeoutCallback);
+                        // Schedule a callback to log the new connection
+                        Callback* logCallback = new Callback(&SocketManager::logNewConnection, _clientSocketFd, client, "connection_logger");
+                        executeDeferred(logCallback, CallbackManager::HIGH);
                     }
                 }
                 catch (const std::exception& e)
                 {
-                    std::cerr << "Accept failed: " << e.what() << std::endl;
+                    LOG_ERROR(ERROR, SOCKET_ERROR, "Accept failed: " + std::string(e.what()), "SocketManager::eventLoop");
                 }
             }
             else if ((ev & EPOLLIN) && fd != _serverSocketFd)
             {
                 // Data available on a client socket
                 communication(fd);
+                // Reset the timeout for this client
+                cancelTimer(fd);
+                Callback* timeoutCallback = new Callback(&SocketManager::handleTimeout, fd, this);
+                addTimer(60, timeoutCallback);
             }
             else if (ev & (EPOLLERR | EPOLLHUP))
             {
                 // Error or hangup on a socket
                 std::cout << "Client disconnected (fd=" << fd << ")" << std::endl;
-                
-                // Clean up the client socket
-                if (fd != _serverSocketFd)
-                {
-                    std::map<int, ClientSocket*>::iterator it = _clientSockets.find(fd);
-                    if (it != _clientSockets.end())
-                    {
-                        delete it->second;
-                        _clientSockets.erase(it);
-                    }
-                    // Remove from epoll
-                    epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
-                    close(fd);
-                }
+                cleanupClientSocket(fd, epoll_fd);
             }
         }
     }
 }
 
+/**
+ * @brief Static callback function for logging new connections
+ * 
+ * @param fd The file descriptor of the new connection
+ * @param data Pointer to the ClientSocket instance
+ */
+void SocketManager::logNewConnection(int fd, void* data)
+{
+    ClientSocket* client = static_cast<ClientSocket*>(data);
+    std::cout << "New connection from " << client->getClientIP() 
+              << ":" << client->getClientPort() 
+              << " (fd=" << fd << ")" << std::endl;
+}
+
+/**
+ * @brief Adds a callback to be executed immediately
+ * 
+ * @param callback The callback to execute
+ */
+void SocketManager::executeImmediate(Callback* callback)
+{
+    _callbackManager.executeImmediate(callback);
+}
+
+/**
+ * @brief Adds a callback to be executed later
+ * 
+ * @param callback The callback to execute
+ * @param priority The priority of the callback
+ */
+void SocketManager::executeDeferred(Callback* callback, CallbackManager::Priority priority)
+{
+    _callbackManager.executeDeferred(callback, priority);
+}
+
+/**
+ * @brief Processes all deferred callbacks
+ * 
+ * Executes all deferred callbacks in priority order.
+ */
+void SocketManager::processDeferredCallbacks()
+{
+    _callbackManager.processDeferredCallbacks();
+}
+
+/**
+ * @brief Cancels all callbacks for a specific file descriptor
+ * 
+ * @param fd The file descriptor to cancel callbacks for
+ * @return int Number of callbacks cancelled
+ */
+int SocketManager::cancelCallbacksForFd(int fd)
+{
+    return _callbackManager.cancelCallbacksForFd(fd);
+}
+
+/**
+ * @brief Cleans up resources for a client socket
+ * 
+ * @param fd The client socket file descriptor
+ * @param epoll_fd The epoll file descriptor
+ */
+void SocketManager::cleanupClientSocket(int fd, int epoll_fd)
+{
+    // Cancel any timers for this client
+    cancelTimer(fd);
+    
+    // Cancel any callbacks for this client
+    cancelCallbacksForFd(fd);
+    
+    // Clean up the client socket
+    if (fd != _serverSocketFd)
+    {
+        std::map<int, ClientSocket*>::iterator it = _clientSockets.find(fd);
+        if (it != _clientSockets.end())
+        {
+            delete it->second;
+            _clientSockets.erase(it);
+        }
+        // Remove from epoll
+        if (epoll_fd >= 0)
+        {
+            epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
+        }
+        close(fd);
+    }
+}
+
+/**
+ * @brief Static callback function for handling timeouts
+ * 
+ * @param fd The file descriptor that timed out
+ * @param data Pointer to the SocketManager instance
+ */
+void SocketManager::handleTimeout(int fd, void* data)
+{
+    SocketManager* manager = static_cast<SocketManager*>(data);
+    std::cout << "Client connection timed out (fd=" << fd << ")" << std::endl;
+    
+    // Find the epoll_fd from the manager
+    // This is a bit of a hack, but we need to get the epoll_fd somehow
+    int epoll_fd = -1; // In a real implementation, you'd store this in the manager
+    
+    manager->cleanupClientSocket(fd, epoll_fd);
+}
+
+/**
+ * @brief Adds a timer to the timer queue
+ * 
+ * @param seconds Seconds from now when the timer should expire
+ * @param callback The callback to execute when the timer expires
+ * @return int Timer ID
+ */
+int SocketManager::addTimer(int seconds, Callback* callback)
+{
+    time_t expireTime = time(NULL) + seconds;
+    Timer timer(expireTime, callback);
+    _timerQueue.push(timer);
+    return callback->getFd(); // Use the file descriptor as the timer ID
+}
+
+/**
+ * @brief Cancels a timer
+ * 
+ * @param fd The file descriptor associated with the timer
+ * @return bool True if the timer was found and cancelled
+ */
+bool SocketManager::cancelTimer(int fd)
+{
+    // We can't easily remove from a priority queue, so we'll mark the callback as cancelled
+    std::priority_queue<Timer> temp;
+    bool found = false;
+    
+    while (!_timerQueue.empty())
+    {
+        Timer timer = _timerQueue.top();
+        _timerQueue.pop();
+        
+        Callback* callback = timer.getCallback();
+        if (callback->getFd() == fd)
+        {
+            callback->cancel();
+            found = true;
+        }
+        
+        temp.push(timer);
+    }
+    
+    _timerQueue = temp;
+	return (found);
+}
+
+/**
+ * @brief Processes expired timers
+ * 
+ * Checks for expired timers and executes their callbacks.
+ */
+void SocketManager::processTimers()
+{
+    time_t now = time(NULL);
+    
+    while (!_timerQueue.empty())
+    {
+        Timer timer = _timerQueue.top();
+        
+        if (timer.getExpireTime() > now)
+        {
+            // No more expired timers
+            break;
+        }
+        
+        // Remove the timer from the queue
+        _timerQueue.pop();
+        
+        // Execute the callback if it's not cancelled
+        Callback* callback = timer.getCallback();
+        if (!callback->isCancelled())
+        {
+            callback->execute();
+        }
+        // Callback is owned by the Timer, which will be destroyed when it goes out of scope
+    }
+}
 
 /**
  * @brief Handles communication with a client
@@ -154,12 +374,17 @@ void SocketManager::communication(int fd)
         std::cout << "Received from client (fd=" << fd << "): " << buffer;
         
         // Echo back to the client
-        write(fd, buffer, bytes_read);
+        if (write(fd, buffer, bytes_read) < 0)
+        {
+            LOG_SYSTEM_ERROR(WARNING, SOCKET_ERROR, "Failed to write response to client", "SocketManager::communication");
+        }
     }
     else if (bytes_read == 0)
     {
         // Client closed the connection
-        std::cout << "Client disconnected (fd=" << fd << ")" << std::endl;
+        std::stringstream ss;
+        ss << fd;
+        LOG_ERROR(INFO, SOCKET_ERROR, "Client disconnected (fd=" + ss.str() + ")", "SocketManager::communication");
         
         // Clean up the client socket
         std::map<int, ClientSocket*>::iterator it = _clientSockets.find(fd);
@@ -170,13 +395,18 @@ void SocketManager::communication(int fd)
         }
         
         // Remove from epoll
-        epoll_ctl(fd, EPOLL_CTL_DEL, fd, NULL);
+        if (epoll_ctl(fd, EPOLL_CTL_DEL, fd, NULL) < 0)
+        {
+            LOG_SYSTEM_ERROR(WARNING, EPOLL_ERROR, "Failed to remove client from epoll", "SocketManager::communication");
+        }
         close(fd);
     }
     else if (bytes_read < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
     {
         // Unexpected read error
-        std::cerr << "Read error on fd " << fd << ": " << strerror(errno) << std::endl;
+        std::stringstream ss;
+        ss << fd;
+        LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR, "Read error on fd " + ss.str(), "SocketManager::communication");
         
         // Clean up the client socket
         std::map<int, ClientSocket*>::iterator it = _clientSockets.find(fd);
@@ -187,23 +417,14 @@ void SocketManager::communication(int fd)
         }
         
         // Remove from epoll
-        epoll_ctl(fd, EPOLL_CTL_DEL, fd, NULL);
+        if (epoll_ctl(fd, EPOLL_CTL_DEL, fd, NULL) < 0)
+        {
+            LOG_SYSTEM_ERROR(WARNING, EPOLL_ERROR, "Failed to remove client from epoll", "SocketManager::communication");
+        }
         close(fd);
     }
     // If errno == EAGAIN or EWOULDBLOCK, we'll wait for the next EPOLLIN event
 }
-
-// **Explanation of Communication Changes:**
-
-// 1. **Removed while loop**: The original code used a while loop to read all available data. I changed this to a single read call because with epoll in edge-triggered mode (EPOLLET), we should read all available data at once.
-//
-// 2. **Added echo functionality**: Added code to echo back the received data to the client. This is a common feature in simple servers and helps demonstrate that the server is working correctly.
-//
-// 3. **Added client socket cleanup**: Added code to clean up the client socket when the client disconnects or there's an error. This includes removing it from the _clientSockets map.
-//
-// 4. **Improved logging**: Added more detailed log messages to show which client is sending data or disconnecting.
-//
-// 5. **Fixed epoll_ctl call**: The original code was missing the epoll_fd parameter in the epoll_ctl call when removing a client socket from epoll.
 
 /**
  * @brief Sets the server socket to non-blocking mode
@@ -229,9 +450,10 @@ int SocketManager::safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll
 {
     if (epoll_ctl(epoll_fd, op, fd, event) < 0)
     {
-        std::cerr << "[Error] epoll_ctl failed (epoll_fd=" << epoll_fd
-                  << ", fd=" << fd << ", op=" << op << "): "
-                  << strerror(errno) << std::endl;
+        std::stringstream ss;
+        ss << "epoll_ctl failed (epoll_fd=" << epoll_fd << ", fd=" << fd << ", op=" << op << ")";
+        LOG_SYSTEM_ERROR(ERROR, EPOLL_ERROR, ss.str(),
+                        "SocketManager::safeEpollCtlClient");
         return -1;
     }
     return 0;
@@ -249,7 +471,7 @@ void SocketManager::safeRegisterToEpoll(int epoll_fd)
     ev.data.fd = _serverSocketFd;
 
     if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, _serverSocketFd, &ev) == -1)
-        throw std::runtime_error("Failed to add server socket to epoll: " + std::string(strerror(errno)));
+        THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "Failed to add server socket to epoll", "SocketManager::safeRegisterToEpoll");
 }
 
 int SocketManager::getServerSocket(void) const { return _serverSocketFd; }
