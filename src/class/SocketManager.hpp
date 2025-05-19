@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   SocketManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:23:58 by jeportie          #+#    #+#             */
 /*   Updated: 2025/05/14 13:52:48 by jeportie         ###   ########.fr       */
@@ -19,6 +19,7 @@
 # include <queue>
 # include "CallbackManager.hpp"
 # include "ServerSocket.hpp"
+#include "HttpRequest.hpp"
 # include "ClientSocket.hpp"
 # include "Timer.hpp"
 # include "Callback.hpp"
@@ -57,7 +58,8 @@ public:
      * 
      * @param fd The client socket file descriptor
      */
-    void communication(int fd);
+    bool communication(int fd);
+
 
 	/**
 	* @brief Static callback function for handling timeouts
@@ -176,6 +178,23 @@ public:
     int getServerSocket(void) const;
     int getClientSocket(void) const;
 
+    void closeConnection(int  fd, int epoll_fd);
+    
+    private:
+    
+    bool readFromClient(int fd);
+    bool parseClientHeaders(ClientSocket* client);
+    bool parseClientBody(ClientSocket* client);
+    HttpRequest buildHttpRequest(ClientSocket* client);
+    void handleHttpRequest(int fd, HttpRequest& req);
+    void cleanupRequest(ClientSocket* client);
+    ServerSocket				 _serverSocket;	  ///< The server socket
+    std::map<int, ClientSocket*> _clientSockets;  ///< Map of client sockets by file descriptor
+
+    int							 _serverSocketFd; ///< Server socket file descriptor
+    int							 _clientSocketFd; ///< Client socket file descriptor (most recent)
+
+    
 private:
 
     std::map<int, ServerSocket*>	_serverSockets;  // Map of server sockets by file descriptor

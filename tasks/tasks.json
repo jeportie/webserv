@@ -266,7 +266,7 @@
           "description": "Parse the HTTP request line to extract method, URI, and HTTP version",
           "dependencies": [],
           "details": "Create a function to parse the first line of an HTTP request. Extract the HTTP method (GET, POST, etc.), the request URI, and the HTTP version. Handle malformed request lines by returning appropriate error codes. Consider edge cases like whitespace handling, unsupported HTTP methods, and invalid HTTP versions. Implement validation for maximum URI length to prevent buffer overflow attacks.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -276,7 +276,7 @@
             1
           ],
           "details": "Create a function to parse HTTP headers into a key-value map. Handle folded headers according to RFC specifications. Implement case-insensitive header name comparison. Validate header format and reject malformed headers. Set limits on header count and individual header size to prevent DoS attacks. Extract critical headers like Content-Length, Content-Type, and Transfer-Encoding for later processing stages.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -286,7 +286,7 @@
             2
           ],
           "details": "Implement a function to read and parse request bodies when Content-Length header is present. Validate that Content-Length is a valid non-negative integer. Enforce maximum body size limits to prevent memory exhaustion. Handle timeouts for slow uploads. Implement proper buffer management for efficient memory usage. Detect and handle premature connection closures during body reading.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -296,7 +296,7 @@
             2
           ],
           "details": "Create a parser for chunked transfer encoding according to HTTP specifications. Parse each chunk's size header and data. Handle chunk extensions (though they can be ignored). Process the final zero-length chunk and optional trailers. Implement timeout handling for slow chunk transfers. Set maximum chunk size and total body size limits. Validate chunk size format and handle malformed chunk headers appropriately.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -307,7 +307,7 @@
             4
           ],
           "details": "Create parsers for both URL-encoded and multipart form data. For URL-encoded: decode percent-encoded characters, handle key-value pairs, and support nested parameters. For multipart: parse boundary delimiters, extract part headers including Content-Disposition, handle file uploads with proper temp file management, and implement memory-efficient streaming for large files. Set limits on form field count, field name length, and field value size.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
@@ -317,7 +317,7 @@
             1
           ],
           "details": "Create a function to extract and parse query parameters from the request URI. Handle URL decoding of parameter names and values. Support array parameters (same name with multiple values). Implement nested parameter parsing if using bracket notation. Set limits on query string length, parameter count, and individual parameter size. Properly handle malformed query strings and return appropriate errors.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 7,
@@ -332,7 +332,7 @@
             6
           ],
           "details": "Implement security validations across all parsing stages. Detect and reject oversized requests before they consume resources. Validate protocol compliance strictly. Implement protection against HTTP request smuggling attacks by validating Content-Length and Transfer-Encoding headers. Add detection for NULL byte injection in headers and URI. Implement rate limiting for parsing complex requests. Create sanitization for header values to prevent header injection. Add logging for suspicious requests that might indicate attack attempts.",
-          "status": "pending"
+          "status": "in-progress"
         }
       ]
     },
