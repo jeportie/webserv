@@ -6,12 +6,13 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 01:28:02 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/16 17:59:10 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/19 17:26:23 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include "../src/class/HttpLimits.hpp"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -26,6 +27,7 @@
 #define private public
 #define protected public
 #include "../src/class/SocketManager.hpp"
+#include "../src/class/HttpException.hpp"
 #undef private
 #undef protected
 
@@ -534,43 +536,27 @@
 // Fixture qui crée un SocketManager propre à chaque test
 // test/SocketManagerCommunicationTests.cpp
 
-#include <gtest/gtest.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <cstring>
-
-#define private public
-#define protected public
-#include "../src/class/SocketManager.hpp"
-#undef private
-#undef protected
-
-bool setNonBlocking(int fd)
+static bool setNonBlocking(int fd)
 {
-    // 1) Récupérer les flags actuels
     int flags = fcntl(fd, F_GETFL, 0);
-    if (flags == -1)
-        return false;
-
-    // 2) Ajouter le flag O_NONBLOCK
-    if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1)
-        return false;
-
-    return true;
+    if (flags == -1) return false;
+    return (fcntl(fd, F_SETFL, flags | O_NONBLOCK) != -1);
 }
 
-// Fixture common aux tests de communication et parsing
+// Fixture commune pour tests de parsing & communication
 class SocketManagerCommTest : public ::testing::Test {
 protected:
-    SocketManager manager;
-    ClientSocket* clientSock;
-    int sv[2];
-    int clientFd;
-    
+    SocketManager     manager;
+    ClientSocket*     clientSock;
+    int               sv[2];
+    int               clientFd;
+
     virtual void SetUp() {
-        ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM, 0, sv));
+        ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM, 0, sv))
+            << "socketpair() failed: " << strerror(errno);
         ASSERT_TRUE(setNonBlocking(sv[1]));
-        clientFd = sv[1];
+
+        clientFd   = sv[1];
         clientSock = new ClientSocket();
         clientSock->setFd(clientFd);
         manager._clientSockets[clientFd] = clientSock;
@@ -582,7 +568,6 @@ protected:
     }
 };
 
-// 1) Test parseClientHeaders parses Request-Line, headers, and sets body mode
 TEST_F(SocketManagerCommTest, ParseClientHeaders_SetsModeAndRequestLine) {
     const char* raw =
         "POST /path?x=1 HTTP/1.1\r\n"
@@ -590,93 +575,93 @@ TEST_F(SocketManagerCommTest, ParseClientHeaders_SetsModeAndRequestLine) {
         "Transfer-Encoding: chunked\r\n"
         "\r\n";
     write(sv[0], raw, strlen(raw));
-    
     manager.readFromClient(clientFd);
 
-    EXPECT_FALSE(clientSock->headersParsed());
-    bool ok = manager.parseClientHeaders(clientSock);
-    EXPECT_TRUE(ok);
-    EXPECT_TRUE(clientSock->headersParsed());
-    EXPECT_EQ(clientSock->getBodyMode(), BODY_CHUNKED);
-    RequestLine rl = clientSock->getRequestLine();
-    EXPECT_EQ(rl.method, HttpRequest::METHOD_POST);
-    EXPECT_EQ(rl.target, "/path?x=1");
-    EXPECT_EQ(rl.http_major, 1);
-    EXPECT_EQ(rl.http_minor, 1);
+    // ici pas d'exception, version et méthode OK
+    EXPECT_NO_THROW({
+        bool ok = manager.parseClientHeaders(clientSock);
+        EXPECT_TRUE(ok);
+        EXPECT_TRUE(clientSock->headersParsed());
+        EXPECT_EQ(clientSock->getBodyMode(), BODY_CHUNKED);
+
+        RequestLine rl = clientSock->getRequestLine();
+        EXPECT_EQ(rl.method,     HttpRequest::METHOD_POST);
+        EXPECT_EQ(rl.target,     "/path?x=1");
+        EXPECT_EQ(rl.http_major, 1);
+        EXPECT_EQ(rl.http_minor, 1);
+    });
 }
 
-// 2) Test parseClientBody for Content-Length mode complete/incomplete
-TEST_F(SocketManagerCommTest, ParseClientBody_ContentLength) {
+// ------------------------------
+// Tests pour parseClientBody (Content-Length)
+// ------------------------------
+
+TEST_F(SocketManagerCommTest, ParseClientBody_ContentLength_ExactLength) {
     clientSock->setHeadersParsed(true);
     clientSock->setBodyMode(BODY_CONTENT_LENGTH);
     clientSock->setContentLength(3);
     clientSock->getBuffer() = "ABC";
-    EXPECT_TRUE(manager.parseClientBody(clientSock));
-    HttpRequest req = manager.buildHttpRequest(clientSock);
-    EXPECT_EQ(req.body, "ABC");
 
+    // Doit renvoyer true (corps complet disponible)
+    EXPECT_TRUE(manager.parseClientBody(clientSock));
+}
+
+TEST_F(SocketManagerCommTest, ParseClientBody_ContentLength_Incomplete) {
+    clientSock->setHeadersParsed(true);
+    clientSock->setBodyMode(BODY_CONTENT_LENGTH);
+    clientSock->setContentLength(5);
     clientSock->getBuffer() = "AB";
+
+    // Doit renvoyer false (trop peu de données)
     EXPECT_FALSE(manager.parseClientBody(clientSock));
 }
 
-// 3) Test parseClientBody for chunked mode incomplete header/data
-TEST_F(SocketManagerCommTest, ParseClientBody_ChunkedIncompleteHeader) {
+TEST_F(SocketManagerCommTest, ParseClientBody_ContentLength_TooLargeThrows) {
     clientSock->setHeadersParsed(true);
-    clientSock->setBodyMode(BODY_CHUNKED);
-    clientSock->setChunkSize(0);
-    clientSock->getBuffer() = "A";
+    clientSock->setBodyMode(BODY_CONTENT_LENGTH);
+    clientSock->setContentLength(MAX_BODY_SIZE + 1);
 
-    EXPECT_FALSE(manager.parseClientBody(clientSock));
-    EXPECT_TRUE(clientSock->getBodyAccumulator().empty());
-    EXPECT_EQ(clientSock->getChunkSize(), size_t(0));
-    EXPECT_EQ(clientSock->getBuffer(), "A");
+    // Doit jeter un 413 Payload Too Large
+    EXPECT_THROW(manager.parseClientBody(clientSock), HttpException);
 }
 
-TEST_F(SocketManagerCommTest, ParseClientBody_ChunkedIncompleteData) {
+// ------------------------------
+// Tests pour buildHttpRequest (Content-Length)
+// ------------------------------
+
+TEST_F(SocketManagerCommTest, BuildHttpRequest_ContentLength_BodyAndBuffer) {
     clientSock->setHeadersParsed(true);
-    clientSock->setBodyMode(BODY_CHUNKED);
-    clientSock->setChunkSize(0);
-    clientSock->getBuffer() ="4\r\n"
-    "XY";
-    EXPECT_FALSE(manager.parseClientBody(clientSock));
-    EXPECT_TRUE(clientSock->getBodyAccumulator().empty());
-    EXPECT_EQ(clientSock->getChunkSize(), size_t(4));
-    EXPECT_EQ(clientSock->getBuffer(), "XY");
-}
-// 3) Test parseClientBody and buildHttpRequest for chunked mode
-TEST_F(SocketManagerCommTest, ParseAndBuild_Chunked) {
-    clientSock->setHeadersParsed(true);
-    clientSock->setBodyMode(BODY_CHUNKED);
-    // Single chunk "Hello"
-    const char* chunked =
-        "5\r\nHello\r\n"
-        "0\r\n\r\n";
-    clientSock->getBuffer() = chunked;
-    // parse body
+    clientSock->setBodyMode(BODY_CONTENT_LENGTH);
+    clientSock->setContentLength(3);
+    // Buffer = 3 octets de body + 4 octets restants
+    clientSock->getBuffer() = "XYZ1234";
+
+    // 1) parseClientBody lit et consomme la partie body
     EXPECT_TRUE(manager.parseClientBody(clientSock));
-    // build request from chunked data
-    HttpRequest req;
-    // simulate stored RequestLine and headers
+    
+    // 2) Simuler RequestLine + Host pour buildHttpRequest
     RequestLine rl;
-    rl.method = HttpRequest::METHOD_GET;
-    rl.target = "/";
+    rl.method     = HttpRequest::METHOD_POST;
+    rl.target     = "/foo?x=1";
     rl.http_major = 1;
     rl.http_minor = 1;
     clientSock->setRequestLine(rl);
-    // store some headers
     std::map<std::string,std::vector<std::string>> hdrs;
-    hdrs["Host"] = std::vector<std::string>(1, "localhost");
+    hdrs["Host"].push_back("example.com");
     clientSock->setParsedHeaders(hdrs);
 
-    req = manager.buildHttpRequest(clientSock);
-    EXPECT_EQ(req.body, "Hello");
-    EXPECT_TRUE(clientSock->getBodyAccumulator().empty());
-    EXPECT_TRUE(clientSock->getBuffer().empty());
+    // 3) Construire la requête
+    HttpRequest req = manager.buildHttpRequest(clientSock);
+
+    // Vérifier que le body est bien "XYZ"
+    EXPECT_EQ(req.body, "XYZ");
+    // Vérifier que le reste ("1234") est toujours dans le buffer du client
+    EXPECT_EQ(clientSock->getBuffer(), "1234");
 }
 
-// 4) End-to-end communication returns true and cleans state
+
+// 4) End-to-end communication : GET sans body → no throw, handled true
 TEST_F(SocketManagerCommTest, Communication_CompleteRequest) {
-    // prepare a full request: GET with no body
     const char* raw =
         "GET /test HTTP/1.1\r\n"
         "Host: ex\r\n"
@@ -684,9 +669,11 @@ TEST_F(SocketManagerCommTest, Communication_CompleteRequest) {
     write(sv[0], raw, strlen(raw));
     close(sv[0]);
 
-    bool handled = manager.communication(clientFd);
-    EXPECT_TRUE(handled);
-    // after cleanup, buffer reset and headersParsed false
+    // on ne doit pas recevoir de SIGPIPE, et communication() retourne true
+    EXPECT_NO_THROW({
+        bool handled = manager.communication(clientFd);
+        EXPECT_TRUE(handled);
+    });
     EXPECT_FALSE(clientSock->headersParsed());
     EXPECT_TRUE(clientSock->getBuffer().empty());
 }

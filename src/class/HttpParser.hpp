@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:17:22 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/19 15:10:15 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/19 16:06:32 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,13 +21,6 @@
 #include <unistd.h>  // pour read()
 #include "HttpRequest.hpp"
 #include "RequestLine.hpp"
-
-
-
-
-
-
-
 #include <string>
 #include <map>
 #include <vector>

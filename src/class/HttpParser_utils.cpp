@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 11:45:44 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/19 14:55:26 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/19 16:04:41 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,12 +17,7 @@
 #include <iostream>
 #include <sstream> // pour stringstream si besoin
 #include "HttpException.hpp"
-
-// Utility : décodage %xx dans une chaîne
-// HttpParser.cpp
-
 #include "HttpParser.hpp"
-#include "HttpException.hpp"
 #include <cstdlib>   // pour strtol
 #include <cctype>    // pour isxdigit
 

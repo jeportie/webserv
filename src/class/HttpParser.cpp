@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:17:24 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/19 15:11:20 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/19 16:45:18 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ RequestLine HttpParser::parseRequestLine(const std::string& line) {
   } else {
     rl.http_major = rl.http_minor = 0;
   }
-  if (!(rl.http_major == '1' && ( rl.http_minor == '0' || rl.http_minor == '1')))
+  if (!(rl.http_major == 1 && ( rl.http_minor == 0 || rl.http_minor == 1)))
     throw HttpException(505, "HTTP Version Not Supported");
 
   return rl;
@@ -106,11 +106,6 @@ HttpParser::parseHeaders(const std::string& hdr_block)
 
         start = end + 2;
     }
-    if (name.length() > MAX_FIELD_NAME || value.length() > MAX_FIELD_VALUE)
-      throw HttpException(431, "Request Header Fields Too Large");
-
-    if (containsCtl(name) || containsCtl(value))
-      throw HttpException(400, "Bad Request");
     return headers;
 }
 
@@ -146,13 +141,13 @@ void HttpParser::splitTarget(const std::string& target, std::string& outPath, st
 
 void HttpParser::parsePathAndQuerry(std::string path, std::string raw_query)
 {
-  if (outPath.empty() || outPath[0] != '/')
+  if (path.empty() || path[0] != '/')
       throw HttpException(400, "Bad Request");
-  if (outPath.size() > MAX_URI_LEN)
+  if (path.size() > MAX_URI_LEN)
       throw HttpException(414, "URI Too Long");
-  if (pathEscapesRoot(outPath))
+  if (pathEscapesRoot(path))
       throw HttpException(403, "Forbidden");
-  if (outRawQuery.size() > MAX_QUERY_LEN)
+  if (raw_query.size() > MAX_QUERY_LEN)
       throw HttpException(414, "URI Too Long");
 }
 

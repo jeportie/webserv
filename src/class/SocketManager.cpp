@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/19 15:10:58 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/19 17:32:38 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -347,7 +347,6 @@ static size_t hexToSize(const std::string& hex)
     iss >> std::hex >> result;
 	if (result == SIZE_MAX)
     	throw HttpException(400, "Bad Request");                     // taille invalide
-
 	if (result > MAX_CHUNK_SIZE)
     	throw HttpException(413, "Payload Too Large");               // chunk trop gros
     return result;
@@ -360,6 +359,8 @@ bool SocketManager::parseClientBody(ClientSocket* client)
 	
     if (mode == BODY_CONTENT_LENGTH) {
 		size_t needed = client->getContentLength();
+		if (needed > MAX_BODY_SIZE)
+			throw HttpException(413, "Payload Too Large");
         if (buf.size() < needed) return false;
         // leave body in buffer until buildHttpRequest
         return true;
@@ -463,15 +464,15 @@ bool SocketManager::communication(int fd)
 	{
 		
 		if (!readFromClient(fd))
-		return false;
+			return false;
 		
 		// 2) Parser les en-têtes si ce n'est pas déjà fait
 		if (!parseClientHeaders(client))
-		return false;
+			return false;
 		
 		// 3) Parser ou accumuler le corps (mode Content-Length ou chunked)
 		if (!parseClientBody(client))
-		return false;
+			return false;
 		
 		// 4) Construire l'objet HttpRequest complet
 		HttpRequest req = buildHttpRequest(client);

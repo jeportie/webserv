@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 13:54:53 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/15 17:47:02 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/19 16:23:07 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,17 @@
 #include "../src/class/SocketManager.hpp"
 #undef private
 #undef protected
+#include "../src/class/HttpException.hpp"
 
 
 // test/HttpParserTest.cpp
+
+// ----------------------
+// Tests pour parseMethod
+// ----------------------
+// test/HttpParserTest.cpp
+
+
 
 // ----------------------
 // Tests pour parseMethod
@@ -44,27 +52,39 @@ TEST(ParseMethod, RejectsUnknownOrEmpty) {
 // Tests pour parseRequestLine
 // ------------------------------
 TEST(ParseRequestLine, ValidRequestLine) {
-    RequestLine rl = HttpParser::parseRequestLine("GET /foo/bar?x=1 HTTP/1.1");
-    EXPECT_EQ(rl.method,     HttpRequest::METHOD_GET);
-    EXPECT_EQ(rl.target,     "/foo/bar?x=1");
-    EXPECT_EQ(rl.http_major, 1);
-    EXPECT_EQ(rl.http_minor, 1);
+    EXPECT_NO_THROW({
+        RequestLine rl = HttpParser::parseRequestLine("GET /foo/bar?x=1 HTTP/1.1");
+        EXPECT_EQ(rl.method,     HttpRequest::METHOD_GET);
+        EXPECT_EQ(rl.target,     "/foo/bar?x=1");
+        EXPECT_EQ(rl.http_major, 1);
+        EXPECT_EQ(rl.http_minor, 1);
+    });
 }
 
 TEST(ParseRequestLine, TooFewTokens) {
-    RequestLine rl = HttpParser::parseRequestLine("BADREQUEST");
-    EXPECT_EQ(rl.method,     HttpRequest::METHOD_INVALID);
-    EXPECT_TRUE(rl.target.empty());
-    EXPECT_EQ(rl.http_major, 0);
-    EXPECT_EQ(rl.http_minor, 0);
+    try {
+        HttpParser::parseRequestLine("BADREQUEST");
+        FAIL() << "Expected HttpException";
+    }
+    catch (const HttpException& e) {
+        EXPECT_EQ(e.status(), 400);
+    }
+    catch (...) {
+        FAIL() << "Expected HttpException";
+    }
 }
 
 TEST(ParseRequestLine, BadVersionFormat) {
-    RequestLine rl = HttpParser::parseRequestLine("POST / HTTP/X.Y");
-    EXPECT_EQ(rl.method,     HttpRequest::METHOD_POST);
-    EXPECT_EQ(rl.target,     "/");
-    EXPECT_EQ(rl.http_major, 0);
-    EXPECT_EQ(rl.http_minor, 0);
+    try {
+        HttpParser::parseRequestLine("POST / HTTP/X.Y");
+        FAIL() << "Expected HttpException";
+    }
+    catch (const HttpException& e) {
+        EXPECT_EQ(e.status(), 505);
+    }
+    catch (...) {
+        FAIL() << "Expected HttpException";
+    }
 }
 
 // ------------------------------
@@ -78,24 +98,29 @@ TEST(ParseHeaders, ParsesMultipleValidLines) {
         "\r\n";
     auto m = HttpParser::parseHeaders(hdrs);
     ASSERT_EQ(m.size(), 3u);
-    EXPECT_EQ(m["Host"][0],             "example.com");
-    EXPECT_EQ(m["Content-Type"][0],     "text/plain");
-    EXPECT_EQ(m["X-Custom-Header"][0],  "42");
+    EXPECT_EQ(m["Host"][0],            "example.com");
+    EXPECT_EQ(m["Content-Type"][0],    "text/plain");
+    EXPECT_EQ(m["X-Custom-Header"][0], "42");
 }
 
 TEST(ParseHeaders, SkipsMalformedLines) {
+    // Maintenant, un header sans « : » ou valeur vide est considéré comme BAD REQUEST
     std::string hdrs =
         "Good: yes\r\n"
-        "NoColonLine\r\n"      // doit être ignorée
-        " AlsoBad :\r\n"       // value vide apres trim → ignorée
+        "NoColonLine\r\n"      // pas de « : »
+        "AlsoBad:   \r\n"      // valeur vide après trim
         "Another: one\r\n"
         "\r\n";
-    auto m = HttpParser::parseHeaders(hdrs);
-    ASSERT_EQ(m.size(), 2u);
-    EXPECT_EQ(m.count("Good"),    1u);
-    EXPECT_EQ(m.count("Another"), 1u);
-    EXPECT_EQ(m["Good"][0],          "yes");
-    EXPECT_EQ(m["Another"][0],       "one");
+    try {
+        HttpParser::parseHeaders(hdrs);
+        FAIL() << "Expected HttpException";
+    }
+    catch (const HttpException& e) {
+        EXPECT_EQ(e.status(), 400);
+    }
+    catch (...) {
+        FAIL() << "Expected HttpException";
+    }
 }
 
 
