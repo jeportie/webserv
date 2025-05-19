@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 17:09:54 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/19 11:03:41 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/19 11:16:45 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -365,6 +365,7 @@ TEST(ParserTest, ParseServerBlock) {
         ASSERT_EQ(config.routes.size(), 1);
         RouteConfig& route = config.routes["/img/"];
         
+        EXPECT_EQ(route.path, "/img/");
         EXPECT_EQ(route.root, "/data/img");
         EXPECT_FALSE(route.autoindex);
         EXPECT_EQ(route.allowedMethods.size(), 1);

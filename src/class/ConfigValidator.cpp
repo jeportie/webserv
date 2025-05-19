@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 16:31:54 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/16 16:37:47 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/19 11:44:23 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,6 +101,8 @@ void ConfigValidator::validateServer(const ServerConfig& config)
 
     for (std::map<int, std::string>::const_iterator it = config.error_pages.begin(); it != config.error_pages.end(); ++it)
     {
+        if (it->first < 400 || it->first > 599)
+            throw std::runtime_error("Invalid HTTP status code in error_page");
         if (it->second.empty())
             throw std::runtime_error("error_page URL must not be empty");
     }
@@ -116,12 +118,6 @@ void ConfigValidator::validateServer(const ServerConfig& config)
         {
             throw std::runtime_error("Invalid allowed method: " + config.allowedMethods[i]);
         }
-    }
-
-    for (std::map<int, std::string>::const_iterator it = config.error_pages.begin(); it != config.error_pages.end(); ++it)
-    {
-        if (it->first < 100 || it->first > 599)
-            throw std::runtime_error("Invalid HTTP status code in error_page");
     }
 
     for (std::map<std::string, RouteConfig>::const_iterator it = config.routes.begin(); it != config.routes.end(); ++it) 
@@ -165,6 +161,8 @@ void ConfigValidator::validateRoute(const RouteConfig& route) {
     {
         if (it->first < 100 || it->first > 599)
             throw std::runtime_error("Invalid HTTP status code");
+        if (it->second.empty())
+            throw std::runtime_error("return code directive must not be empty");
     }
     
 }
