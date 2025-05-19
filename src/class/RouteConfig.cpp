@@ -21,6 +21,8 @@ RouteConfig::RouteConfig()
       returnCodes(),
       cgiExecutor(),
       uploadEnabled(false),
-      uploadStore("")
+      uploadStore(""),
+      indexFiles(),
+      indexIsSet(false)
 {
 }

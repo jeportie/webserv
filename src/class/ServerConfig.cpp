@@ -21,6 +21,8 @@ ServerConfig::ServerConfig()
       error_pages(),
       client_max_body_size(1048576),
       routes(),
+      indexFiles(),
+      indexIsSet(false),
       listenIsSet(false),
       rootIsSet(false)
 {

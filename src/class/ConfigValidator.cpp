@@ -21,6 +21,10 @@
 
 
 #include "ConfigValidator.hpp"
+#include <sstream>
+#include <cstdlib>
+#include <stdexcept>
+#include <set>
 
 
 ConfigValidator::ConfigValidator(){};
@@ -139,11 +143,10 @@ void ConfigValidator::validateRoute(const RouteConfig& route) {
         throw std::runtime_error("A route cannot have both root and return directives at the same time");
 
     if (!route.defaultFile.empty() && route.defaultFile.find('/') == 0)
-    throw std::runtime_error("default_file must be a relative filename (not starting with /)");
-
+        throw std::runtime_error("default_file must be a relative filename (not starting with /)");
 
     if (route.defaultFile.find('/') != std::string::npos)
-    throw std::runtime_error("default_file must not contain '/'");
+        throw std::runtime_error("default_file must not contain '/'");
 
     for (std::map<int, std::string>::const_iterator it = route.returnCodes.begin(); it != route.returnCodes.end(); ++it)
     {

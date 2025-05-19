@@ -171,7 +171,7 @@ Token Lexer::parsePathLike()
     while (!isAtEnd())
     {
         char c = peek();
-        if (std::isalnum(c) || c == '/' || c == '.' || c == '-' || c == '_')
+        if (std::isalnum(c) || c == '/' || c == '.' || c == '-' || c == '_' || c == ':')
         {
             value += get();
         }

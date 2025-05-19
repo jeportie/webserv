@@ -14,7 +14,9 @@
 #ifndef ROUTECONFIG_HPP
 # define ROUTECONFIG_HPP
 
-# include "Parser.hpp"
+# include <string>
+# include <vector>
+# include <map>
 
 struct RouteConfig {
     std::string path; // le chemin de la route, ex: /images
@@ -26,6 +28,8 @@ struct RouteConfig {
     std::pair<std::string, std::string> cgiExecutor; // ex: ".php" => "/usr/bin/php-cgi"
     bool uploadEnabled;
     std::string uploadStore;
+    std::vector<std::string> indexFiles; 
+    bool indexIsSet;              // Flag to indicate if index directive is set
     RouteConfig();
 };
 

@@ -22,6 +22,8 @@
 # include "ClientSocket.hpp"
 # include "Timer.hpp"
 # include "Callback.hpp"
+# include "Parser.hpp"
+# include "ConfigValidator.hpp"
 
 /**
  * @brief Manages server and client sockets
@@ -39,12 +41,15 @@ public:
     SocketManager& operator=(const SocketManager& rhs);
 
     /**
-     * @brief Initializes the server connection
-     * Creates a server socket, binds it to a port, and starts listening
-     * for connections. Then creates an epoll instance and registers the
-     * server socket with it.
+     * @brief Initializes server connections based on configuration
+     * 
+     * Creates server sockets for each configured server, binds them to the specified
+     * host:port combinations, and starts listening for connections. Then creates an
+     * epoll instance and registers all server sockets with it.
+     * 
+     * @param configs Vector of server configurations
      */
-    void init_connect(void);
+    void init_connect_with_config(const std::vector<ServerConfig>& configs);
 
     /**
      * @brief Handles communication with a client
@@ -167,16 +172,22 @@ public:
      */
     int cancelCallbacksForFd(int fd);
 
+
     int getServerSocket(void) const;
     int getClientSocket(void) const;
 
 private:
-    ServerSocket				 _serverSocket;	  ///< The server socket
-    std::map<int, ClientSocket*> _clientSockets;  ///< Map of client sockets by file descriptor
-    int							 _serverSocketFd; ///< Server socket file descriptor
-    int							 _clientSocketFd; ///< Client socket file descriptor (most recent)
-    std::priority_queue<Timer>  _timerQueue;      ///< Priority queue of timers
-    CallbackManager				_callbackManager;  ///< Callback manager
+
+    std::map<int, ServerSocket*>	_serverSockets;  // Map of server sockets by file descriptor
+    std::map<int, ServerConfig>		_serverConfigs;  // Map of server configurations by server socket fd
+    std::map<int, ClientSocket*>	_clientSockets;  ///< Map of client sockets by file descriptor
+    int								_serverSocketFd; ///< Server socket file descriptor
+    int								_clientSocketFd; ///< Client socket file descriptor (most recent)
+    std::priority_queue<Timer>		_timerQueue;      ///< Priority queue of timers
+    CallbackManager					_callbackManager;  ///< Callback manager
+	
+    // Helper method to register a server socket with epoll
+    void registerServerSocketToEpoll(int epoll_fd, int server_socket_fd);
 };
 
 #endif  // ************************************************ SOCKETMANAGER_HPP //

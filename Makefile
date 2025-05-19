@@ -26,17 +26,17 @@ SRC = \
   src/class/Socket.cpp \
   src/class/ConfigValidator.cpp \
   src/class/Lexer.cpp \
-  src/class/Parser.cpp \
   src/class/RouteConfig.cpp \
-  src/class/ServerConfig.cpp \
+  src/class/SocketManager.cpp \
   src/class/Callback.cpp \
   src/class/CallbackManager.cpp \
   src/class/CallbackQueue.cpp \
   src/class/ClientSocket.cpp \
   src/class/ErrorHandler.cpp \
   src/class/ServerSocket.cpp \
-  src/class/SocketManager.cpp \
-  src/class/Timer.cpp 
+  src/class/Timer.cpp \
+  src/class/ServerConfig.cpp \
+  src/class/Parser.cpp 
 ### END AUTO GENERATED FILES ###
 
 # Create object for main.cpp

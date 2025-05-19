@@ -47,11 +47,11 @@ int main(int argc, char* argv[])
         // Parse configuration
         Lexer lexer(content);
         Parser parser(lexer);
-        std::map<std::string, std::vector<ServerConfig>> serversByHostPort = parser.parseConfigFile();
+        std::map<std::string, std::vector<ServerConfig> > serversByHostPort = parser.parseConfigFile();
         
         // Extract all server configs into a flat vector
         std::vector<ServerConfig> serverConfigs;
-        for (std::map<std::string, std::vector<ServerConfig>>::iterator it = serversByHostPort.begin();
+        for (std::map<std::string, std::vector<ServerConfig> >::iterator it = serversByHostPort.begin();
              it != serversByHostPort.end(); ++it) {
             for (size_t i = 0; i < it->second.size(); ++i) {
                 serverConfigs.push_back(it->second[i]);

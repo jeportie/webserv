@@ -46,6 +46,7 @@ class Parser
         std::vector<std::string> parseAllowedMethodsDirective();
         std::map<int, std::string> parseErrorPagesDirective();
         size_t parseClientMaxBodySizeDirective();
+        std::vector<std::string> parseIndexDirective();
         std::map<std::string, RouteConfig> parseLocationBlocks();
         
         //location bloc directive

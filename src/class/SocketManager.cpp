@@ -29,6 +29,14 @@ SocketManager::SocketManager(void)
 
 SocketManager::~SocketManager(void)
 {
+    // Clean up server sockets
+    for (std::map<int, ServerSocket*>::iterator it = _serverSockets.begin();
+         it != _serverSockets.end(); ++it)
+    {
+        delete it->second;
+    }
+    _serverSockets.clear();
+    
     // Clean up client sockets
     for (std::map<int, ClientSocket*>::iterator it = _clientSockets.begin();
          it != _clientSockets.end(); ++it)
@@ -39,27 +47,64 @@ SocketManager::~SocketManager(void)
 }
 
 /**
- * @brief Initializes the server connection
+ * @brief Initializes server connections based on configuration
  * 
- * Creates a server socket, binds it to a port, and starts listening
- * for connections. Then creates an epoll instance and registers the
- * server socket with it.
+ * Creates server sockets for each configured server, binds them to the specified
+ * host:port combinations, and starts listening for connections. Then creates an
+ * epoll instance and registers all server sockets with it.
+ * 
+ * @param configs Vector of server configurations
  */
-void SocketManager::init_connect(void)
+void SocketManager::init_connect_with_config(const std::vector<ServerConfig>& configs)
 {
-    // Create, bind, and listen on the server socket
-    if (!_serverSocket.safeBind(PORT, ""))
-        THROW_ERROR(CRITICAL, SOCKET_ERROR, "Failed to bind server socket", "SocketManager::init_connect");
+    // Create a server socket for each configured server
+    for (size_t i = 0; i < configs.size(); ++i)
+    {
+        const ServerConfig& config = configs[i];
+        
+        ServerSocket* serverSocket = new ServerSocket();
+        if (!serverSocket->safeBind(config.port, config.host))
+        {
+            std::stringstream ss;
+            ss << "Failed to bind server socket on " << config.host << ":" << config.port;
+            LOG_ERROR(ERROR, SOCKET_ERROR, ss.str(), "SocketManager::init_connect_with_config");
+            delete serverSocket;
+            continue; // Try to bind other servers even if one fails
+        }
+        
+        serverSocket->safeListen(10);
+        int serverSocketFd = serverSocket->getFd();
+        
+        // Store the server socket and its configuration
+        _serverSockets[serverSocketFd] = serverSocket;
+        _serverConfigs[serverSocketFd] = config;
+        
+        std::cout << "Server listening on " << config.host << ":" << config.port << std::endl;
+    }
     
-    _serverSocket.safeListen(10);
-    _serverSocketFd = _serverSocket.getFd();
+    // If no servers were successfully bound, throw an error
+    if (_serverSockets.empty())
+    {
+        THROW_ERROR(CRITICAL, SOCKET_ERROR, "Failed to bind any server sockets", 
+                   "SocketManager::init_connect_with_config");
+    }
     
+    // Create epoll instance
     int epoll_fd = epoll_create(1);
     if (epoll_fd < 0)
-        THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "Failed to create epoll instance", "SocketManager::init_connect");
+    {
+        THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "Failed to create epoll instance", 
+                          "SocketManager::init_connect_with_config");
+    }
     
-    safeRegisterToEpoll(epoll_fd);
-    std::cout << "Server listening on port " << PORT << std::endl;
+    // Register all server sockets with epoll
+    for (std::map<int, ServerSocket*>::iterator it = _serverSockets.begin();
+         it != _serverSockets.end(); ++it)
+    {
+        registerServerSocketToEpoll(epoll_fd, it->first);
+    }
+    
+    // Start the event loop
     eventLoop(epoll_fd);
 }
 
@@ -128,12 +173,16 @@ void SocketManager::eventLoop(int epoll_fd, int timeout_ms)
             int fd = events[i].data.fd;
             uint32_t ev = events[i].events;
     
-            if ((ev & EPOLLIN) && fd == _serverSocketFd)
+            // Check if this is a server socket
+            std::map<int, ServerSocket*>::iterator server_it = _serverSockets.find(fd);
+            if ((ev & EPOLLIN) && server_it != _serverSockets.end())
             {
                 // New connection on the server socket
                 try
                 {
-                    ClientSocket* client = _serverSocket.safeAccept(epoll_fd);
+                    // Get the server socket from the map
+                    ServerSocket* serverSocket = _serverSockets[fd];
+                    ClientSocket* client = serverSocket->safeAccept(epoll_fd);
                     if (client)
                     {
                         _clientSocketFd = client->getFd();
@@ -434,7 +483,12 @@ void SocketManager::communication(int fd)
  */
 int SocketManager::setNonBlockingServer(int fd)
 {
-    return _serverSocket.setNonBlocking(fd);
+    // Find the server socket in the map
+    std::map<int, ServerSocket*>::iterator it = _serverSockets.find(fd);
+    if (it != _serverSockets.end()) {
+        return it->second->setNonBlocking(fd);
+    }
+    return -1;
 }
 
 /**
@@ -473,6 +527,27 @@ void SocketManager::safeRegisterToEpoll(int epoll_fd)
     if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, _serverSocketFd, &ev) == -1)
         THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "Failed to add server socket to epoll", "SocketManager::safeRegisterToEpoll");
 }
+
+/**
+ * @brief Registers a server socket with epoll
+ * 
+ * @param epoll_fd The epoll file descriptor
+ * @param server_socket_fd The server socket file descriptor to register
+ */
+void SocketManager::registerServerSocketToEpoll(int epoll_fd, int server_socket_fd)
+{
+    struct epoll_event ev;
+    ev.events = EPOLLIN;
+    ev.data.fd = server_socket_fd;
+
+    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, server_socket_fd, &ev) == -1)
+    {
+        std::stringstream ss;
+        ss << "Failed to add server socket (fd=" << server_socket_fd << ") to epoll";
+        THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, ss.str(), "SocketManager::registerServerSocketToEpoll");
+    }
+}
+
 
 int SocketManager::getServerSocket(void) const { return _serverSocketFd; }
 
