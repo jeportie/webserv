@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/19 11:17:02 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/19 11:25:21 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/19 15:26:44 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,10 @@ HttpException::HttpException(int status,
 	const std::string &reason) : _status(status), _reason(reason)
 {
 }
+
+HttpException::~HttpException() throw() 
+{}
+
 
 int HttpException::status() const
 {
