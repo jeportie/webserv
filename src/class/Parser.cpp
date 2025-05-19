@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 16:21:43 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/16 16:55:03 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/19 10:56:37 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -403,9 +403,6 @@ ServerConfig Parser::parseServerBlock() {
             config.root = parseRootDirective();
             config.rootIsSet = true;
         }
-        else if (current().value == "autoindex") {
-            config.autoindex = parseAutoindexDirective();
-        }
        else if (current().value == "allowed_methods") {
             config.allowedMethods = parseAllowedMethodsDirective();
         }
@@ -415,24 +412,8 @@ ServerConfig Parser::parseServerBlock() {
         else if (current().value == "client_max_body_size") {
             config.client_max_body_size = parseClientMaxBodySizeDirective();
         }
-        else if (current().value == "default_file") {
-            config.defaultFile = parseDefaultFileDirective();
-        }
-        else if (current().value == "cgi_executor") {
-            config.cgiExecutor = parseCgiExecutorsDirective();
-        }
-        else if (current().value == "upload_enable") {
-            config.uploadEnabled = parseUploadEnabledDirective();
-        }
-        else if (current().value == "upload_store") {
-            config.uploadStore = parseUploadStoreDirective();
-        }
         else if (current().value == "location") {
             config.routes = parseLocationBlocks();
-        }
-        else if (current().value == "return") {
-
-            config.returnCodes = parseReturnDirective();
         }
         else {
             throw std::runtime_error("Unknown directive in server block: " + current().value);

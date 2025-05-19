@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 17:09:54 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/16 16:56:18 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/19 11:03:41 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -338,7 +338,7 @@ TEST(ParserTest, ParseLocationBlocks) {
 
 TEST(ParserTest, ParseServerBlock) {
     std::string input =
-        "server { listen 8080; server_name example.com; root /var/www; autoindex on; "
+        "server { listen 8080; server_name example.com; root /var/www;  "
         "allowed_methods GET POST; error_page 404 /errors/404.html; "
         "location /img/ { root /data/img; autoindex off; allowed_methods GET; "
         "return 301 /moved; cgi_executor .php /usr/bin/php-cgi; "
@@ -353,7 +353,6 @@ TEST(ParserTest, ParseServerBlock) {
         // Vérifications des attributs de ServerConfig
         EXPECT_EQ(config.port, 8080);
         EXPECT_EQ(config.root, "/var/www");
-        EXPECT_TRUE(config.autoindex);
         EXPECT_EQ(config.serverNames.size(), 1);
         EXPECT_EQ(config.serverNames[0], "example.com");
         EXPECT_EQ(config.allowedMethods.size(), 2);
