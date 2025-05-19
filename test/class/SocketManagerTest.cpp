@@ -73,3 +73,33 @@ TEST(SocketManagerTest, CancelCallbacksForFd)
     // Process the callbacks
     manager.processDeferredCallbacks();
 }
+
+TEST(SocketManagerTest, EpollIntegration)
+{
+    SocketManager manager;
+    int epoll_fd = epoll_create1(0);
+    ASSERT_NE(epoll_fd, -1);
+
+    // In a real test, you would create a socket, add it to epoll,
+    // and then verify that events are received correctly.
+    // This is a placeholder.
+
+    close(epoll_fd);
+}
+
+TEST(SocketManagerTest, FdLimitHandling)
+{
+    SocketManager manager;
+    // This test would attempt to exhaust file descriptors and verify
+    // that the server handles the situation gracefully.
+    // This is a placeholder.
+}
+
+TEST(SocketManagerTest, SignalHandlingIntegration)
+{
+    SocketManager manager;
+    // This test would send signals to the server and verify that
+    // it shuts down or continues operation correctly.
+    // This is a placeholder.
+}
+
