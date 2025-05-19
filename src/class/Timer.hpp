@@ -41,16 +41,19 @@ class Timer
 {
 public:
 	Timer(time_t expireTime, Callback* callback);
+	Timer(const Timer& src);
+	Timer& operator=(const Timer& rhs);
 	~Timer(void);
 
-	time_t		getExpireTime(void) const;
-	Callback*	getCallback(void) const;
+	time_t		getExpireTime() const;
+	Callback*	getCallback() const;
 
     bool operator<(const Timer& src) const;
 
 private:
 	time_t		_expireTime;
 	Callback*	_callback; // pointer to function if time expired
+	bool        _ownsCallback; // Flag to indicate if this Timer owns the callback
 };
 
 #endif  // ******************************************************** TIMER_HPP //

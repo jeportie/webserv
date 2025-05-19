@@ -15,9 +15,39 @@
 Timer::Timer(time_t expireTime, Callback* callback)
 : _expireTime(expireTime)
 , _callback(callback)
+, _ownsCallback(true) // Timer owns the callback by default
 {}
 
-Timer::~Timer() { delete _callback; }
+Timer::Timer(const Timer& src)
+: _expireTime(src._expireTime)
+, _callback(src._callback ? new Callback(*src._callback) : NULL)
+, _ownsCallback(src._callback != NULL) // Only own if the original had a callback
+{}
+
+Timer& Timer::operator=(const Timer& rhs) {
+    if (this != &rhs) {
+        _expireTime = rhs._expireTime;
+        // Clean up existing callback if we own it
+        if (_ownsCallback && _callback) {
+            delete _callback;
+        }
+        // Copy the callback and update ownership
+        if (rhs._callback) {
+            _callback = new Callback(*rhs._callback);
+            _ownsCallback = true;
+        } else {
+            _callback = NULL;
+            _ownsCallback = false;
+        }
+    }
+    return *this;
+}
+
+Timer::~Timer() {
+    if (_ownsCallback && _callback) {
+        delete _callback;
+    }
+}
 
 time_t Timer::getExpireTime() const { return _expireTime; }
 

@@ -13,10 +13,12 @@
 #include "include/webserv.h"
 #include "src/class/SocketManager.hpp"
 #include "src/class/ErrorHandler.hpp"
+#include "src/class/ConfigValidator.hpp"
+#include "src/class/Parser.hpp"
 #include <stdexcept>
 #include <iostream>
 
-int main()
+int main(int argc, char* argv[])
 {
     // Initialize error handler
     ErrorHandler& errorHandler = ErrorHandler::getInstance();
@@ -25,17 +27,50 @@ int main()
     errorHandler.setLogLevel(INFO);
     errorHandler.setLogFile("webserv.log");
     
-    try
+ try
     {
-        std::cout << "Starting webserv on port " << PORT << std::endl;
+        if (argc < 2)
+			throw std::runtime_error("Format: ./webserv <config_file.conf>");
+
+		std::string configPath = argv[1];
+        // Read configuration file
+        std::ifstream configFile(configPath.c_str());
+        if (!configFile.is_open()) {
+            throw std::runtime_error("Failed to open configuration file: " + configPath);
+        }
+        
+        // Read file content into string
+        std::stringstream buffer;
+        buffer << configFile.rdbuf();
+        std::string content = buffer.str();
+        
+        // Parse configuration
+        Lexer lexer(content);
+        Parser parser(lexer);
+        std::map<std::string, std::vector<ServerConfig>> serversByHostPort = parser.parseConfigFile();
+        
+        // Extract all server configs into a flat vector
+        std::vector<ServerConfig> serverConfigs;
+        for (std::map<std::string, std::vector<ServerConfig>>::iterator it = serversByHostPort.begin();
+             it != serversByHostPort.end(); ++it) {
+            for (size_t i = 0; i < it->second.size(); ++i) {
+                serverConfigs.push_back(it->second[i]);
+            }
+        }
+        
+        // Validate configuration
+        ConfigValidator validator;
+        validator.validate(serverConfigs);
+        
+        // Initialize socket manager with configuration
         SocketManager socketManager;
-
+        
         // Log server start
-        std::stringstream ss;
-        ss << PORT;
-        errorHandler.logError(INFO, INTERNAL_ERROR, "Server starting on port " + ss.str(), "main");
-
-        socketManager.init_connect();
+        errorHandler.logError(INFO, INTERNAL_ERROR, 
+                             "Server starting with configuration from " + configPath, "main");
+        
+        // Initialize server with configuration
+        socketManager.init_connect_with_config(serverConfigs);
     }
     catch (const std::runtime_error& e)
     {
