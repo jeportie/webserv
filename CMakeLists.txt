@@ -6,12 +6,12 @@
 #    By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/04/16 14:48:08 by jeportie          #+#    #+#              #
-#    Updated: 2025/04/29 10:38:39 by jeportie         ###   ########.fr        #
+#    Updated: 2025/04/17 14:16:38 by jeportie         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 cmake_minimum_required(VERSION 3.10)
-project(UnitTester LANGUAGES CXX)
+project(Interface LANGUAGES CXX)
 
 # Set C++ standard and compilation flags
 set(CMAKE_CXX_STANDARD 98)

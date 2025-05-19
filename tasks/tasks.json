@@ -63,14 +63,14 @@
     {
       "id": 2,
       "title": "Implement Event Loop with poll()",
-      "description": "Create a non-blocking event loop using poll() to handle multiple client connections simultaneously.",
-      "details": "Implement an EventLoop class that:\n1. Uses poll() to monitor file descriptors for read/write readiness\n2. Maintains a collection of active client connections\n3. Handles events for server sockets (new connections) and client sockets (data ready, write ready)\n4. Provides a clean interface for the main server loop\n\nPseudo-code:\n```cpp\nclass EventLoop {\nprivate:\n    std::vector<struct pollfd> poll_fds;\n    std::map<int, ClientConnection> clients;\n    SocketManager& socket_manager;\n    \npublic:\n    EventLoop(SocketManager& sm) : socket_manager(sm) {}\n    void addServerSocket(int server_socket);\n    void addClientSocket(int client_socket, ClientConnection client);\n    void removeSocket(int socket_fd);\n    void run(int timeout_ms = -1);\n    // Event handlers\n    void handleServerEvent(int server_socket);\n    void handleClientReadEvent(int client_socket);\n    void handleClientWriteEvent(int client_socket);\n};\n\nvoid EventLoop::run(int timeout_ms) {\n    int ready = poll(poll_fds.data(), poll_fds.size(), timeout_ms);\n    if (ready <= 0) return; // Timeout or error\n    \n    for (size_t i = 0; i < poll_fds.size(); ++i) {\n        if (poll_fds[i].revents == 0) continue;\n        \n        int fd = poll_fds[i].fd;\n        \n        // Check if this is a server socket\n        if (is_server_socket(fd)) {\n            if (poll_fds[i].revents & POLLIN) {\n                handleServerEvent(fd);\n            }\n        } else {\n            // Client socket\n            if (poll_fds[i].revents & POLLIN) {\n                handleClientReadEvent(fd);\n            }\n            if (poll_fds[i].revents & POLLOUT) {\n                handleClientWriteEvent(fd);\n            }\n            if (poll_fds[i].revents & (POLLERR | POLLHUP | POLLNVAL)) {\n                removeSocket(fd);\n            }\n        }\n    }\n}\n```\n\nImplement the main server loop that initializes the EventLoop and runs it continuously.",
-      "testStrategy": "1. Unit tests for EventLoop class methods\n2. Test with mock poll() implementation to verify correct event handling\n3. Integration test with multiple simultaneous connections\n4. Test handling of various event types (read ready, write ready, errors)\n5. Stress test with many connections to verify scalability\n6. Test timeout behavior and error conditions",
-      "priority": "high",
+      "description": "Create a non-blocking event loop using epoll to handle multiple client connections simultaneously.",
+      "status": "done",
       "dependencies": [
         1
       ],
-      "status": "in-progress",
+      "priority": "high",
+      "details": "Implement an EventLoop class that:\n1. Uses epoll to monitor file descriptors for read/write readiness\n2. Maintains a collection of active client connections\n3. Handles events for server sockets (new connections) and client sockets (data ready, write ready)\n4. Provides a clean interface for the main server loop\n\nPseudo-code:\n```cpp\nclass EventLoop {\nprivate:\n    int epoll_fd;\n    std::map<int, ClientConnection> clients;\n    SocketManager& socket_manager;\n    \npublic:\n    EventLoop(SocketManager& sm) : socket_manager(sm) {\n        epoll_fd = epoll_create1(0);\n        if (epoll_fd == -1) {\n            throw std::runtime_error(\"epoll_create1 failed\");\n        }\n    }\n    ~EventLoop() {\n        close(epoll_fd);\n    }\n    void addServerSocket(int server_socket);\n    void addClientSocket(int client_socket, ClientConnection client);\n    void removeSocket(int socket_fd);\n    void run(int timeout_ms = -1);\n    // Event handlers\n    void handleServerEvent(int server_socket);\n    void handleClientReadEvent(int client_socket);\n    void handleClientWriteEvent(int client_socket);\n};\n\nvoid EventLoop::run(int timeout_ms) {\n    const int MAX_EVENTS = 64;\n    struct epoll_event events[MAX_EVENTS];\n    \n    int ready = epoll_wait(epoll_fd, events, MAX_EVENTS, timeout_ms);\n    if (ready <= 0) return; // Timeout or error\n    \n    for (int i = 0; i < ready; ++i) {\n        int fd = events[i].data.fd;\n        uint32_t event_flags = events[i].events;\n        \n        // Check if this is a server socket\n        if (is_server_socket(fd)) {\n            if (event_flags & EPOLLIN) {\n                handleServerEvent(fd);\n            }\n        } else {\n            // Client socket\n            if (event_flags & EPOLLIN) {\n                handleClientReadEvent(fd);\n            }\n            if (event_flags & EPOLLOUT) {\n                handleClientWriteEvent(fd);\n            }\n            if (event_flags & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)) {\n                removeSocket(fd);\n            }\n        }\n    }\n}\n\nvoid EventLoop::addServerSocket(int server_socket) {\n    struct epoll_event ev;\n    ev.events = EPOLLIN;\n    ev.data.fd = server_socket;\n    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, server_socket, &ev) == -1) {\n        throw std::runtime_error(\"Failed to add server socket to epoll\");\n    }\n}\n\nvoid EventLoop::addClientSocket(int client_socket, ClientConnection client) {\n    struct epoll_event ev;\n    ev.events = EPOLLIN | EPOLLOUT | EPOLLET; // Edge-triggered mode\n    ev.data.fd = client_socket;\n    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_socket, &ev) == -1) {\n        throw std::runtime_error(\"Failed to add client socket to epoll\");\n    }\n    clients[client_socket] = client;\n}\n\nvoid EventLoop::removeSocket(int socket_fd) {\n    epoll_ctl(epoll_fd, EPOLL_CTL_DEL, socket_fd, nullptr);\n    clients.erase(socket_fd);\n    close(socket_fd);\n}\n```\n\nImplement the main server loop that initializes the EventLoop and runs it continuously.",
+      "testStrategy": "1. Unit tests for EventLoop class methods\n2. Test with mock epoll implementation to verify correct event handling\n3. Integration test with multiple simultaneous connections\n4. Test handling of various event types (read ready, write ready, errors)\n5. Stress test with many connections to verify scalability\n6. Test timeout behavior and error conditions\n7. Compare performance between epoll and poll implementations\n8. Test edge-triggered vs level-triggered notification modes",
       "subtasks": [
         {
           "id": 1,
@@ -109,7 +109,7 @@
             3
           ],
           "details": "Create an efficient timer wheel or priority queue for managing timeouts. Support one-shot and recurring timers with millisecond precision. Implement cancellation of pending timeouts. Handle system clock changes and time jumps. Optimize for scenarios with many timers but few expirations. Include jitter mechanisms to prevent thundering herd problems.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -120,7 +120,7 @@
             4
           ],
           "details": "Implement a callback queue with proper lifecycle management. Support different callback types (synchronous, deferred, prioritized). Handle exceptions in callbacks without crashing the event loop. Implement backpressure mechanisms for high load scenarios. Create debugging tools to track callback execution and timing. Support cancellation of pending callbacks.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
@@ -134,7 +134,29 @@
             5
           ],
           "details": "Implement graceful degradation during resource exhaustion (too many FDs, memory pressure). Create recovery mechanisms for system call failures. Handle partial writes and reads correctly. Implement proper cleanup during shutdown sequences. Create extensive logging for debugging event loop issues. Handle edge cases like closed FDs, zombie connections, and resource leaks. Develop stress tests that simulate various failure scenarios.",
-          "status": "pending"
+          "status": "done"
+        },
+        {
+          "id": 7,
+          "title": "Implement epoll-specific functionality",
+          "description": "Update the event loop implementation to use epoll instead of poll",
+          "dependencies": [
+            1,
+            2,
+            3
+          ],
+          "details": "Refactor the existing implementation to use epoll_create1(), epoll_ctl(), and epoll_wait() instead of poll(). Implement proper initialization and cleanup of epoll file descriptor. Update event flags to use EPOLLIN, EPOLLOUT, etc. instead of POLLIN, POLLOUT. Implement edge-triggered notification mode (EPOLLET) for improved performance. Handle epoll-specific error conditions and edge cases.",
+          "status": "done"
+        },
+        {
+          "id": 8,
+          "title": "Optimize for epoll performance characteristics",
+          "description": "Tune the event loop implementation to take advantage of epoll's performance characteristics",
+          "dependencies": [
+            7
+          ],
+          "details": "Benchmark and optimize for epoll's specific performance characteristics. Implement batched event processing for high-throughput scenarios. Tune buffer sizes and event batch sizes for optimal performance. Compare level-triggered vs edge-triggered modes in different scenarios. Document best practices for using the epoll-based event loop.",
+          "status": "done"
         }
       ]
     },

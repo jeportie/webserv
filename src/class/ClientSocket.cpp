@@ -19,6 +19,13 @@
 #include <cstdlib>
 #include "HttpException.hpp"
 #include "HttpLimits.hpp"
+# include "../../include/webserv.h"
+# include "ClientSocket.hpp"
+# include <cstring>
+# include <iostream>
+# include <sstream>
+# include <cerrno>
+# include "ErrorHandler.hpp"
 
 /**
  * @brief Default constructor
@@ -68,15 +75,15 @@ ClientSocket::~ClientSocket(void)
  */
 int ClientSocket::safeFcntl(int fd, int cmd, int flag)
 {
-	int	ret;
-
-	ret = fcntl(fd, cmd, flag);
-	if (ret == -1)
-	{
-		std::cerr << "[Error] fcntl failed on client fd " << fd << ": " << strerror(errno) << std::endl;
-		return (-1);
-	}
-	return (ret);
+    int ret = fcntl(fd, cmd, flag);
+    if (ret == -1)
+    {
+                        std::stringstream ss;
+                        ss << fd;
+                        LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR, "fcntl failed on client fd " + ss.str(), "ClientSocket::safeFcntl");
+        return -1;
+    }
+    return ret;
 }
 
 /**

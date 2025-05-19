@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:23:58 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/19 11:35:29 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/14 13:52:48 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,13 +16,18 @@
 # include <arpa/inet.h>
 # include <map>
 # include <sys/epoll.h>
+# include <queue>
+# include "CallbackManager.hpp"
 # include "ServerSocket.hpp"
 #include "HttpRequest.hpp"
 # include "ClientSocket.hpp"
+# include "Timer.hpp"
+# include "Callback.hpp"
+# include "Parser.hpp"
+# include "ConfigValidator.hpp"
 
 /**
  * @brief Manages server and client sockets
- * 
  * This class is responsible for managing server sockets and client connections.
  * It handles the creation of server sockets, accepting client connections,
  * and managing the event loop for handling I/O events.
@@ -37,17 +42,18 @@ public:
     SocketManager& operator=(const SocketManager& rhs);
 
     /**
-     * @brief Initializes the server connection
+     * @brief Initializes server connections based on configuration
      * 
-     * Creates a server socket, binds it to a port, and starts listening
-     * for connections. Then creates an epoll instance and registers the
-     * server socket with it.
+     * Creates server sockets for each configured server, binds them to the specified
+     * host:port combinations, and starts listening for connections. Then creates an
+     * epoll instance and registers all server sockets with it.
+     * 
+     * @param configs Vector of server configurations
      */
-    void init_connect(void);
+    void init_connect_with_config(const std::vector<ServerConfig>& configs);
 
     /**
      * @brief Handles communication with a client
-     * 
      * Reads data from a client socket and processes it.
      * 
      * @param fd The client socket file descriptor
@@ -55,14 +61,54 @@ public:
     bool communication(int fd);
 
 
+	/**
+	* @brief Static callback function for handling timeouts
+	* 
+	* @param fd The file descriptor that timed out
+	* @param data Pointer to the SocketManager instance
+	*/
+	static void handleTimeout(int fd, void* data);
+
     /**
      * @brief Runs the event loop
-     * 
      * Waits for events on the registered file descriptors and handles them.
      * 
      * @param epoll_fd The epoll file descriptor
+     * @param timeout_ms Timeout in milliseconds, -1 for infinite
      */
-    void eventLoop(int epoll_fd);
+    void eventLoop(int epoll_fd, int timeout_ms = -1);
+
+    /**
+     * @brief Adds a timer to the timer queue
+     * 
+     * @param seconds Seconds from now when the timer should expire
+     * @param callback The callback to execute when the timer expires
+     * @return int Timer ID
+     */
+    int addTimer(int seconds, Callback* callback);
+
+    /**
+     * @brief Cancels a timer
+     * 
+     * @param fd The file descriptor associated with the timer
+     * @return bool True if the timer was found and cancelled
+     */
+    bool cancelTimer(int fd);
+
+    /**
+     * @brief Processes expired timers
+     * 
+     * Checks for expired timers and executes their callbacks.
+     */
+    void processTimers();
+
+    /**
+     * @brief Cleans up resources for a client socket
+     * 
+     * @param fd The client socket file descriptor
+     * @param epoll_fd The epoll file descriptor
+     */
+    void cleanupClientSocket(int fd, int epoll_fd);
 
     /**
      * @brief Sets the server socket to non-blocking mode
@@ -90,16 +136,49 @@ public:
      */
     void safeRegisterToEpoll(int epoll_fd);
 
+	/**
+	* @brief Static callback function for logging new connections
+	* 
+	* @param fd The file descriptor of the new connection
+	* @param data Pointer to the ClientSocket instance
+	*/
+	static void logNewConnection(int fd, void* data);
+
+    /**
+     * @brief Adds a callback to be executed immediately
+     * 
+     * @param callback The callback to execute
+     */
+    void executeImmediate(Callback* callback);
+
+    /**
+     * @brief Adds a callback to be executed later
+     * 
+     * @param callback The callback to execute
+     * @param priority The priority of the callback
+     */
+    void executeDeferred(Callback* callback, CallbackManager::Priority priority = CallbackManager::NORMAL);
+
+    /**
+     * @brief Processes all deferred callbacks
+     * 
+     * Executes all deferred callbacks in priority order.
+     */
+    void processDeferredCallbacks();
+
+    /**
+     * @brief Cancels all callbacks for a specific file descriptor
+     * 
+     * @param fd The file descriptor to cancel callbacks for
+     * @return int Number of callbacks cancelled
+     */
+    int cancelCallbacksForFd(int fd);
+
+
     int getServerSocket(void) const;
     int getClientSocket(void) const;
 
     void closeConnection(int  fd, int epoll_fd);
-    
-    
-    
-    
-    
-    
     
     private:
     
@@ -116,6 +195,18 @@ public:
     int							 _clientSocketFd; ///< Client socket file descriptor (most recent)
 
     
+private:
+
+    std::map<int, ServerSocket*>	_serverSockets;  // Map of server sockets by file descriptor
+    std::map<int, ServerConfig>		_serverConfigs;  // Map of server configurations by server socket fd
+    std::map<int, ClientSocket*>	_clientSockets;  ///< Map of client sockets by file descriptor
+    int								_serverSocketFd; ///< Server socket file descriptor
+    int								_clientSocketFd; ///< Client socket file descriptor (most recent)
+    std::priority_queue<Timer>		_timerQueue;      ///< Priority queue of timers
+    CallbackManager					_callbackManager;  ///< Callback manager
+	
+    // Helper method to register a server socket with epoll
+    void registerServerSocketToEpoll(int epoll_fd, int server_socket_fd);
 };
 
 #endif  // ************************************************ SOCKETMANAGER_HPP //
