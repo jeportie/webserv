@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:17:22 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/15 17:42:38 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/19 15:10:15 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,9 @@ public:
     // 2) Request-Line complète
     static RequestLine
     parseRequestLine(const std::string& line);
+
+    static void 
+    parsePathAndQuerry(std::string path, std::string raw_query);
 
     // 3) Toutes les lignes d’en-têtes (avant "\r\n\r\n")
     //    map<nom, liste de valeurs>

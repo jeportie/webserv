@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 11:45:44 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/19 12:13:17 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/19 14:55:26 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,36 +16,52 @@
 #include <cstring> // strerror
 #include <iostream>
 #include <sstream> // pour stringstream si besoin
+#include "HttpException.hpp"
 
 // Utility : décodage %xx dans une chaîne
+// HttpParser.cpp
+
+#include "HttpParser.hpp"
+#include "HttpException.hpp"
+#include <cstdlib>   // pour strtol
+#include <cctype>    // pour isxdigit
+
 std::string urlDecode(const std::string &s)
 {
-	size_t	i;
-	i = 0;
-	char	buf[3] = {s[i + 1], s[i + 2], '\0'};
-	char	decoded;
+    std::string out;
+    out.reserve(s.size());  // au moins la taille d'origine
 
-	std::string out;
-	for (i = 0; i < s.size(); ++i)
-	{
-		if (s[i] == '%' && i + 2 < s.size() && isxdigit(s[i + 1])
-			&& isxdigit(s[i + 2]))
-		{
-			decoded = static_cast<char>(strtol(buf, NULL, 16));
-			out += decoded;
-			i += 2;
-		}
-		else if (s[i] == '+')
-		{
-			out += ' ';
-		}
-		else
-		{
-			out += s[i];
-		}
-	}
-	return (out);
+    for (size_t i = 0; i < s.size(); ++i)
+    {
+        if (s[i] == '%')
+        {
+            // doit avoir deux caractères hex suivant
+            if (i + 2 >= s.size() ||
+                !std::isxdigit(static_cast<unsigned char>(s[i+1])) ||
+                !std::isxdigit(static_cast<unsigned char>(s[i+2])))
+            {
+                throw HttpException(400, "Bad Request");
+            }
+
+            // lire les deux hex, les convertir
+            char hex[3] = { s[i+1], s[i+2], '\0' };
+            char decoded = static_cast<char>(std::strtol(hex, NULL, 16));
+            out += decoded;
+            i += 2;  // on a consommé %xx
+        }
+        else if (s[i] == '+')
+        {
+            out += ' ';
+        }
+        else
+        {
+            out += s[i];
+        }
+    }
+
+    return out;
 }
+
 
 // découpe "a=b" en clé et valeur (URL-decode)
 void	splitKeyVal(const std::string &token, std::string &key,
@@ -64,6 +80,9 @@ void	splitKeyVal(const std::string &token, std::string &key,
 		key = urlDecode(token.substr(0, pos));
 		val = urlDecode(token.substr(pos + 1));
 	}
+	if (key.empty())
+    	throw HttpException(400, "Bad Request");
+
 }
 
 std::string trim(const std::string &s)
@@ -90,5 +109,47 @@ bool containsCtl(const std::string& s)
     }
     return false;
 }
+
+
+bool pathEscapesRoot(const std::string& path)
+{
+    // On attend un chemin absolu commençant par '/'
+    // Si ce n'est pas le cas, on considère ça comme invalide/évasion
+    if (path.empty() || path[0] != '/')
+        return true;
+
+    std::vector<std::string> stack;
+    std::string segment;
+    size_t i = 1;  // on skippe le '/' initial
+
+    while (i <= path.size())
+    {
+        // extraire le segment jusqu'au prochain '/' ou fin
+        size_t j = path.find('/', i);
+        if (j == std::string::npos)
+            j = path.size();
+
+        segment.assign(path, i, j - i);
+
+        if (segment == "..")
+        {
+            // on remonte d'un niveau : si on ne peut plus, c'est une évasion
+            if (stack.empty())
+                return true;
+            stack.pop_back();
+        }
+        else if (!segment.empty() && segment != ".")
+        {
+            // un nom de dossier/fichier valide → on descend une branche
+            stack.push_back(segment);
+        }
+
+        i = j + 1;
+    }
+
+    // si on n'a jamais débordé la racine, tout va bien
+    return false;
+}
+
 
 

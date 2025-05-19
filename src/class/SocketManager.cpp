@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/19 12:51:38 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/19 15:10:58 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -411,6 +411,7 @@ HttpRequest SocketManager::buildHttpRequest(ClientSocket* client)
     req.http_major = rl.http_major;
     req.http_minor = rl.http_minor;
     HttpParser::splitTarget(rl.target, req.path, req.raw_query);
+	HttpParser::parsePathAndQuerry(req.path, req.raw_query);
     req.headers      = client->getParsedHeaders();
     req.query_params = HttpParser::parseQueryParams(req.raw_query);
     req.form_data    = HttpParser::parseFormUrlencoded(req.body);

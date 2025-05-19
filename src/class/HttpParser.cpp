@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:17:24 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/19 12:44:58 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/19 15:11:20 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,6 +142,18 @@ void HttpParser::splitTarget(const std::string& target, std::string& outPath, st
         outPath     = target.substr(0, pos);
         outRawQuery = target.substr(pos+1);
     }
+}
+
+void HttpParser::parsePathAndQuerry(std::string path, std::string raw_query)
+{
+  if (outPath.empty() || outPath[0] != '/')
+      throw HttpException(400, "Bad Request");
+  if (outPath.size() > MAX_URI_LEN)
+      throw HttpException(414, "URI Too Long");
+  if (pathEscapesRoot(outPath))
+      throw HttpException(403, "Forbidden");
+  if (outRawQuery.size() > MAX_QUERY_LEN)
+      throw HttpException(414, "URI Too Long");
 }
 
 // 5) parseQueryParams
