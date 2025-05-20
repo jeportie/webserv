@@ -388,6 +388,10 @@ std::map<std::string, RouteConfig> Parser::parseLocationBlocks()
                 route.indexFiles = parseIndexDirective();
                 route.indexIsSet = true;
             }
+            else if (directive == "client_max_body_size")
+            {
+                route.client_max_body_size = parseClientMaxBodySizeDirective();
+            }
             else
             {
                 throw std::runtime_error("Unknown directive in location block: " + directive);
@@ -453,17 +457,19 @@ std::map<int, std::string> Parser::parseReturnDirective()
     std::map<int, std::string> returnCodes;
     int                        code = std::atoi(current().value.c_str());
     advance();
-
-    if (current().type != TOKEN_STRING && current().type != TOKEN_IDENTIFIER)
-        throw std::runtime_error("Expected return URL after code");
-
-    std::string url = current().value;
-    advance();
+    if (code >= 300 && code < 400)
+    {
+        if (current().type != TOKEN_STRING && current().type != TOKEN_IDENTIFIER)
+            throw std::runtime_error("Expected return URL after code");
+    
+        std::string url = current().value;
+        advance();
+        returnCodes.insert(std::make_pair(code, url));
+    }
 
     if (current().type != TOKEN_SEMICOLON)
         throw std::runtime_error("Expected ';' after return directive");
-
-    returnCodes.insert(std::make_pair(code, url));
+    
     advance();
 
     return returnCodes;

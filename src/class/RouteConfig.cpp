@@ -23,6 +23,8 @@ RouteConfig::RouteConfig()
       uploadEnabled(false),
       uploadStore(""),
       indexFiles(),
-      indexIsSet(false)
+      indexIsSet(false),
+      client_max_body_size(-1)
+
 {
 }

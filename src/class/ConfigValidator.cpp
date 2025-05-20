@@ -62,25 +62,39 @@ bool isValidIPv4(const std::string& ip) {
 
 void ConfigValidator::validate(const std::vector<ServerConfig>& servers)
 {
-     if (servers.empty())
+    if (servers.empty())
         throw std::runtime_error("No server block defined");
 
     for (size_t i = 0; i < servers.size(); ++i) {
         validateServer(servers[i]);
     }
-    std::set<std::string> listenSet;
+
+    // Map: key = "host:port", value = set of server_names
+    std::map<std::string, std::set<std::string> > hostPortToNames;
 
     for (std::vector<ServerConfig>::const_iterator it = servers.begin(); it != servers.end(); ++it) {
-    std::ostringstream oss;
-    oss << it->host << ":" << it->port;
-    std::string key = oss.str();
+        std::ostringstream oss;
+        oss << it->host << ":" << it->port;
+        std::string key = oss.str();
 
-    if (!listenSet.insert(key).second) {
-        throw std::runtime_error("Duplicate host:port detected: " + key);
+        const std::vector<std::string>& names = it->serverNames;
+        std::set<std::string>& nameSet = hostPortToNames[key];
+
+        for (size_t i = 0; i < names.size(); ++i) {
+            if (!nameSet.insert(names[i]).second) {
+                throw std::runtime_error("Duplicate server_name '" + names[i] + "' for host:port " + key);
+            }
+        }
+
+        // Si aucun server_name, on autorise seulement un bloc sans nom pour ce host:port
+        if (names.empty()) {
+            if (!nameSet.insert("__default__").second) {
+                throw std::runtime_error("Multiple unnamed servers defined for host:port " + key);
+            }
+        }
     }
 }
-    
-}
+
 
 void ConfigValidator::validateServer(const ServerConfig& config)
 {
@@ -136,12 +150,6 @@ void ConfigValidator::validateRoute(const RouteConfig& route) {
     if (route.path.empty())
         throw std::runtime_error("Route path is required");
 
-    if (route.root.empty() && route.returnCodes.empty())
-        throw std::runtime_error("Each route must have either a root or a return directive");
-
-    if (!route.root.empty() && !route.returnCodes.empty())
-        throw std::runtime_error("A route cannot have both root and return directives at the same time");
-
     if (!route.defaultFile.empty() && route.defaultFile.find('/') == 0)
         throw std::runtime_error("default_file must be a relative filename (not starting with /)");
 
@@ -152,7 +160,7 @@ void ConfigValidator::validateRoute(const RouteConfig& route) {
     {
         if (it->first < 100 || it->first > 599)
             throw std::runtime_error("Invalid HTTP status code");
-        if (it->second.empty())
+        if ( (it->first >= 300 && it->first < 400 ) && it->second.empty())
             throw std::runtime_error("return_url must not be empty for return_code");
     }
     if (!route.cgiExecutor.first.empty() && route.cgiExecutor.second.find('/') != 0)

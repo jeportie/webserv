@@ -58,6 +58,7 @@ class Lexer {
     char get(); // avance et retourne le prochin char 
     bool isAtEnd() const;
     bool isValidIdentifierSymbol(char c) const;
+    bool isNextTokenUrl() const;
     void skipWhitespace(); // Ignore les espaces et les sauts de ligne
     void skipComment(); // Ignore les lignes de commentaire
     Token parseIdentifier();
@@ -65,6 +66,7 @@ class Lexer {
     Token parseNumber();
     Token parseSymbol();
     Token parsePathLike();
+    Token parseUrl();
 };
 
 #endif 

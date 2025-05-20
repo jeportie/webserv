@@ -30,6 +30,7 @@ struct RouteConfig {
     std::string uploadStore;
     std::vector<std::string> indexFiles; 
     bool indexIsSet;              // Flag to indicate if index directive is set
+    size_t                          client_max_body_size;    // en octets
     RouteConfig();
 };
 

@@ -108,6 +108,44 @@ Token Lexer::parseIdentifier()
 }
 
 
+bool Lexer::isNextTokenUrl() const
+{
+    size_t tmpPos = _pos;
+    std::string protocol;
+
+    // Lire les lettres pour voir si c'est "http" ou "https"
+    while (tmpPos < _content.size() && std::isalpha(_content[tmpPos]))
+        protocol += _content[tmpPos++];
+
+    if (protocol != "http" && protocol != "https")
+        return false;
+
+    // Vérifie que c'est bien suivi de "://"
+    return tmpPos + 2 < _content.size()
+        && _content[tmpPos] == ':'
+        && _content[tmpPos + 1] == '/'
+        && _content[tmpPos + 2] == '/';
+}
+
+Token Lexer::parseUrl()
+{
+    int startLine = _line;
+    int startColumn = _column;
+    std::string value;
+
+    while (!isAtEnd())
+    {
+        char c = peek();
+        if (std::isalnum(c) || c == ':' || c == '/' || c == '.' || c == '-' || c == '_')
+            value += get();
+        else
+            break;
+    }
+
+    return Token(TOKEN_STRING, value, startLine, startColumn);
+}
+
+
 Token Lexer::parseString()
 {
     int startLine = _line;
@@ -171,7 +209,7 @@ Token Lexer::parsePathLike()
     while (!isAtEnd())
     {
         char c = peek();
-        if (std::isalnum(c) || c == '/' || c == '.' || c == '-' || c == '_' || c == ':')
+        if (std::isalnum(c) || c == '/' || c == '.' || c == '-' || c == '_' )
         {
             value += get();
         }
@@ -199,6 +237,8 @@ Token Lexer::nextToken()
         char c = peek();
         if (std::isalpha(c))
         {
+            if (isNextTokenUrl())
+                return parseUrl();
             return parseIdentifier();
         } 
         else if (std::isdigit(c))

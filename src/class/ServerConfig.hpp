@@ -36,7 +36,6 @@ struct ServerConfig {
     bool                            indexIsSet;              // Flag to indicate if index directive is set
     bool listenIsSet;
     bool rootIsSet;
-    // Autres directives comme error_pages, cgi, etc.
     
     
     ServerConfig();
