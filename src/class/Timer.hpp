@@ -6,7 +6,7 @@
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 14:17:36 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/13 15:23:23 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/20 10:00:00 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,27 +16,6 @@
 #include "Callback.hpp"
 #include <ctime>
 
-/**
- * @brief Timer class for timeout handling
- * 
- * This class represents a timer that will execute a callback
- * function when it expires. It stores the expiration time
- * and the callback to execute.
- *
- * @note How It Works
- *
- * 1. When a client connects, we create a timer that will expire in 60 seconds
- * 2. If the client sends data before the timer expires, we cancel the old timer 
- *    and create a new one
- * 3. If the timer expires, we call the callback function which closes the client connection
- * 4. In the event loop, we check for expired timers and adjust the epoll_wait 
- *    timeout based on the next timer to expire
- *
- * This timeout handling is crucial for a web server because it prevents inactive connections 
- * from consuming server resources indefinitely. Without timeouts, a malicious client could
- * open many connections and never close them, eventually causing the server to run out 
- * of resources.
- */
 class Timer
 {
 public:
@@ -50,7 +29,8 @@ public:
 
 private:
 	time_t		_expireTime;
-	Callback*	_callback; // pointer to function if time expired
+	Callback*	_callback; // callback to execute when timer expires
 };
 
 #endif  // ******************************************************** TIMER_HPP //
+

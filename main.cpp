@@ -15,6 +15,7 @@
 #include "src/class/ErrorHandler.hpp"
 #include <stdexcept>
 #include <iostream>
+#include <sstream>
 
 int main()
 {

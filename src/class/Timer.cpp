@@ -6,7 +6,7 @@
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 14:48:16 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/13 15:23:16 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/20 10:00:00 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,8 @@
 Timer::Timer(time_t expireTime, Callback* callback)
 : _expireTime(expireTime)
 , _callback(callback)
-{}
+{
+}
 
 Timer::~Timer() { delete _callback; }
 
@@ -25,3 +26,4 @@ Callback* Timer::getCallback() const { return _callback; }
 
 // Reverse comparison for priority queue (earliest expiration at top)
 bool Timer::operator<(const Timer& src) const { return _expireTime > src._expireTime; }
+
