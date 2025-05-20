@@ -67,13 +67,8 @@ void SocketManager::eventLoop(int epoll_fd, int timeout_ms)
 
     while (running)
     {
-        // Process any expired timers
         processTimers();
-
-        // Process any pending callbacks
         _callbackQueue.processCallbacks();
-
-        // Calculate timeout for next epoll_wait
         int wait_timeout = this->calculateEpollTimeout(timeout_ms);
 
         // Wait for events
@@ -82,8 +77,7 @@ void SocketManager::eventLoop(int epoll_fd, int timeout_ms)
         {
             if (errno == EINTR)
                 continue;
-            THROW_SYSTEM_ERROR(
-                CRITICAL, EPOLL_ERROR, "epoll_wait failed", "SocketManager::eventLoop");
+            THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "epoll_wait failed", "SocketManager::eventLoop");
         }
 
         // Process events by queueing appropriate callbacks

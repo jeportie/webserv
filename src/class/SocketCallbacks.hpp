@@ -29,7 +29,7 @@ public:
 
 private:
     SocketManager* _manager;
-    int _epollFd;
+    int            _epollFd;
 };
 
 // Read data from client callback
@@ -54,7 +54,7 @@ public:
 
 private:
     SocketManager* _manager;
-    std::string _data;
+    std::string    _data;
 };
 
 // Error/cleanup callback
@@ -67,7 +67,7 @@ public:
 
 private:
     SocketManager* _manager;
-    int _epollFd;
+    int            _epollFd;
 };
 
 // Timeout callback
@@ -80,8 +80,7 @@ public:
 
 private:
     SocketManager* _manager;
-    int _epollFd;
+    int            _epollFd;
 };
 
 #endif  // ********************************************** SOCKETCALLBACKS_HPP //
-
