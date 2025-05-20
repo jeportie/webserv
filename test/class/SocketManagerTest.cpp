@@ -12,94 +12,52 @@
 
 #include <gtest/gtest.h>
 #include "../../src/class/SocketManager.hpp"
+#include "../../src/class/ClientSocket.hpp"
+#include "../../src/class/Callback.hpp"
+#include "../../src/class/CallbackQueue.hpp"
 
-TEST(SocketManagerTest, DefaultConstructor)
-{
+// Dummy callback for testing
+class DummyCallback : public Callback {
+public:
+    DummyCallback(int fd, int* counter) : Callback(fd), counter_(counter) {}
+    void execute() {
+        if (counter_) (*counter_)++;
+    }
+private:
+    int* counter_;
+};
+
+TEST(SocketManagerTest, ConstructionAndServerSocketAccess) {
     SocketManager manager;
-    EXPECT_EQ(manager.getServerSocket(), -1);
-    EXPECT_EQ(manager.getClientSocket(), -1);
+    // Just check that getServerSocket returns a reference
+    ServerSocket& server = manager.getServerSocket();
+    (void)server;
+    SUCCEED();
 }
 
-// Note: It's difficult to properly test SocketManager without mocking
-// the socket and epoll functions, which is beyond the scope of a simple test.
-// The following tests focus on the methods that don't require actual networking.
-
-// Test callback function
-static void testCallbackFunction(int fd, void* data)
-{
-    (void) fd;
-    (void) data;
-    // Do nothing, just for testing
+TEST(SocketManagerTest, AddClientSocket) {
+    SocketManager manager;
+    int fd = 42;
+    ClientSocket* client = new ClientSocket();
+    manager.addClientSocket(fd, client);
+    // No direct getter, but cleanupClientSocket should delete it
+    manager.cleanupClientSocket(fd, -1);
+    SUCCEED();
 }
 
-TEST(SocketManagerTest, ExecuteImmediate)
-{
+TEST(SocketManagerTest, CallbackQueueIntegration) {
     SocketManager manager;
-    Callback* callback = new Callback(testCallbackFunction, 42);
-    
-    // This should not crash
-    manager.executeImmediate(callback);
-    
-    // No need to delete callback, executeImmediate takes ownership
+    CallbackQueue& queue = manager.getCallbackQueue();
+    int counter = 0;
+    queue.push(new DummyCallback(1, &counter));
+    queue.push(new DummyCallback(2, &counter));
+    queue.processCallbacks();
+    EXPECT_EQ(counter, 2);
 }
 
-TEST(SocketManagerTest, ExecuteDeferred)
-{
-    SocketManager manager;
-    Callback* callback = new Callback(testCallbackFunction, 42);
-    
-    // This should not crash
-    manager.executeDeferred(callback);
-    
-    // Process the callbacks
-    manager.processDeferredCallbacks();
-}
-
-TEST(SocketManagerTest, CancelCallbacksForFd)
-{
-    SocketManager manager;
-    Callback* callback1 = new Callback(testCallbackFunction, 42);
-    Callback* callback2 = new Callback(testCallbackFunction, 43);
-    
-    manager.executeDeferred(callback1);
-    manager.executeDeferred(callback2);
-    
-    // Cancel callbacks for fd 42
-    int cancelled = manager.cancelCallbacksForFd(42);
-    
-    // Check that we cancelled 1 callback
-    EXPECT_EQ(cancelled, 1);
-    
-    // Process the callbacks
-    manager.processDeferredCallbacks();
-}
-
-TEST(SocketManagerTest, EpollIntegration)
-{
-    SocketManager manager;
+TEST(SocketManagerTest, EpollFdCreation) {
     int epoll_fd = epoll_create1(0);
     ASSERT_NE(epoll_fd, -1);
-
-    // In a real test, you would create a socket, add it to epoll,
-    // and then verify that events are received correctly.
-    // This is a placeholder.
-
     close(epoll_fd);
-}
-
-TEST(SocketManagerTest, FdLimitHandling)
-{
-    SocketManager manager;
-    // This test would attempt to exhaust file descriptors and verify
-    // that the server handles the situation gracefully.
-    // This is a placeholder.
-}
-
-TEST(SocketManagerTest, SignalHandlingIntegration)
-{
-    SocketManager manager;
-    // This test would send signals to the server and verify that
-    // it shuts down or continues operation correctly.
-    // This is a placeholder.
 }
 

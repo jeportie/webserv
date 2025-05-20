@@ -12,77 +12,47 @@
 
 #include <gtest/gtest.h>
 #include "../../src/class/Callback.hpp"
+#include "../../src/class/CallbackQueue.hpp"
 
-// Test callback function
-static void testCallbackFunction(int fd, void* data)
-{
-	(void) fd;
-	(void) data;
-    // Do nothing, just for testing
-}
-
-// Test callback function that sets a flag
-static void testFlagCallbackFunction(int fd, void* data)
-{
-    (void) fd;
-    bool* flag = static_cast<bool*>(data);
-    if (flag) {
-        *flag = true;
+// A simple test callback that increments a counter
+class TestCallback : public Callback {
+public:
+    TestCallback(int fd, int* counter)
+        : Callback(fd), counter_(counter) {}
+    void execute() {
+        if (counter_) (*counter_)++;
     }
+private:
+    int* counter_;
+};
+
+TEST(CallbackTest, GetFd) {
+    int fd = 123;
+    TestCallback cb(fd, nullptr);
+    EXPECT_EQ(cb.getFd(), fd);
 }
 
-TEST(CallbackTest, Constructor)
-{
-    int testFd = 42;
-    const char* testSource = "test_source";
-    
-    Callback callback(testCallbackFunction, testFd, NULL, testSource);
-    
-    EXPECT_EQ(callback.getFd(), testFd);
-    EXPECT_FALSE(callback.isCancelled());
-    EXPECT_STREQ(callback.getSource(), testSource);
+TEST(CallbackQueueTest, PushAndProcess) {
+    CallbackQueue queue;
+    int counter = 0;
+    // Push 3 callbacks
+    queue.push(new TestCallback(1, &counter));
+    queue.push(new TestCallback(2, &counter));
+    queue.push(new TestCallback(3, &counter));
+    EXPECT_EQ(queue.size(), 3u);
+    queue.processCallbacks();
+    EXPECT_EQ(counter, 3);
+    EXPECT_TRUE(queue.isEmpty());
 }
 
-TEST(CallbackTest, Execute)
-{
-    int testFd = 42;
-    bool flag = false;
-    
-    Callback callback(testFlagCallbackFunction, testFd, &flag);
-    
-    // Execute the callback
-    callback.execute();
-    
-    // Check that the flag was set
-    EXPECT_TRUE(flag);
-}
-
-TEST(CallbackTest, Cancel)
-{
-    int testFd = 42;
-    bool flag = false;
-    
-    Callback callback(testFlagCallbackFunction, testFd, &flag);
-    
-    // Cancel the callback
-    callback.cancel();
-    
-    // Execute the callback (should not set the flag)
-    callback.execute();
-    
-    // Check that the flag was not set
-    EXPECT_FALSE(flag);
-    EXPECT_TRUE(callback.isCancelled());
-}
-
-TEST(CallbackTest, GetCreationTime)
-{
-    int testFd = 42;
-    
-    Callback callback(testCallbackFunction, testFd);
-    
-    // Check that the creation time is reasonable (within the last minute)
-    time_t now = time(NULL);
-    EXPECT_LE(callback.getCreationTime(), now);
-    EXPECT_GE(callback.getCreationTime(), now - 60);
+TEST(CallbackQueueTest, DestructorCleansUp) {
+    int counter = 0;
+    {
+        CallbackQueue queue;
+        queue.push(new TestCallback(1, &counter));
+        queue.push(new TestCallback(2, &counter));
+        // Do not process callbacks, let destructor clean up
+    }
+    // No crash means success
+    SUCCEED();
 }
