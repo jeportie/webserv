@@ -29,8 +29,8 @@ SRC = \
   src/class/ServerSocket.cpp \
   src/class/ClientSocket.cpp \
   src/class/SocketManager.cpp \
-  src/class/SimpleCallback.cpp \
-  src/class/SimpleCallbackQueue.cpp \
+  src/class/Callback.cpp \
+  src/class/CallbackQueue.cpp \
   src/class/SocketCallbacks.cpp
 ### END AUTO GENERATED FILES ###
 

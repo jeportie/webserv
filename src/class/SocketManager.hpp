@@ -34,6 +34,7 @@ public:
 
     void init_connect(void);
     void eventLoop(int epoll_fd, int timeout_ms = -1);
+    int  calculateEpollTimeout(int timeout_ms);
     int  addTimer(int seconds, Callback* callback);
     bool cancelTimer(int fd);
     void processTimers();

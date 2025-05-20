@@ -13,6 +13,8 @@
 #include "ErrorHandler.hpp"
 #include <stdexcept>
 #include <iomanip>
+#include <iostream>
+#include <sstream>
 
 ErrorHandler::ErrorHandler()
 : _minLogLevel(INFO)

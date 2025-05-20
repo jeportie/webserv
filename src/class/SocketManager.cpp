@@ -63,8 +63,9 @@ void SocketManager::init_connect(void)
 void SocketManager::eventLoop(int epoll_fd, int timeout_ms)
 {
     std::vector<epoll_event> events(MAXEVENTS);
+    bool running = true;
 
-    while (true)
+    while (running)
     {
         // Process any expired timers
         processTimers();
@@ -72,26 +73,10 @@ void SocketManager::eventLoop(int epoll_fd, int timeout_ms)
         // Process any pending callbacks
         _callbackQueue.processCallbacks();
 
-        // Calculate timeout for epoll_wait based on next timer expiration
-        int wait_timeout = timeout_ms;
-        if (!_timerQueue.empty())
-        {
-            time_t now         = time(NULL);
-            time_t next_expire = _timerQueue.top().getExpireTime();
-            if (next_expire <= now)
-            {
-                wait_timeout = 0;  // Process immediately
-            }
-            else
-            {
-                wait_timeout = (next_expire - now) * 1000;  // Convert to milliseconds
-                if (timeout_ms != -1 && wait_timeout > timeout_ms)
-                {
-                    wait_timeout = timeout_ms;  // Use the smaller timeout
-                }
-            }
-        }
+        // Calculate timeout for next epoll_wait
+        int wait_timeout = this->calculateEpollTimeout(timeout_ms);
 
+        // Wait for events
         int n = epoll_wait(epoll_fd, events.data(), MAXEVENTS, wait_timeout);
         if (n < 0)
         {
@@ -101,6 +86,7 @@ void SocketManager::eventLoop(int epoll_fd, int timeout_ms)
                 CRITICAL, EPOLL_ERROR, "epoll_wait failed", "SocketManager::eventLoop");
         }
 
+        // Process events by queueing appropriate callbacks
         for (int i = 0; i < n; ++i)
         {
             int      fd = events[i].data.fd;
@@ -123,6 +109,25 @@ void SocketManager::eventLoop(int epoll_fd, int timeout_ms)
             }
         }
     }
+}
+
+int SocketManager::calculateEpollTimeout(int timeout_ms)
+{
+    if (_timerQueue.empty())
+        return timeout_ms;
+        
+    time_t now = time(NULL);
+    time_t next_expire = _timerQueue.top().getExpireTime();
+    
+    if (next_expire <= now)
+        return 0;  // Process immediately
+        
+    int wait_timeout = (next_expire - now) * 1000;  // Convert to milliseconds
+    
+    if (timeout_ms != -1 && wait_timeout > timeout_ms)
+        return timeout_ms;  // Use the smaller timeout
+        
+    return wait_timeout;
 }
 
 void SocketManager::addClientSocket(int fd, ClientSocket* client) { _clientSockets[fd] = client; }
