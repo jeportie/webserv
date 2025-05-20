@@ -42,8 +42,8 @@ void SocketManager::init_connect(void)
 {
     // Create, bind, and listen on the server socket
     if (!_serverSocket.safeBind(PORT, ""))
-        THROW_ERROR(
-            CRITICAL, SOCKET_ERROR, "Failed to bind server socket", "SocketManager::init_connect");
+        THROW_ERROR(CRITICAL, SOCKET_ERROR, "Failed to bind server socket",
+					"SocketManager::init_connect");
 
     _serverSocket.safeListen(10);
     _serverSocketFd = _serverSocket.getFd();

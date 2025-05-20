@@ -13,6 +13,7 @@
 #include "include/webserv.h"
 #include "src/class/SocketManager.hpp"
 #include "src/class/ErrorHandler.hpp"
+#include <cstdlib>
 #include <stdexcept>
 #include <iostream>
 #include <sstream>
@@ -21,22 +22,23 @@ int main()
 {
     // Initialize error handler
     ErrorHandler& errorHandler = ErrorHandler::getInstance();
-    
-    // Set log level and log file
+    // Set min log level (DEBUG TO SHOW DEBUG LOGS)
     errorHandler.setLogLevel(INFO);
+	// Create the log file
     errorHandler.setLogFile("webserv.log");
     
     try
     {
         std::cout << "Starting webserv on port " << PORT << std::endl;
-        SocketManager socketManager;
+        SocketManager theSocketMaster;
 
         // Log server start
         std::stringstream ss;
         ss << PORT;
         errorHandler.logError(INFO, INTERNAL_ERROR, "Server starting on port " + ss.str(), "main");
 
-        socketManager.init_connect();
+		// Start the server
+        theSocketMaster.init_connect();
     }
     catch (const std::runtime_error& e)
     {
@@ -57,8 +59,9 @@ int main()
     // Check if we should shut down due to critical errors
     if (errorHandler.shouldShutdown())
     {
+		errorHandler.logSystemError(CRITICAL, INTERNAL_ERROR, "Critical error occurred, shutting down server");
         std::cerr << "Critical error occurred, shutting down server" << std::endl;
+		exit(EXIT_FAILURE);
     }
-    
     return (0);
 }
