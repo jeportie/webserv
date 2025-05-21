@@ -301,7 +301,7 @@ bool SocketManager::parseClientHeaders(ClientSocket* client)
 
     // Headers
     std::string                                     rest = hdr_block.substr(line_end + 2);
-    std::map<std::string, std::vector<std::string>> hdrs = HttpParser::parseHeaders(rest);
+    std::map<std::string, std::vector<std::string> > hdrs = HttpParser::parseHeaders(rest);
     if (hdrs.size() > MAX_HEADER_COUNT)
         throw HttpException(431, "Request Header Fields Too Large");
     client->setParsedHeaders(hdrs);

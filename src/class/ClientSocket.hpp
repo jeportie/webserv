@@ -51,7 +51,7 @@ public:
     bool                                            headersParsed() const;
     void                                            setHeadersParsed(bool parsed);
     size_t                                          getContentLength() const;
-    std::map<std::string, std::vector<std::string>> getParsedHeaders() const;
+    std::map<std::string, std::vector<std::string> > getParsedHeaders() const;
     RequestLine                                     getRequestLine() const;
     void                                            setContentLength(size_t length);
     void                                            setRequestLine(RequestLine rl);
@@ -61,7 +61,7 @@ public:
     std::string&                                    getBodyAccumulator();
     void                                            clearBodyAccumulator();
     void                                            resetParserState();
-    void                                            setParsedHeaders(std::map<std::string, std::vector<std::string>> hdrs);
+    void                                            setParsedHeaders(std::map<std::string, std::vector<std::string> > hdrs);
     bool                                            getChunked() const;
     void                                            setChunked(bool);
     size_t                                          getChunkSize() const;
@@ -79,7 +79,7 @@ private:
     BodyMode                                        _bodyMode;
     size_t                                          _contentLength;
     RequestLine                                     _requestLine;
-    std::map<std::string, std::vector<std::string>> _parsedHeaders;
+    std::map<std::string, std::vector<std::string> > _parsedHeaders;
     bool                                            _chunked;    // mode chunked activé
     size_t                                          _chunkSize;  // taille restante du chunk courant
     std::string                                     _bodyAccumulator;

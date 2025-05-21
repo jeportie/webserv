@@ -101,7 +101,7 @@ size_t ClientSocket::getContentLength() const { return (_contentLength); }
 
 RequestLine ClientSocket::getRequestLine() const { return (_requestLine); }
 
-std::map<std::string, std::vector<std::string>> ClientSocket::getParsedHeaders() const
+std::map<std::string, std::vector<std::string> > ClientSocket::getParsedHeaders() const
 {
     return (_parsedHeaders);
 }
@@ -109,7 +109,7 @@ std::map<std::string, std::vector<std::string>> ClientSocket::getParsedHeaders()
 void ClientSocket::setContentLength(size_t length) { _contentLength = length; }
 
 void ClientSocket::setRequestLine(RequestLine rl) { _requestLine = rl; }
-void ClientSocket::setParsedHeaders(std::map<std::string, std::vector<std::string>> hdrs)
+void ClientSocket::setParsedHeaders(std::map<std::string, std::vector<std::string> > hdrs)
 {
     _parsedHeaders = hdrs;
 }
@@ -177,5 +177,17 @@ void ClientSocket::resetParserState()
     _bodyAccumulator.clear();
 }
 
+int ClientSocket::setNonBlocking(int fd)
+{
+	int	flags;
+	int	ret;
 
+	// Get current flags
+	flags = safeFcntl(fd, F_GETFL, 0);
+	// Set new flags with O_NONBLOCK added
+	ret = safeFcntl(fd, F_SETFL, flags | O_NONBLOCK);
+	// Update non-blocking flag
+	_isNonBlocking = true;
+	return (ret);
+}
 // SocketManager.cpp.cpp

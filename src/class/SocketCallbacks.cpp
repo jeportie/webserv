@@ -65,16 +65,13 @@ ReadCallback::~ReadCallback()
 {
 }
 
-ReadCallback::ReadCallback(int fd, SocketManager* manager)
-: Callback(fd), _manager(manager) {}
-
-ReadCallback::~ReadCallback() {}
-
 void ReadCallback::execute() {
     try {
         // communication() returns false if the socket should be closed
         if (!_manager->communication(_fd)) {
-            LOG_ERROR(INFO, SOCKET_ERROR, "Closing client connection (fd=" + std::to_string(_fd) + ")", "ReadCallback::execute");
+            std::ostringstream oss;
+            oss << _fd;
+            LOG_ERROR(INFO, SOCKET_ERROR, "Closing client connection (fd=" + oss.str() + ")", "ReadCallback::execute");
             _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1));
         }
     } catch (const std::exception& e) {

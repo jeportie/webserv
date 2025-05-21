@@ -43,7 +43,6 @@ public:
     void cleanupClientSocket(int fd, int epoll_fd);
 
     bool communication(int fd);
-    void eventLoop(int epoll_fd);
     int  setNonBlockingServer(int fd);
     int  safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event* event);
     void safeRegisterToEpoll(int epoll_fd);
