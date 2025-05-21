@@ -67,7 +67,8 @@ void SocketManager::eventLoop(int epoll_fd, int timeout_ms)
 
     while (running)
     {
-        processTimers();
+        processTimers(); //checks if any timers have expired
+		// For each expired timer, the callback is pushed into the _callbackQueue
         _callbackQueue.processCallbacks();
         int wait_timeout = this->calculateEpollTimeout(timeout_ms);
 

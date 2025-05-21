@@ -14,7 +14,7 @@
 #define SOCKETCALLBACKS_HPP
 
 #include "Callback.hpp"
-#include "ClientSocket.hpp"
+#include <string>
 
 // Forward declaration
 class SocketManager;
