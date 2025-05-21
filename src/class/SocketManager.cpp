@@ -180,7 +180,7 @@ int SocketManager::addTimer(int seconds, Callback* callback)
 
 bool SocketManager::cancelTimer(int fd)
 {
-    // We can't easily remove from a priority queue, so we'll mark the callback as cancelled
+    // We can't easily remove from a priority queue, so we'll rebuild it without the timer
     std::priority_queue<Timer> temp;
     bool                       found = false;
 
@@ -190,10 +190,11 @@ bool SocketManager::cancelTimer(int fd)
         _timerQueue.pop();
 
         Callback* callback = timer.getCallback();
-        if (callback->getFd() == fd)
+        if (callback && callback->getFd() == fd)
         {
-            // In our simplified model, we just delete the callback
-            delete callback;
+            // We found a timer for this fd
+            // The callback will be deleted by the Timer destructor
+            // since the original Timer owns it
             found = true;
         }
         else
@@ -223,9 +224,17 @@ void SocketManager::processTimers()
         // Remove the timer from the queue
         _timerQueue.pop();
 
-        // Execute the callback
+        // Get the callback
         Callback* callback = timer.getCallback();
-        _callbackQueue.push(callback);
+        
+        if (callback)
+        {
+            // Create a copy of the callback for the queue
+            // The original callback will be deleted by the Timer destructor
+            // We need to transfer ownership to the queue
+            timer.setCallback(NULL); // Remove ownership from the Timer
+            _callbackQueue.push(callback); // Transfer ownership to the queue
+        }
     }
 }
 
