@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocketManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:23:58 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/14 13:52:48 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/19 11:35:29 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,13 +17,15 @@
 #include <map>
 #include <sys/epoll.h>
 #include <queue>
-#include "CallbackQueue.hpp"
+
 #include "ServerSocket.hpp"
+#include "HttpRequest.hpp"
 #include "ClientSocket.hpp"
+#include "CallbackQueue.hpp"
 #include "Timer.hpp"
 #include "Callback.hpp"
 
-// Forward declarations
+
 class Callback;
 
 class SocketManager
@@ -39,21 +41,38 @@ public:
     bool cancelTimer(int fd);
     void processTimers();
     void cleanupClientSocket(int fd, int epoll_fd);
+
+    bool communication(int fd);
+    void eventLoop(int epoll_fd);
+    int  setNonBlockingServer(int fd);
+    int  safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event* event);
     void safeRegisterToEpoll(int epoll_fd);
     void addClientSocket(int fd, ClientSocket* client);
 
-    ServerSocket& getServerSocket();
+    ServerSocket&  getServerSocket();
     CallbackQueue& getCallbackQueue();
+    int            getServerSocketFd(void) const;
+    int            getClientSocketFd(void) const;
 
 private:
     SocketManager(const SocketManager& src);
     SocketManager& operator=(const SocketManager& rhs);
 
-    ServerSocket                 _serverSocket;     ///< The server socket
-    std::map<int, ClientSocket*> _clientSockets;    ///< Map of client sockets by file descriptor
-    int                          _serverSocketFd;   ///< Server socket file descriptor
-    std::priority_queue<Timer>   _timerQueue;       ///< Priority queue of timers
-    CallbackQueue          _callbackQueue;    ///< Simple callback queue
+    ServerSocket                 _serverSocket;    ///< The server socket
+    std::map<int, ClientSocket*> _clientSockets;   ///< Map of client sockets by file descriptor
+    int                          _serverSocketFd;  ///< Server socket file descriptor
+    int                          _clientSocketFd;  ///< Client socket file descriptor (most recent)
+    std::priority_queue<Timer>   _timerQueue;      ///< Priority queue of timers
+    CallbackQueue                _callbackQueue;   ///< Simple callback queue
+
+
+    void        closeConnection(int fd, int epoll_fd);
+    bool        readFromClient(int fd);
+    bool        parseClientHeaders(ClientSocket* client);
+    bool        parseClientBody(ClientSocket* client);
+    HttpRequest buildHttpRequest(ClientSocket* client);
+    void        handleHttpRequest(int fd, HttpRequest& req);
+    void        cleanupRequest(ClientSocket* client);
 };
 
 #endif  // ************************************************ SOCKETMANAGER_HPP //
