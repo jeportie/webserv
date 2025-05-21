@@ -65,50 +65,25 @@ ReadCallback::~ReadCallback()
 {
 }
 
-void ReadCallback::execute()
-{
-    char buffer[BUFFER_SIZE];
-    int bytes_read;
+ReadCallback::ReadCallback(int fd, SocketManager* manager)
+: Callback(fd), _manager(manager) {}
 
-    bytes_read = read(_fd, buffer, BUFFER_SIZE - 1);
-    if (bytes_read > 0)
-    {
-        buffer[bytes_read] = '\0';
-        std::cout << "Received from client (fd=" << _fd << "): " << buffer;
+ReadCallback::~ReadCallback() {}
 
-        // Reset the timeout for this client
-        _manager->cancelTimer(_fd);
-        _manager->addTimer(CLIENT_TIMEOUT, new TimeoutCallback(_fd, _manager, -1));
-
-        // Echo back to the client - in a real HTTP server, this would be replaced with
-        // request parsing and response generation
-        _manager->getCallbackQueue().push(new WriteCallback(_fd, _manager, std::string(buffer, bytes_read)));
-    }
-    else if (bytes_read == 0)
-    {
-        // Client closed the connection
-        std::stringstream ss;
-        ss << _fd;
-        LOG_ERROR(INFO,
-                  SOCKET_ERROR,
-                  "Client disconnected (fd=" + ss.str() + ")",
-                  "ReadCallback::execute");
-
-        // Queue an error callback to clean up the client socket
+void ReadCallback::execute() {
+    try {
+        // communication() returns false if the socket should be closed
+        if (!_manager->communication(_fd)) {
+            LOG_ERROR(INFO, SOCKET_ERROR, "Closing client connection (fd=" + std::to_string(_fd) + ")", "ReadCallback::execute");
+            _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1));
+        }
+    } catch (const std::exception& e) {
+        LOG_ERROR(ERROR, CALLBACK_ERROR, e.what(), "ReadCallback::execute");
+        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1));
+    } catch (...) {
+        LOG_ERROR(ERROR, CALLBACK_ERROR, "Unknown error", "ReadCallback::execute");
         _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1));
     }
-    else if (bytes_read < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
-    {
-        // Unexpected read error
-        std::stringstream ss;
-        ss << _fd;
-        LOG_SYSTEM_ERROR(
-            ERROR, SOCKET_ERROR, "Read error on fd " + ss.str(), "ReadCallback::execute");
-
-        // Queue an error callback to clean up the client socket
-        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1));
-    }
-    // If errno == EAGAIN or EWOULDBLOCK, we'll wait for the next EPOLLIN event
 }
 
 // WriteCallback implementation
