@@ -23,6 +23,9 @@ public:
     virtual ~Callback();
 
     virtual void execute() = 0;
+    
+    // Non-virtual method to get the file descriptor
+    // This is safe to call even after derived class destruction
     int getFd() const;
 
 protected:

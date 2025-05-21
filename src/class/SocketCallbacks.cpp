@@ -119,11 +119,12 @@ ErrorCallback::~ErrorCallback()
 
 void ErrorCallback::execute()
 {
-    // Cancel any timers for this client
-    _manager->cancelTimer(_fd);
-
+    // Store the fd locally since we'll be using it after potentially deleting objects
+    int fd = _fd;
+    int epollFd = _epollFd;
+    
     // Clean up the client socket
-    _manager->cleanupClientSocket(_fd, _epollFd);
+    _manager->cleanupClientSocket(fd, epollFd);
 }
 
 // TimeoutCallback implementation
@@ -138,9 +139,13 @@ TimeoutCallback::~TimeoutCallback()
 
 void TimeoutCallback::execute()
 {
-    std::cout << "Client connection timed out (fd=" << _fd << ")" << std::endl;
+    // Store the fd locally since we'll be using it after potentially deleting objects
+    int fd = _fd;
+    int epollFd = _epollFd;
+    
+    std::cout << "Client connection timed out (fd=" << fd << ")" << std::endl;
     
     // Clean up the client socket
-    _manager->cleanupClientSocket(_fd, _epollFd);
+    _manager->cleanupClientSocket(fd, epollFd);
 }
 

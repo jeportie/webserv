@@ -27,6 +27,7 @@ public:
 	time_t		getExpireTime(void) const;
 	Callback*	getCallback(void) const;
 	void		setCallback(Callback* callback);
+	int         getTimerFd(void) const;  // Safe way to get the fd without accessing callback directly
 
     bool operator<(const Timer& src) const;
 

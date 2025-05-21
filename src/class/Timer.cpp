@@ -11,12 +11,17 @@
 /* ************************************************************************** */
 
 #include "Timer.hpp"
+#include "ErrorHandler.hpp"
+#include <sstream>
 
 Timer::Timer(time_t expireTime, Callback* callback)
 : _expireTime(expireTime)
 , _callback(callback)
 , _ownsCallback(true)
 {
+    std::stringstream ss;
+    ss << _callback;
+    ErrorHandler::getInstance().logError(DEBUG, TIMER_ERROR, "Timer Constructor called with callback: " + ss.str(), "Timer::Timer");
 }
 
 Timer::Timer(const Timer& src)
@@ -26,6 +31,7 @@ Timer::Timer(const Timer& src)
 {
     // When copying, we don't take ownership of the callback
     // The original Timer will be responsible for deleting it
+    // This is important for the priority queue operations
 }
 
 Timer& Timer::operator=(const Timer& rhs)
@@ -47,6 +53,9 @@ Timer& Timer::operator=(const Timer& rhs)
 
 Timer::~Timer() 
 { 
+    std::stringstream ss;
+    ss << _callback;
+    ErrorHandler::getInstance().logError(DEBUG, TIMER_ERROR, "Timer Destructor called with callback: " + ss.str(), "Timer::~Timer");
     // Only delete the callback if we own it
     if (_ownsCallback && _callback)
     {
@@ -61,6 +70,9 @@ Callback* Timer::getCallback() const { return _callback; }
 
 void Timer::setCallback(Callback* callback)
 {
+    std::stringstream ss;
+    ss << callback;
+    ErrorHandler::getInstance().logError(DEBUG, TIMER_ERROR, "Timer::setCallback called with callback: " + ss.str(), "Timer::setCallback");
     // If we own the current callback, delete it
     if (_ownsCallback && _callback)
     {
@@ -69,6 +81,20 @@ void Timer::setCallback(Callback* callback)
     
     _callback = callback;
     _ownsCallback = true;
+}
+
+int Timer::getTimerFd() const
+{
+    // Store the fd in a local variable before potentially accessing the callback
+    int fd = -1;
+    if (_callback)
+    {
+        std::stringstream ss;
+        ss << _callback;
+        ErrorHandler::getInstance().logError(DEBUG, TIMER_ERROR, "Timer::getTimerFd called with callback: " + ss.str(), "Timer::getTimerFd");
+        fd = _callback->getFd();
+    }
+    return fd;
 }
 
 // Reverse comparison for priority queue (earliest expiration at top)

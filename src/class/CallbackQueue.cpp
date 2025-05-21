@@ -50,7 +50,16 @@ void CallbackQueue::processCallbacks()
 
         try
         {
-            callback->execute();
+            if (callback) // Check if callback is valid
+            {
+                callback->execute();
+            }
+            else
+            {
+                ErrorHandler::getInstance().logError(
+                    WARNING, CALLBACK_ERROR, "Null callback in queue", "CallbackQueue::processCallbacks");
+                continue; // Skip to next callback
+            }
         }
         catch (const std::exception& e)
         {
@@ -67,7 +76,7 @@ void CallbackQueue::processCallbacks()
                                                  "CallbackQueue::processCallbacks");
         }
 
-        delete callback;
+        delete callback; // Always delete the callback after execution
     }
 }
 

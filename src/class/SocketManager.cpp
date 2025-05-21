@@ -32,6 +32,8 @@
 #include "HttpRequest.hpp"
 #include "HttpException.hpp"
 #include "HttpLimits.hpp"
+// Forward declaration of sendErrorResponse
+void sendErrorResponse(int fd, int status, const std::string& reason);
 
 
 SocketManager::SocketManager(void)
@@ -50,6 +52,12 @@ SocketManager::~SocketManager(void)
         delete it->second;
     }
     _clientSockets.clear();
+    
+    // Clean up any remaining timers and their callbacks
+    while (!_timerQueue.empty())
+    {
+        _timerQueue.pop(); // Timer destructor will handle callback cleanup
+    }
 }
 
 void SocketManager::init_connect(void)
@@ -147,27 +155,30 @@ ServerSocket& SocketManager::getServerSocket() { return _serverSocket; }
 
 CallbackQueue& SocketManager::getCallbackQueue() { return _callbackQueue; }
 
+#include <sstream>
+#include "ErrorHandler.hpp"
+
 void SocketManager::cleanupClientSocket(int fd, int epoll_fd)
 {
-    // Cancel any timers for this client
+    // Cancel any timers for this client first
     cancelTimer(fd);
 
-    // Clean up the client socket
-    if (fd != _serverSocketFd)
+    // Remove from epoll first
+    if (epoll_fd >= 0)
     {
-        std::map<int, ClientSocket*>::iterator it = _clientSockets.find(fd);
-        if (it != _clientSockets.end())
-        {
-            delete it->second;
-            _clientSockets.erase(it);
-        }
-        // Remove from epoll
-        if (epoll_fd >= 0)
-        {
-            epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
-        }
-        close(fd);
+        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
     }
+
+    // Then delete the client socket object
+    std::map<int, ClientSocket*>::iterator it = _clientSockets.find(fd);
+    if (it != _clientSockets.end())
+    {
+        delete it->second;
+        _clientSockets.erase(it);
+    }
+
+    // Finally close the file descriptor
+    close(fd);
 }
 
 int SocketManager::addTimer(int seconds, Callback* callback)
@@ -175,41 +186,65 @@ int SocketManager::addTimer(int seconds, Callback* callback)
     time_t expireTime = time(NULL) + seconds;
     Timer  timer(expireTime, callback);
     _timerQueue.push(timer);
+    std::stringstream ss;
+    ss << callback;
     return callback->getFd();  // Use the file descriptor as the timer ID
 }
 
 bool SocketManager::cancelTimer(int fd)
 {
+    std::stringstream ss;
+    ss << fd;
+    ErrorHandler::getInstance().logError(DEBUG, TIMER_ERROR, "SocketManager::cancelTimer called with fd: " + ss.str(), "SocketManager::cancelTimer");
     // We can't easily remove from a priority queue, so we'll rebuild it without the timer
     std::priority_queue<Timer> temp;
-    bool                       found = false;
+    bool found = false;
 
+    // First, mark all timers with matching fd as "to be removed"
+    std::vector<int> fdsToRemove;
+    fdsToRemove.push_back(fd);
+
+    // Rebuild the queue, skipping timers with matching fd
     while (!_timerQueue.empty())
     {
         Timer timer = _timerQueue.top();
+        
+        // Get the fd from the timer using the safe method BEFORE popping
+        int timerFd = timer.getTimerFd();
+        
         _timerQueue.pop();
 
-        Callback* callback = timer.getCallback();
-        if (callback && callback->getFd() == fd)
+        // Check if this timer should be removed
+        bool shouldRemove = false;
+        
+        for (size_t i = 0; i < fdsToRemove.size(); i++)
         {
-            // We found a timer for this fd
-            // The callback will be deleted by the Timer destructor
-            // since the original Timer owns it
-            found = true;
+            if (timerFd == fdsToRemove[i])
+            {
+                shouldRemove = true;
+                found = true;
+                break;
+            }
         }
-        else
+
+        if (shouldRemove)
         {
-            temp.push(timer);
+            // Don't push this timer back
+            continue;
         }
+        
+        // If we get here, the timer should be kept
+        temp.push(timer);
     }
 
     _timerQueue = temp;
-    return (found);
+    return found;
 }
 
 void SocketManager::processTimers()
 {
     time_t now = time(NULL);
+    ErrorHandler::getInstance().logError(DEBUG, TIMER_ERROR, "SocketManager::processTimers called", "SocketManager::processTimers");
 
     while (!_timerQueue.empty())
     {
@@ -229,11 +264,14 @@ void SocketManager::processTimers()
         
         if (callback)
         {
-            // Create a copy of the callback for the queue
-            // The original callback will be deleted by the Timer destructor
-            // We need to transfer ownership to the queue
+            std::stringstream ss;
+            ss << callback;
+            ErrorHandler::getInstance().logError(DEBUG, TIMER_ERROR, "SocketManager::processTimers processing timer with callback: " + ss.str(), "SocketManager::processTimers");
+            // Transfer ownership of the callback to the queue
+            // The Timer no longer owns the callback
+            Callback* callbackCopy = callback;
             timer.setCallback(NULL); // Remove ownership from the Timer
-            _callbackQueue.push(callback); // Transfer ownership to the queue
+            _callbackQueue.push(callbackCopy); // Transfer ownership to the queue
         }
     }
 }

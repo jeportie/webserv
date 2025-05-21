@@ -23,7 +23,7 @@ int main()
     // Initialize error handler
     ErrorHandler& errorHandler = ErrorHandler::getInstance();
     // Set min log level (DEBUG TO SHOW DEBUG LOGS)
-    errorHandler.setLogLevel(INFO);
+    errorHandler.setLogLevel(DEBUG);
 	// Create the log file
     errorHandler.setLogFile("webserv.log");
     
