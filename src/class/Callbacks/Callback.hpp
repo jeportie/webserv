@@ -13,8 +13,6 @@
 #ifndef CALLBACK_HPP
 #define CALLBACK_HPP
 
-#include <ctime>
-
 // Base class for all callbacks
 class Callback
 {

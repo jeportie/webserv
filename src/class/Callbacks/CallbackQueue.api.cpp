@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   CallbackQueue.cpp                                  :+:      :+:    :+:   */
+/*   CallbackQueue.api.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/20 10:00:00 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/20 10:00:00 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/22 13:46:11 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,8 @@ void CallbackQueue::push(Callback* callback)
 
 bool CallbackQueue::tryExecute(Callback* callback)
 {
+	std::string errorMsg;
+
     try
     {
         if (callback)
@@ -45,7 +47,7 @@ bool CallbackQueue::tryExecute(Callback* callback)
     }
     catch (const std::exception& e)
     {
-        std::string errorMsg = "Error executing callback: ";
+        errorMsg = "Error executing callback: ";
         errorMsg += e.what();
         LOG_ERROR(ERROR, CALLBACK_ERROR, errorMsg, "CallbackQueue::processCallbacks");
     }

@@ -6,16 +6,15 @@
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:12:37 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/22 13:12:47 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/22 13:53:05 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef TIMEOUTCALLBACK_HPP
-# define TIMEOUTCALLBACK_HPP
+#define TIMEOUTCALLBACK_HPP
 
 #include "Callback.hpp"
 
-// Forward declaration
 class SocketManager;
 
 // Timeout callback

@@ -15,7 +15,6 @@
 
 #include "Callback.hpp"
 
-// Forward declaration
 class SocketManager;
 
 class AcceptCallback : public Callback

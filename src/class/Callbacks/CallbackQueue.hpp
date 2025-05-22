@@ -13,6 +13,7 @@
 #ifndef CALLBACKQUEUE_HPP
 #define CALLBACKQUEUE_HPP
 
+#include <cstddef>
 #include <queue>
 #include "Callback.hpp"
 

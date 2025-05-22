@@ -36,12 +36,15 @@ AcceptCallback::~AcceptCallback()
 
 void AcceptCallback::execute()
 {
-    try
+    ClientSocket* client;
+    int clientFd;
+
+	try
     {
-        ClientSocket* client = _manager->getServerSocket().safeAccept(_epollFd);
+        client = _manager->getServerSocket().safeAccept(_epollFd);
         if (client)
         {
-            int clientFd = client->getFd();
+            clientFd = client->getFd();
             _manager->addClientSocket(clientFd, client);
 
             client->touch(); // Init timer for the new client;
@@ -52,9 +55,7 @@ void AcceptCallback::execute()
     }
     catch (const std::exception& e)
     {
-        LOG_ERROR(ERROR,
-                  SOCKET_ERROR,
-                  "Accept failed: " + std::string(e.what()),
-                  "AcceptCallback::execute");
+        LOG_ERROR(ERROR, SOCKET_ERROR, "Accept failed: " + std::string(e.what()),
+				"AcceptCallback::execute");
     }
 }

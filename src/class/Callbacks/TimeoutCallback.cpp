@@ -6,7 +6,7 @@
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:16:41 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/22 13:18:43 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/22 13:52:50 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 #include <unistd.h>
 #include <sys/epoll.h>
 #include <iostream>
-
 
 // TimeoutCallback implementation
 TimeoutCallback::TimeoutCallback(int fd, SocketManager* manager, int epollFd)

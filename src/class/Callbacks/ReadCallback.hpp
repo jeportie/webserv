@@ -6,7 +6,7 @@
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 12:59:00 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/22 13:06:59 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/22 13:52:18 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 
 #include "Callback.hpp"
 
-// Forward declaration
 class SocketManager;
 
 // Read data from client callback

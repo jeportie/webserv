@@ -6,7 +6,7 @@
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:13:44 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/22 13:16:13 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/22 13:50:45 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,10 +33,5 @@ ErrorCallback::~ErrorCallback()
 
 void ErrorCallback::execute()
 {
-    // Store the fd locally since we'll be using it after potentially deleting objects
-    int fd = _fd;
-    int epollFd = _epollFd;
-    
-    // Clean up the client socket
-    _manager->cleanupClientSocket(fd, epollFd);
+    _manager->cleanupClientSocket(_fd, _epollFd);
 }
