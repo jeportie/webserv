@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #include "ErrorCallback.hpp"
-#include "../SocketManager.hpp"
+#include "../SocketManager/SocketManager.hpp"
 #include "../../../include/webserv.h"
 
 #include <unistd.h>

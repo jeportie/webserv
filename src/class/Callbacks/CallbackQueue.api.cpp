@@ -11,8 +11,7 @@
 /* ************************************************************************** */
 
 #include "CallbackQueue.hpp"
-#include "../ErrorHandler.hpp"
-#include "../ErrorHandler.hpp"
+#include "../Errors/ErrorHandler.hpp"
 #include "../../../include/webserv.h"
 
 void CallbackQueue::push(Callback* callback)

@@ -18,7 +18,7 @@
 #include <sys/socket.h>
 #include <string>
 #include <vector>
-#include "RequestLine.hpp"
+#include "../Http/RequestLine.hpp"
 
 enum BodyMode
 {

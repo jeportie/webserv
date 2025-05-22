@@ -11,8 +11,9 @@
 /* ************************************************************************** */
 
 #include "TimeoutCallback.hpp"
-#include "../SocketManager.hpp"
+#include "../SocketManager/SocketManager.hpp"
 #include "../../../include/webserv.h"
+
 #include <unistd.h>
 #include <sys/epoll.h>
 #include <iostream>

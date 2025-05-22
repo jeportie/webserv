@@ -10,8 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../SocketManager.hpp"
-#include "../ErrorHandler.hpp"
+#include "../SocketManager/SocketManager.hpp"
+#include "../Errors/ErrorHandler.hpp"
 #include "../../../include/webserv.h"
 #include "AcceptCallback.hpp"
 

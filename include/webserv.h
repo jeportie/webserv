@@ -23,7 +23,7 @@
 
 # include <iostream>
 # include <string>
-# include "../src/class/ErrorHandler.hpp"
+# include "../src/class/Errors/ErrorHandler.hpp"
 
 // Macro for easy error logging
 # define LOG_ERROR(level, category, message, source) \

@@ -17,10 +17,10 @@
 #include <map>
 #include <sys/epoll.h>
 
-#include "ServerSocket.hpp"
-#include "HttpRequest.hpp"
-#include "ClientSocket.hpp"
-#include "Callbacks/CallbackQueue.hpp"
+#include "../Sockets/ServerSocket.hpp"
+#include "../Http/HttpRequest.hpp"
+#include "../Sockets/ClientSocket.hpp"
+#include "../Callbacks/CallbackQueue.hpp"
 
 
 class Callback;

@@ -17,8 +17,8 @@
 #include <iostream>
 #include <sstream>
 #include <cerrno>
-#include "ErrorHandler.hpp"
-#include "../../include/webserv.h"
+#include "../Errors/ErrorHandler.hpp"
+#include "../../../include/webserv.h"
 
 ServerSocket::ServerSocket(void)
 : Socket()

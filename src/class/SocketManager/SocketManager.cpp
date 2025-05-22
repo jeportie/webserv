@@ -22,19 +22,19 @@
 #include <unistd.h>
 #include <sstream>
 
-#include "../../include/webserv.h"
-#include "Callbacks/AcceptCallback.hpp"
-#include "Callbacks/ErrorCallback.hpp"
-#include "Callbacks/ReadCallback.hpp"
-#include "Callbacks/TimeoutCallback.hpp"
-#include "RequestLine.hpp"
+#include "../../../include/webserv.h"
+#include "../Callbacks/AcceptCallback.hpp"
+#include "../Callbacks/ErrorCallback.hpp"
+#include "../Callbacks/ReadCallback.hpp"
+#include "../Callbacks/TimeoutCallback.hpp"
+#include "../Http/RequestLine.hpp"
 #include "SocketManager.hpp"
-#include "ClientSocket.hpp"
+#include "../Sockets/ClientSocket.hpp"
 
-#include "HttpParser.hpp"
-#include "HttpRequest.hpp"
-#include "HttpException.hpp"
-#include "HttpLimits.hpp"
+#include "../Http/HttpParser.hpp"
+#include "../Http/HttpRequest.hpp"
+#include "../Http/HttpException.hpp"
+#include "../Http/HttpLimits.hpp"
 
 SocketManager::SocketManager(void)
 : _serverSocketFd(-1)

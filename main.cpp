@@ -11,8 +11,9 @@
 /* ************************************************************************** */
 
 #include "include/webserv.h"
-#include "src/class/SocketManager.hpp"
-#include "src/class/ErrorHandler.hpp"
+#include "src/class/SocketManager/SocketManager.hpp"
+#include "src/class/Errors/ErrorHandler.hpp"
+
 #include <cstdlib>
 #include <stdexcept>
 #include <iostream>
@@ -20,11 +21,14 @@
 
 int main()
 {
+	std::string Start("Server starting on port ");
+	std::string RunT("Runtime Error: ");
+	std::string Excp("Exception Error: ");
+	std::string Ukwn("Unknown Error: ");
+
     // Initialize error handler
     ErrorHandler& errorHandler = ErrorHandler::getInstance();
-    // Set min log level (DEBUG TO SHOW DEBUG LOGS)
     errorHandler.setLogLevel(DEBUG);
-	// Create the log file
     errorHandler.setLogFile("webserv.log");
     
     try
@@ -32,27 +36,26 @@ int main()
         std::cout << "Starting webserv on port " << PORT << std::endl;
         SocketManager theSocketMaster;
 
-        // Log server start
         std::stringstream ss;
         ss << PORT;
-        errorHandler.logError(INFO, INTERNAL_ERROR, "Server starting on port " + ss.str(), "main");
+        LOG_ERROR(INFO, INTERNAL_ERROR, Start + ss.str(), "main");
 
 		// Start the server
         theSocketMaster.init_connect();
     }
     catch (const std::runtime_error& e)
     {
-        errorHandler.logError(CRITICAL, INTERNAL_ERROR, std::string("Runtime Error: ") + e.what(), "main");
+        LOG_ERROR(CRITICAL, INTERNAL_ERROR, RunT + e.what(), "main");
         std::cerr << "Runtime Error: " << e.what() << std::endl;
     }
     catch (const std::exception& e)
     {
-        errorHandler.logError(CRITICAL, INTERNAL_ERROR, std::string("Exception Error: ") + e.what(), "main");
+        LOG_ERROR(CRITICAL, INTERNAL_ERROR, Excp + e.what(), "main");
         std::cerr << "Exception Error: " << e.what() << std::endl;
     }
     catch (...)
     {
-        errorHandler.logError(CRITICAL, INTERNAL_ERROR, "Unknown Error", "main");
+        LOG_ERROR(CRITICAL, INTERNAL_ERROR, Ukwn, "main");
         std::cerr << "Unknown Error" << std::endl;
     }
     

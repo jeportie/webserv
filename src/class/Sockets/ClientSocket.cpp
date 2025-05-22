@@ -10,15 +10,16 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../include/webserv.h"
+#include "../../../include/webserv.h"
 #include "ClientSocket.hpp"
+#include "../Http/HttpException.hpp"
+#include "../Http/HttpLimits.hpp"
+
 #include <cerrno>
 #include <cstring>
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
-#include "HttpException.hpp"
-#include "HttpLimits.hpp"
 
 
 ClientSocket::ClientSocket()
