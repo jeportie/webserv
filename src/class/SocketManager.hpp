@@ -16,14 +16,11 @@
 #include <arpa/inet.h>
 #include <map>
 #include <sys/epoll.h>
-#include <queue>
 
 #include "ServerSocket.hpp"
 #include "HttpRequest.hpp"
 #include "ClientSocket.hpp"
 #include "CallbackQueue.hpp"
-#include "Timer.hpp"
-#include "Callback.hpp"
 
 
 class Callback;
@@ -35,11 +32,7 @@ public:
     ~SocketManager(void);
 
     void init_connect(void);
-    void eventLoop(int epoll_fd, int timeout_ms = -1);
-    int  calculateEpollTimeout(int timeout_ms);
-    int  addTimer(int seconds, Callback* callback);
-    bool cancelTimer(int fd);
-    void processTimers();
+    void eventLoop(int epoll_fd);
     void cleanupClientSocket(int fd, int epoll_fd);
 
     bool communication(int fd);
@@ -50,8 +43,12 @@ public:
 
     ServerSocket&  getServerSocket();
     CallbackQueue& getCallbackQueue();
-    int            getServerSocketFd(void) const;
-    int            getClientSocketFd(void) const;
+
+    int  getCheckIntervalMs(void);
+    void enqueueReadyCallbacks(int n, std::vector<epoll_event>& events, int epoll_fd);
+    void scanClientTimeouts(int epoll_fd);
+    int  getServerSocketFd(void) const;
+    int  getClientSocketFd(void) const;
 
 private:
     SocketManager(const SocketManager& src);
@@ -61,7 +58,6 @@ private:
     std::map<int, ClientSocket*> _clientSockets;   ///< Map of client sockets by file descriptor
     int                          _serverSocketFd;  ///< Server socket file descriptor
     int                          _clientSocketFd;  ///< Client socket file descriptor (most recent)
-    std::priority_queue<Timer>   _timerQueue;      ///< Priority queue of timers
     CallbackQueue                _callbackQueue;   ///< Simple callback queue
 
 

@@ -114,6 +114,9 @@ void ClientSocket::setParsedHeaders(std::map<std::string, std::vector<std::strin
     _parsedHeaders = hdrs;
 }
 
+void ClientSocket::touch() { _lastActivity = time(NULL); }
+time_t ClientSocket::getLastActivity() const { return _lastActivity; }
+
 bool         ClientSocket::getChunked() const { return (_chunked); }
 void         ClientSocket::setChunked(bool c) { _chunked = c; }
 size_t       ClientSocket::getChunkSize() const { return (_chunkSize); }

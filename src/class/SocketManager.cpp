@@ -32,9 +32,6 @@
 #include "HttpRequest.hpp"
 #include "HttpException.hpp"
 #include "HttpLimits.hpp"
-// Forward declaration of sendErrorResponse
-void sendErrorResponse(int fd, int status, const std::string& reason);
-
 
 SocketManager::SocketManager(void)
 : _serverSocketFd(-1)
@@ -52,12 +49,6 @@ SocketManager::~SocketManager(void)
         delete it->second;
     }
     _clientSockets.clear();
-    
-    // Clean up any remaining timers and their callbacks
-    while (!_timerQueue.empty())
-    {
-        _timerQueue.pop(); // Timer destructor will handle callback cleanup
-    }
 }
 
 void SocketManager::init_connect(void)
@@ -82,72 +73,99 @@ void SocketManager::init_connect(void)
     eventLoop(epoll_fd);
 }
 
-void SocketManager::eventLoop(int epoll_fd, int timeout_ms)
+void SocketManager::eventLoop(int epoll_fd)
 {
-    std::vector<epoll_event> events(MAXEVENTS);
-    bool                     running = true;
+    std::vector<epoll_event> events;
+    int checkIntervalMs;
+    bool running;
+    int n;
+
+    events = std::vector<epoll_event>(MAXEVENTS);
+    checkIntervalMs = getCheckIntervalMs();
+    running = true;
 
     while (running)
     {
-        processTimers();  // checks if any timers have expired
-        // For each expired timer, the callback is pushed into the _callbackQueue
-        _callbackQueue.processCallbacks();
-        int wait_timeout = this->calculateEpollTimeout(timeout_ms);
-
-        // Wait for events
-        int n = epoll_wait(epoll_fd, events.data(), MAXEVENTS, wait_timeout);
+        /* 1) Wait up to CHECK_INTERVAL_MS for any I/O */
+        n = epoll_wait(epoll_fd, &events[0], MAXEVENTS, checkIntervalMs);
         if (n < 0)
         {
             if (errno == EINTR)
+            {
                 continue;
-            THROW_SYSTEM_ERROR(
-                CRITICAL, EPOLL_ERROR, "epoll_wait failed", "SocketManager::eventLoop");
+            }
+            THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "epoll_wait failed", "SocketManager::eventLoop");
         }
 
-        // Process events by queueing appropriate callbacks
-        for (int i = 0; i < n; ++i)
-        {
-            int      fd = events[i].data.fd;
-            uint32_t ev = events[i].events;
+        scanClientTimeouts(epoll_fd);
 
-            if ((ev & EPOLLIN) && fd == _serverSocketFd)
-            {
-                // New connection on the server socket
-                _callbackQueue.push(new AcceptCallback(fd, this, epoll_fd));
-            }
-            else if ((ev & EPOLLIN) && fd != _serverSocketFd)
-            {
-                // Data available on a client socket
-                _callbackQueue.push(new ReadCallback(fd, this));
-            }
-            else if (ev & (EPOLLERR | EPOLLHUP))
-            {
-                // Error or hangup on a socket
-                _callbackQueue.push(new ErrorCallback(fd, this, epoll_fd));
-            }
-        }
+        _callbackQueue.processCallbacks();
+
+        enqueueReadyCallbacks(n, events, epoll_fd);
     }
 }
 
-int SocketManager::calculateEpollTimeout(int timeout_ms)
+int SocketManager::getCheckIntervalMs(void)
 {
-    if (_timerQueue.empty())
-        return timeout_ms;
-
-
-    time_t now         = time(NULL);
-    time_t next_expire = _timerQueue.top().getExpireTime();
-
-    if (next_expire <= now)
-        return 0;  // Process immediately
-
-    int wait_timeout = (next_expire - now) * 1000;  // Convert to milliseconds
-
-    if (timeout_ms != -1 && wait_timeout > timeout_ms)
-        return timeout_ms;  // Use the smaller timeout
-
-    return wait_timeout;
+    return 1000;
 }
+
+void SocketManager::enqueueReadyCallbacks(int n, std::vector<epoll_event>& events, int epoll_fd)
+{
+    int i;
+    int fd;
+    uint32_t ev;
+
+    i = 0;
+    while (i < n)
+    {
+        fd = events[i].data.fd;
+        ev = events[i].events;
+
+        if ((ev & EPOLLIN) && fd == _serverSocketFd)
+        {
+            _callbackQueue.push(new AcceptCallback(fd, this, epoll_fd));
+        }
+        else if ((ev & EPOLLIN) && fd != _serverSocketFd)
+        {
+            _callbackQueue.push(new ReadCallback(fd, this));
+        }
+        else if (ev & (EPOLLERR | EPOLLHUP))
+        {
+            _callbackQueue.push(new ErrorCallback(fd, this, epoll_fd));
+        }
+        i++;
+    }
+}
+
+void SocketManager::scanClientTimeouts(int epoll_fd)
+{
+    time_t now;
+    std::map<int, ClientSocket*>::iterator it;
+    int fd;
+    ClientSocket* c;
+    std::ostringstream oss;
+
+    now = time(NULL);
+    it = _clientSockets.begin();
+    while (it != _clientSockets.end())
+    {
+        fd = it->first;
+        c = it->second;
+        if (now - c->getLastActivity() >= CLIENT_TIMEOUT)
+        {
+            oss.str("");
+            oss.clear();
+            oss << "Client timed out (fd=" << fd << ")";
+            LOG_ERROR(INFO, SOCKET_ERROR,
+                      oss.str(),
+                      "SocketManager::scanClientTimeouts");
+            _callbackQueue.push(new TimeoutCallback(fd, this, epoll_fd));
+        }
+        ++it;
+    }
+}
+
 
 void SocketManager::addClientSocket(int fd, ClientSocket* client) { _clientSockets[fd] = client; }
 
@@ -160,9 +178,6 @@ CallbackQueue& SocketManager::getCallbackQueue() { return _callbackQueue; }
 
 void SocketManager::cleanupClientSocket(int fd, int epoll_fd)
 {
-    // Cancel any timers for this client first
-    cancelTimer(fd);
-
     // Remove from epoll first
     if (epoll_fd >= 0)
     {
@@ -181,100 +196,6 @@ void SocketManager::cleanupClientSocket(int fd, int epoll_fd)
     close(fd);
 }
 
-int SocketManager::addTimer(int seconds, Callback* callback)
-{
-    time_t expireTime = time(NULL) + seconds;
-    Timer  timer(expireTime, callback);
-    _timerQueue.push(timer);
-    std::stringstream ss;
-    ss << callback;
-    return callback->getFd();  // Use the file descriptor as the timer ID
-}
-
-bool SocketManager::cancelTimer(int fd)
-{
-    std::stringstream ss;
-    ss << fd;
-    ErrorHandler::getInstance().logError(DEBUG, TIMER_ERROR, "SocketManager::cancelTimer called with fd: " + ss.str(), "SocketManager::cancelTimer");
-    // We can't easily remove from a priority queue, so we'll rebuild it without the timer
-    std::priority_queue<Timer> temp;
-    bool found = false;
-
-    // First, mark all timers with matching fd as "to be removed"
-    std::vector<int> fdsToRemove;
-    fdsToRemove.push_back(fd);
-
-    // Rebuild the queue, skipping timers with matching fd
-    while (!_timerQueue.empty())
-    {
-        Timer timer = _timerQueue.top();
-        
-        // Get the fd from the timer using the safe method BEFORE popping
-        int timerFd = timer.getTimerFd();
-        
-        _timerQueue.pop();
-
-        // Check if this timer should be removed
-        bool shouldRemove = false;
-        
-        for (size_t i = 0; i < fdsToRemove.size(); i++)
-        {
-            if (timerFd == fdsToRemove[i])
-            {
-                shouldRemove = true;
-                found = true;
-                break;
-            }
-        }
-
-        if (shouldRemove)
-        {
-            // Don't push this timer back
-            continue;
-        }
-        
-        // If we get here, the timer should be kept
-        temp.push(timer);
-    }
-
-    _timerQueue = temp;
-    return found;
-}
-
-void SocketManager::processTimers()
-{
-    time_t now = time(NULL);
-    ErrorHandler::getInstance().logError(DEBUG, TIMER_ERROR, "SocketManager::processTimers called", "SocketManager::processTimers");
-
-    while (!_timerQueue.empty())
-    {
-        Timer timer = _timerQueue.top();
-
-        if (timer.getExpireTime() > now)
-        {
-            // No more expired timers
-            break;
-        }
-
-        // Remove the timer from the queue
-        _timerQueue.pop();
-
-        // Get the callback
-        Callback* callback = timer.getCallback();
-        
-        if (callback)
-        {
-            std::stringstream ss;
-            ss << callback;
-            ErrorHandler::getInstance().logError(DEBUG, TIMER_ERROR, "SocketManager::processTimers processing timer with callback: " + ss.str(), "SocketManager::processTimers");
-            // Transfer ownership of the callback to the queue
-            // The Timer no longer owns the callback
-            Callback* callbackCopy = callback;
-            timer.setCallback(NULL); // Remove ownership from the Timer
-            _callbackQueue.push(callbackCopy); // Transfer ownership to the queue
-        }
-    }
-}
 
 void SocketManager::safeRegisterToEpoll(int epoll_fd)
 {
@@ -319,6 +240,7 @@ bool SocketManager::readFromClient(int fd)
         if (n > 0)
         {
             buf.append(tmp, n);
+			client->touch();
             continue;
         }
         // n <= 0 : soit EOF (n==0), soit plus de données pour l'instant (n<0/EAGAIN)
@@ -455,12 +377,6 @@ HttpRequest SocketManager::buildHttpRequest(ClientSocket* client)
 
 void SocketManager::cleanupRequest(ClientSocket* client) { client->resetParserState(); }
 
-/**
- * @brief Closes a client connection, removing it from epoll and cleaning up resources
- *
- * @param fd The client socket file descriptor to close
- * @param epoll_fd The epoll instance file descriptor; if >=0, the socket will be deregistered
- */
 void SocketManager::closeConnection(int fd, int epoll_fd)
 {
     // 1) Deregister from epoll if applicable

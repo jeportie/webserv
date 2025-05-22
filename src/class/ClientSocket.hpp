@@ -44,6 +44,9 @@ public:
     const struct sockaddr_in&                       getClientAddr(void) const;
     socklen_t                                       getClientAddrLen(void) const;
 
+	void											touch(void);
+	time_t											getLastActivity(void) const ;
+
     // --- Contexte de parsing HTTP ---
     /// Accès au tampon brut où l’on accumulate les données lues
     std::string& getBuffer();
@@ -72,6 +75,7 @@ private:
     ClientSocket(const ClientSocket& src);
     ClientSocket& operator=(const ClientSocket& rhs);
     
+	time_t											_lastActivity;
     socklen_t                                       _clientAddrLen;  ///< Length of client address structure
     struct sockaddr_in                              _clientAddr;     ///< Client address structure
     std::string                                     _buffer;

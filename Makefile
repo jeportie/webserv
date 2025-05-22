@@ -23,19 +23,18 @@ ARGS=$(filter-out $@,$(MAKECMDGOALS))
 #### BEGIN AUTO GENERATED FILES ###
 # List of source files:
 SRC = \
-  src/class/Timer.cpp \
   src/class/HttpException.cpp \
   src/class/HttpParser.cpp \
   src/class/HttpParser_utils.cpp \
   src/class/HttpRequest.cpp \
   src/class/RequestLine.cpp \
-  src/class/ClientSocket.cpp \
-  src/class/SocketCallbacks.cpp \
   src/class/Callback.cpp \
   src/class/CallbackQueue.cpp \
+  src/class/SocketCallbacks.cpp \
   src/class/ErrorHandler.cpp \
   src/class/ServerSocket.cpp \
   src/class/Socket.cpp \
+  src/class/ClientSocket.cpp \
   src/class/SocketManager.cpp 
 ### END AUTO GENERATED FILES ###
 

@@ -38,9 +38,8 @@ void AcceptCallback::execute()
         {
             int clientFd = client->getFd();
             _manager->addClientSocket(clientFd, client);
-            
             // Add a timeout for idle connections
-            _manager->addTimer(CLIENT_TIMEOUT, new TimeoutCallback(clientFd, _manager, _epollFd));
+			client->touch();
             
             std::cout << "New connection from " << client->getClientIP() << ":" 
                       << client->getClientPort() << " (fd=" << clientFd << ")" << std::endl;
@@ -95,17 +94,23 @@ WriteCallback::~WriteCallback()
 
 void WriteCallback::execute()
 {
-    if (write(_fd, _data.c_str(), _data.length()) < 0)
+    ssize_t written = write(_fd, _data.c_str(), _data.length());
+    if (written < 0)
     {
         LOG_SYSTEM_ERROR(WARNING,
                          SOCKET_ERROR,
                          "Failed to write response to client",
                          "WriteCallback::execute");
-        
-        // Queue an error callback if write failed
         _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1));
     }
+   // else
+   // {
+   //     ClientSocket* c = _manager->getClientSocket(_fd);
+   //     if (c)
+   //         c->touch();   // ← update activity on write
+   // }
 }
+
 
 // ErrorCallback implementation
 ErrorCallback::ErrorCallback(int fd, SocketManager* manager, int epollFd)
