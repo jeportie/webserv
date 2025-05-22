@@ -1,160 +1,96 @@
 # Task ID: 7
-# Title: Implement Route Handler and HTTP Method Support
+# Title: Client Connection Handler
 # Status: pending
-# Dependencies: 3, 5, 6
+# Dependencies: 3, 4, 5
 # Priority: medium
-# Description: Create a route handler that matches requests to configured routes and implements support for GET, POST, and DELETE HTTP methods.
+# Description: Implement a client connection handler that manages the lifecycle of client connections, from acceptance to closure.
 # Details:
-Implement a RouteHandler class that:
-1. Matches incoming requests to configured routes based on URI path
-2. Verifies the HTTP method is allowed for the matched route
-3. Dispatches the request to appropriate handlers based on method
-4. Implements GET, POST, and DELETE method handling
-5. Handles redirects defined in route configuration
+Create a Client class to manage client connections:
 
-Pseudo-code:
 ```cpp
-class RouteHandler {
+class Client {
 private:
-    StaticFileHandler file_handler;
-    // Will add CGIHandler and other handlers later
-    
-    const RouteConfig* findMatchingRoute(const HTTPRequest& request, const ServerConfig& server) const;
-    bool isMethodAllowed(const std::string& method, const RouteConfig& route) const;
+    int _socketFd;
+    std::string _buffer;
+    HTTPRequest _request;
+    HTTPResponse _response;
+    time_t _lastActivity;
+    bool _keepAlive;
+    size_t _maxBodySize;
     
 public:
-    HTTPResponse handleRequest(const HTTPRequest& request, const ServerConfig& server);
-    HTTPResponse handleGET(const HTTPRequest& request, const RouteConfig& route);
-    HTTPResponse handlePOST(const HTTPRequest& request, const RouteConfig& route);
-    HTTPResponse handleDELETE(const HTTPRequest& request, const RouteConfig& route);
+    Client(int socketFd, size_t maxBodySize);
+    ~Client();
+    
+    bool readRequest();
+    bool writeResponse();
+    bool hasTimedOut(time_t currentTime, int timeout) const;
+    void updateActivity();
+    int getSocketFd() const;
+    bool isKeepAlive() const;
+    void setResponse(const HTTPResponse& response);
 };
-
-HTTPResponse RouteHandler::handleRequest(const HTTPRequest& request, const ServerConfig& server) {
-    // Find matching route
-    const RouteConfig* route = findMatchingRoute(request, server);
-    if (!route) {
-        return HTTPResponse::makeErrorResponse(404);
-    }
-    
-    // Check for redirect
-    if (!route->redirect.empty()) {
-        HTTPResponse response;
-        response.setStatusCode(301);
-        response.addHeader("Location", route->redirect);
-        return response;
-    }
-    
-    // Check if method is allowed
-    if (!isMethodAllowed(request.getMethod(), *route)) {
-        return HTTPResponse::makeErrorResponse(405);
-    }
-    
-    // Dispatch based on method
-    if (request.getMethod() == "GET") {
-        return handleGET(request, *route);
-    } else if (request.getMethod() == "POST") {
-        return handlePOST(request, *route);
-    } else if (request.getMethod() == "DELETE") {
-        return handleDELETE(request, *route);
-    }
-    
-    // Unsupported method
-    return HTTPResponse::makeErrorResponse(501);
-}
-
-HTTPResponse RouteHandler::handleGET(const HTTPRequest& request, const RouteConfig& route) {
-    // For now, just use the static file handler
-    return file_handler.handleRequest(request, route);
-}
-
-HTTPResponse RouteHandler::handleDELETE(const HTTPRequest& request, const RouteConfig& route) {
-    std::string uri_path = request.getURI();
-    // Remove query parameters if present
-    size_t query_pos = uri_path.find('?');
-    if (query_pos != std::string::npos) {
-        uri_path = uri_path.substr(0, query_pos);
-    }
-    
-    // Map to filesystem path
-    std::string file_path = route.root + uri_path;
-    
-    // Check if file exists
-    if (!file_handler.fileExists(file_path)) {
-        return HTTPResponse::makeErrorResponse(404);
-    }
-    
-    // Delete the file
-    if (remove(file_path.c_str()) != 0) {
-        return HTTPResponse::makeErrorResponse(500);
-    }
-    
-    // Return success response
-    HTTPResponse response;
-    response.setStatusCode(200);
-    response.setBody("{\"status\": \"success\", \"message\": \"File deleted\"}", "application/json");
-    return response;
-}
 ```
 
-Implement the POST method handler and route matching logic.
+Implementation steps:
+1. Accept new client connections in the event loop
+2. Read data from client socket in a non-blocking manner
+3. Buffer incoming data until a complete HTTP request is received
+4. Process the request and generate a response
+5. Write the response to the client socket in a non-blocking manner
+6. Handle keep-alive connections
+7. Implement timeout mechanism to close idle connections
+
+Ensure all socket operations are non-blocking and properly integrated with the event loop.
 
 # Test Strategy:
-1. Unit tests for RouteHandler methods
-2. Test route matching with various URI patterns
-3. Test method validation against allowed methods
-4. Test GET method for file retrieval
-5. Test POST method for file creation
-6. Test DELETE method for file removal
-7. Test redirect handling
-8. Test error responses for invalid methods and routes
-9. Integration tests with the full request-response cycle
+1. Test handling of multiple concurrent clients
+2. Verify proper buffering of partial requests
+3. Test keep-alive connection handling
+4. Verify timeout mechanism closes idle connections
+5. Test with slow clients to ensure non-blocking behavior
+6. Validate proper cleanup of client resources on disconnection
 
 # Subtasks:
-## 1. Implement Route Matching Algorithm [pending]
+## 1. Implement connection acceptance [pending]
 ### Dependencies: None
-### Description: Design and implement an efficient algorithm for matching incoming request paths to registered routes
+### Description: Create a mechanism to accept incoming client connections efficiently
 ### Details:
-Create a trie-based route matching system that supports path parameters, wildcards, and regex patterns. Include fallback mechanisms for 404 handling. Ensure O(log n) or better matching performance. Implement extensibility points for custom matching logic. Handle edge cases like trailing slashes, case sensitivity options, and normalization of paths. Include comprehensive error handling for malformed routes.
+Implement a socket listener that accepts new client connections, configures them as non-blocking, and registers them with the event loop. Include error handling for connection failures and implement backpressure mechanisms when the server is under high load.
 
-## 2. Develop Request Method Validation [pending]
+## 2. Implement non-blocking read operations [pending]
 ### Dependencies: 7.1
-### Description: Create a system to validate HTTP methods against allowed methods for each route
+### Description: Develop a system to read data from client sockets without blocking the event loop
 ### Details:
-Implement method validation that supports standard HTTP methods (GET, POST, PUT, DELETE, etc.) and custom methods. Include middleware hooks for pre-validation logic. Build a configurable response system for method not allowed (405) errors with appropriate headers. Design for extensibility to support protocol upgrades and custom method handling. Implement proper error handling with detailed logging.
+Create a non-blocking read mechanism that processes incoming data when available without waiting. Handle partial reads, implement buffering for incomplete data, and manage read events through the event loop. Include error handling for connection resets and other read failures.
 
-## 3. Build Handler Dispatching Mechanism [pending]
-### Dependencies: 7.1, 7.2
-### Description: Create a system to efficiently dispatch requests to the appropriate handler functions
+## 3. Implement request buffering [pending]
+### Dependencies: 7.2
+### Description: Create a buffering system to accumulate and manage partial request data
 ### Details:
-Implement a dispatcher that supports middleware chains, handler functions, and controller classes. Include support for async handlers and proper error propagation. Design for extensibility with plugin hooks before and after dispatch. Implement handler resolution strategies (lazy loading, dependency injection). Create comprehensive error handling with fallback handlers and error transformation capabilities.
+Design a buffer management system that efficiently accumulates partial request data until a complete request is received. Implement buffer size limits to prevent memory exhaustion attacks, and create a mechanism to detect when a complete request has been received and is ready for processing.
 
-## 4. Implement Client Connection Management [pending]
-### Dependencies: None
-### Description: Develop systems to manage client connections, timeouts, and connection pooling
+## 4. Implement request processing [pending]
+### Dependencies: 7.3
+### Description: Create a system to parse and process complete client requests
 ### Details:
-Create connection lifecycle management with configurable timeouts, keep-alive support, and graceful termination. Implement connection pooling for efficient resource usage. Add support for WebSockets and HTTP/2 multiplexing. Design for extensibility with connection event hooks. Include robust error handling for network issues, timeouts, and client disconnects with proper resource cleanup.
+Develop a request processing pipeline that parses the buffered request data, validates it, and routes it to the appropriate handler. Implement error handling for malformed requests and create a mechanism to generate appropriate responses based on the request content.
 
-## 5. Orchestrate Request-Response Cycle [pending]
-### Dependencies: 7.3, 7.4
-### Description: Build the core logic to manage the complete lifecycle of requests and responses
+## 5. Implement non-blocking write operations [pending]
+### Dependencies: 7.4
+### Description: Develop a system to write response data to client sockets without blocking
 ### Details:
-Implement the full request-response pipeline including parsing, routing, handling, and response generation. Support streaming responses and partial content. Add compression and content negotiation capabilities. Design for extensibility with lifecycle hooks at each stage. Create comprehensive error handling with appropriate status codes, error templates, and recovery strategies.
+Create a non-blocking write mechanism that sends response data when the socket is ready for writing. Handle partial writes, implement output buffering, and manage write events through the event loop. Include error handling for connection failures during writes.
 
-## 6. Develop Virtual Host Support [pending]
-### Dependencies: 7.1, 7.5
-### Description: Implement support for virtual hosts to handle multiple domains on a single server
+## 6. Implement keep-alive connection management [pending]
+### Dependencies: 7.5
+### Description: Create a system to manage persistent connections efficiently
 ### Details:
-Create a virtual host system that routes requests based on hostname. Support wildcard domains and port-based routing. Implement host-specific configurations and middleware. Design for extensibility with custom host resolution strategies. Include error handling for misconfigured hosts and domain resolution issues.
+Develop a keep-alive management system that maintains client connections across multiple requests. Implement connection pooling, idle connection tracking, and mechanisms to gracefully close connections when appropriate. Include support for HTTP keep-alive headers and connection reuse.
 
-## 7. Integrate Server Components [pending]
-### Dependencies: 7.5, 7.6
-### Description: Connect all server components into a cohesive system with clean interfaces
+## 7. Implement timeout handling [pending]
+### Dependencies: 7.6
+### Description: Create a system to manage connection timeouts and resource cleanup
 ### Details:
-Integrate routing, middleware, handlers, and response generation into a unified API. Implement a plugin system for extending server functionality. Create a clean configuration interface for all components. Design for extensibility with dependency injection and service location. Implement comprehensive error handling across component boundaries with centralized logging and monitoring.
-
-## 8. Implement Performance Monitoring and Metrics Collection [pending]
-### Dependencies: 7.7
-### Description: Develop a system to track server performance metrics and provide monitoring capabilities
-### Details:
-Create instrumentation points throughout the request lifecycle to collect timing and resource usage metrics. Implement configurable logging levels and formats. Add support for distributed tracing (OpenTelemetry). Design for extensibility with custom metric collectors and exporters. Build a health check system with readiness/liveness probes. Include error handling for monitoring failures that won't impact core server operations.
+Develop a timeout management system that tracks idle connections and terminates them after appropriate timeout periods. Implement different timeout policies for various connection states (connecting, reading, processing, writing) and ensure proper resource cleanup when connections are closed due to timeouts.
 

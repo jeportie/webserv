@@ -1,206 +1,110 @@
 # Task ID: 10
-# Title: Implement Error Handling and Multiple Server Support
+# Title: Main Server Integration and Testing
 # Status: pending
-# Dependencies: 3, 5, 7
-# Priority: medium
-# Description: Create a comprehensive error handling system and support for multiple virtual servers on different host:port combinations.
+# Dependencies: 1, 2, 3, 7, 9
+# Priority: high
+# Description: Integrate all components into a cohesive server application and implement comprehensive testing.
 # Details:
-Implement error handling and multiple server support:
+Create a Server class that integrates all components:
 
-1. Error Handling:
-   - Create an ErrorHandler class that generates appropriate error responses
-   - Support custom error pages from configuration
-   - Log detailed error information
-   - Handle various HTTP error codes (400, 403, 404, 405, 413, 500, etc.)
-
-2. Multiple Server Support:
-   - Enhance the server to handle multiple virtual servers
-   - Route requests to the correct server based on Host header
-   - Support default server for unmatched hosts
-   - Handle different configurations for each server
-
-Pseudo-code for ErrorHandler:
 ```cpp
-class ErrorHandler {
+class Server {
 private:
-    std::map<int, std::string> default_error_pages;
-    
-    std::string readErrorPage(const std::string& path) const;
+    ConfigParser _configParser;
+    std::vector<Socket*> _sockets;
+    EventLoop _eventLoop;
+    RequestHandler _requestHandler;
     
 public:
-    ErrorHandler();
-    HTTPResponse makeErrorResponse(int status_code, const std::map<int, std::string>& custom_error_pages = std::map<int, std::string>());
+    Server(const std::string& configFile);
+    ~Server();
+    
+    bool initialize();
+    void run();
+    void stop();
 };
 
-ErrorHandler::ErrorHandler() {
-    // Initialize default error pages
-    default_error_pages[400] = "<html><body><h1>400 Bad Request</h1></body></html>";
-    default_error_pages[403] = "<html><body><h1>403 Forbidden</h1></body></html>";
-    default_error_pages[404] = "<html><body><h1>404 Not Found</h1></body></html>";
-    default_error_pages[405] = "<html><body><h1>405 Method Not Allowed</h1></body></html>";
-    default_error_pages[413] = "<html><body><h1>413 Request Entity Too Large</h1></body></html>";
-    default_error_pages[500] = "<html><body><h1>500 Internal Server Error</h1></body></html>";
-    default_error_pages[501] = "<html><body><h1>501 Not Implemented</h1></body></html>";
-    default_error_pages[502] = "<html><body><h1>502 Bad Gateway</h1></body></html>";
-    default_error_pages[504] = "<html><body><h1>504 Gateway Timeout</h1></body></html>";
-}
-
-HTTPResponse ErrorHandler::makeErrorResponse(int status_code, const std::map<int, std::string>& custom_error_pages) {
-    HTTPResponse response;
-    response.setStatusCode(status_code);
-    
-    // Check for custom error page
-    if (custom_error_pages.find(status_code) != custom_error_pages.end()) {
-        std::string page_path = custom_error_pages.at(status_code);
-        std::string content = readErrorPage(page_path);
-        if (!content.empty()) {
-            response.setBody(content, "text/html");
-            return response;
-        }
+int main(int argc, char** argv) {
+    if (argc != 2) {
+        std::cerr << "Usage: " << argv[0] << " <config_file>" << std::endl;
+        return 1;
     }
     
-    // Use default error page
-    if (default_error_pages.find(status_code) != default_error_pages.end()) {
-        response.setBody(default_error_pages.at(status_code), "text/html");
-    } else {
-        // Generic error page
-        response.setBody("<html><body><h1>Error " + std::to_string(status_code) + "</h1></body></html>", "text/html");
+    Server server(argv[1]);
+    if (!server.initialize()) {
+        std::cerr << "Failed to initialize server" << std::endl;
+        return 1;
     }
     
-    return response;
+    server.run();
+    return 0;
 }
 ```
 
-Pseudo-code for multiple server support in the main server class:
-```cpp
-class WebServer {
-private:
-    SocketManager socket_manager;
-    EventLoop event_loop;
-    std::vector<ServerConfig> server_configs;
-    RouteHandler route_handler;
-    ErrorHandler error_handler;
-    
-    const ServerConfig* findServerConfig(const std::string& host, int port) const;
-    
-public:
-    WebServer(const std::vector<ServerConfig>& configs);
-    bool start();
-    void handleRequest(int client_socket, const std::string& request_data);
-};
+Implementation steps:
+1. Create a main server class that initializes all components
+2. Implement proper signal handling (SIGINT, SIGTERM)
+3. Create a clean shutdown procedure
+4. Implement logging for debugging and monitoring
+5. Create a comprehensive test suite
+6. Compare behavior with NGINX for validation
 
-const ServerConfig* WebServer::findServerConfig(const std::string& host, int port) const {
-    // First, try to find exact match for host:port
-    for (const auto& config : server_configs) {
-        if (config.port == port) {
-            for (const auto& name : config.server_names) {
-                if (name == host) {
-                    return &config;
-                }
-            }
-        }
-    }
-    
-    // If no exact match, find default server for this port
-    for (const auto& config : server_configs) {
-        if (config.port == port && config.server_names.empty()) {
-            return &config;
-        }
-    }
-    
-    // If no default server, use first server for this port
-    for (const auto& config : server_configs) {
-        if (config.port == port) {
-            return &config;
-        }
-    }
-    
-    return nullptr;
-}
-
-void WebServer::handleRequest(int client_socket, const std::string& request_data) {
-    // Parse HTTP request
-    HTTPRequest request;
-    if (!request.parse(request_data)) {
-        // Bad request
-        HTTPResponse response = error_handler.makeErrorResponse(400);
-        // Send response
-        send(client_socket, response.serialize().c_str(), response.serialize().length(), 0);
-        return;
-    }
-    
-    // Extract host and find matching server config
-    std::string host = request.getHeader("Host");
-    // Remove port from host if present
-    size_t colon_pos = host.find(':');
-    if (colon_pos != std::string::npos) {
-        host = host.substr(0, colon_pos);
-    }
-    
-    // Get client address info to determine port
-    struct sockaddr_in addr;
-    socklen_t addr_len = sizeof(addr);
-    getsockname(client_socket, (struct sockaddr*)&addr, &addr_len);
-    int port = ntohs(addr.sin_port);
-    
-    // Find server config
-    const ServerConfig* server = findServerConfig(host, port);
-    if (!server) {
-        // No matching server
-        HTTPResponse response = error_handler.makeErrorResponse(404);
-        send(client_socket, response.serialize().c_str(), response.serialize().length(), 0);
-        return;
-    }
-    
-    // Handle request with route handler
-    HTTPResponse response = route_handler.handleRequest(request, *server);
-    
-    // Send response
-    send(client_socket, response.serialize().c_str(), response.serialize().length(), 0);
-}
-```
-
-Integrate these components into the main server implementation.
+Ensure all components work together seamlessly and the server handles edge cases gracefully.
 
 # Test Strategy:
-1. Unit tests for ErrorHandler methods
-2. Test generation of error responses for various status codes
-3. Test custom error page loading and fallback to defaults
-4. Test server configuration matching based on host and port
-5. Test request routing to the correct virtual server
-6. Test default server behavior when no exact match is found
-7. Integration tests with multiple server configurations
-8. Test with various Host headers and port combinations
-9. Test error handling across the entire request-response cycle
+1. Create integration tests with tools like curl and telnet
+2. Test server with real browsers
+3. Implement stress testing to verify stability under load
+4. Compare responses with NGINX for validation
+5. Test graceful shutdown and resource cleanup
+6. Verify memory usage remains stable over time
 
 # Subtasks:
-## 1. Implement Error Response Generation [pending]
+## 1. Component Initialization Implementation [pending]
 ### Dependencies: None
-### Description: Create a standardized error response system that generates consistent error messages across the application
+### Description: Develop the initialization sequence for server components ensuring proper startup order and dependency handling.
 ### Details:
-Develop a centralized error handling module that: 1) Creates standardized JSON error responses with appropriate HTTP status codes, 2) Supports different error types (validation, authentication, server, etc.), 3) Includes configurable error detail levels based on environment (development vs production), 4) Implements error codes for client-side interpretation, 5) Ensures minimal performance overhead with efficient error object creation
+Create a robust initialization system that handles component dependencies, configuration loading, and graceful handling of initialization failures. Implement health checks during startup and establish proper communication channels between components.
 
-## 2. Build Logging Infrastructure with Multiple Levels [pending]
-### Dependencies: None
-### Description: Implement a comprehensive logging system with configurable severity levels
+## 2. Signal Handling Implementation [pending]
+### Dependencies: 10.1
+### Description: Implement comprehensive signal handling to manage server lifecycle events.
 ### Details:
-Create a logging infrastructure that: 1) Supports multiple log levels (debug, info, warn, error, fatal), 2) Allows runtime configuration of minimum log level, 3) Includes context information with each log entry (timestamp, request ID, user ID if available), 4) Provides async logging capabilities to minimize performance impact, 5) Implements a plugin architecture for different logging destinations (console, file, external services)
+Develop handlers for SIGTERM, SIGINT, SIGHUP and other relevant signals. Ensure signals trigger appropriate actions like graceful shutdown, configuration reloading, or worker process management. Include proper logging of signal events.
 
-## 3. Implement Request/Response Logging [pending]
+## 3. Shutdown Procedure Development [pending]
 ### Dependencies: 10.2
-### Description: Create middleware for logging incoming requests and outgoing responses
+### Description: Create a robust shutdown sequence that ensures clean termination of all server processes.
 ### Details:
-Develop request/response logging that: 1) Logs request details (method, URL, headers, body) with configurable sanitization of sensitive data, 2) Records response status, timing information, and size, 3) Includes correlation IDs to track requests through the system, 4) Provides performance optimization options (sampling rate, minimal logging for high-traffic routes), 5) Supports conditional logging based on request characteristics
+Implement orderly shutdown of components in reverse dependency order, ensure all connections are properly closed, resources are released, and in-flight requests are completed or properly terminated. Add timeout mechanisms for components that fail to shut down promptly.
 
-## 4. Develop Log Output Management and Formatting [pending]
-### Dependencies: 10.2
-### Description: Create configurable log formatting and output management system
+## 4. Logging System Setup [pending]
+### Dependencies: 10.1
+### Description: Configure comprehensive logging throughout the server components.
 ### Details:
-Implement log formatting that: 1) Supports multiple output formats (JSON, plain text, structured), 2) Allows custom format templates, 3) Includes colorization options for console output, 4) Provides compression options for stored logs, 5) Implements batching capabilities for high-volume logging scenarios to minimize I/O operations, 6) Ensures thread-safety for concurrent logging operations
+Implement structured logging with appropriate severity levels, component tagging, and context information. Set up log rotation, compression, and retention policies. Ensure sensitive information is properly redacted. Add performance metrics logging integration.
 
-## 5. Implement Log Rotation and Archiving [pending]
-### Dependencies: 10.2, 10.4
-### Description: Create a system for log file rotation, archiving, and retention management
+## 5. Integration Testing Framework [pending]
+### Dependencies: 10.1, 10.2, 10.3, 10.4
+### Description: Develop a comprehensive integration testing framework for the server.
 ### Details:
-Develop log rotation and archiving that: 1) Rotates logs based on configurable criteria (size, time), 2) Compresses archived logs to minimize storage requirements, 3) Implements configurable retention policies, 4) Provides hooks for external archiving solutions (S3, cloud storage), 5) Ensures no log data is lost during rotation, 6) Includes cleanup utilities for managing log storage, 7) Optimizes file operations to minimize performance impact during rotation events
+Create test suites that verify correct interaction between all server components. Include tests for startup/shutdown sequences, configuration changes, error conditions, and expected functionality. Implement automated test runners and reporting.
+
+## 6. Stress Testing Implementation [pending]
+### Dependencies: 10.5
+### Description: Develop and execute stress tests to evaluate server performance under load.
+### Details:
+Create benchmarking tools to simulate high concurrency, large payloads, and sustained traffic. Measure response times, throughput, error rates, and resource utilization. Identify bottlenecks and failure points under extreme conditions.
+
+## 7. NGINX Comparison Benchmarking [pending]
+### Dependencies: 10.6
+### Description: Conduct comparative performance analysis against NGINX.
+### Details:
+Set up equivalent NGINX configurations for comparison testing. Measure and document performance metrics including requests per second, latency, memory usage, and CPU utilization across various workloads. Analyze strengths and weaknesses relative to NGINX.
+
+## 8. Resource Monitoring System [pending]
+### Dependencies: 10.4, 10.5
+### Description: Implement comprehensive resource monitoring for the server.
+### Details:
+Develop real-time monitoring of CPU, memory, network, and disk usage. Implement alerting thresholds for resource constraints. Create dashboards for visualizing performance metrics and resource utilization trends. Add profiling capabilities for detailed analysis.
 

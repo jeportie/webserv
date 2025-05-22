@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Callback.hpp                                       :+:      :+:    :+:   */
+/*   Callback.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,26 +10,24 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CALLBACK_HPP
-#define CALLBACK_HPP
+#include "Callback.hpp"
+#include "../ErrorHandler.hpp"
+#include "../../../include/webserv.h"
 
-#include <ctime>
-
-// Base class for all callbacks
-class Callback
+Callback::Callback(int fd)
+: _fd(fd)
 {
-public:
-    Callback(int fd);
-    virtual ~Callback();
+	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "Callback Constructor called.",
+	 	"Callback.cpp->Callback(int fd)");
+}
 
-    virtual void execute() = 0;
-    
-    // Non-virtual method to get the file descriptor
-    // This is safe to call even after derived class destruction
-    int getFd() const;
+Callback::~Callback()
+{
+	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "Callback Destructor called.",
+	 	   "Callback.cpp->~Callback()");
+}
 
-protected:
-    int _fd;  // File descriptor associated with this callback
-};
-
-#endif  // ************************************************** CALLBACK_HPP //
+int Callback::getFd() const
+{
+    return _fd;
+}

@@ -1,159 +1,82 @@
 # Task ID: 2
-# Title: Implement Event Loop with poll()
+# Title: Server Socket Initialization
 # Status: done
-# Dependencies: 1
+# Dependencies: None
 # Priority: high
-# Description: Create a non-blocking event loop using epoll to handle multiple client connections simultaneously.
+# Description: Initialize server sockets based on the parsed configuration, binding to specified host and port combinations, and setting them to non-blocking mode.
 # Details:
-Implement an EventLoop class that:
-1. Uses epoll to monitor file descriptors for read/write readiness
-2. Maintains a collection of active client connections
-3. Handles events for server sockets (new connections) and client sockets (data ready, write ready)
-4. Provides a clean interface for the main server loop
+Create a Socket class that handles socket creation, binding, and listening:
 
-Pseudo-code:
 ```cpp
-class EventLoop {
+class Socket {
 private:
-    int epoll_fd;
-    std::map<int, ClientConnection> clients;
-    SocketManager& socket_manager;
+    int _socketFd;
+    struct sockaddr_in _address;
+    bool _isNonBlocking;
     
 public:
-    EventLoop(SocketManager& sm) : socket_manager(sm) {
-        epoll_fd = epoll_create1(0);
-        if (epoll_fd == -1) {
-            throw std::runtime_error("epoll_create1 failed");
-        }
-    }
-    ~EventLoop() {
-        close(epoll_fd);
-    }
-    void addServerSocket(int server_socket);
-    void addClientSocket(int client_socket, ClientConnection client);
-    void removeSocket(int socket_fd);
-    void run(int timeout_ms = -1);
-    // Event handlers
-    void handleServerEvent(int server_socket);
-    void handleClientReadEvent(int client_socket);
-    void handleClientWriteEvent(int client_socket);
+    Socket(const std::string& host, int port);
+    ~Socket();
+    
+    bool create();
+    bool bind();
+    bool listen(int backlog = 10);
+    bool setNonBlocking();
+    int accept();
+    int getFd() const;
 };
-
-void EventLoop::run(int timeout_ms) {
-    const int MAX_EVENTS = 64;
-    struct epoll_event events[MAX_EVENTS];
-    
-    int ready = epoll_wait(epoll_fd, events, MAX_EVENTS, timeout_ms);
-    if (ready <= 0) return; // Timeout or error
-    
-    for (int i = 0; i < ready; ++i) {
-        int fd = events[i].data.fd;
-        uint32_t event_flags = events[i].events;
-        
-        // Check if this is a server socket
-        if (is_server_socket(fd)) {
-            if (event_flags & EPOLLIN) {
-                handleServerEvent(fd);
-            }
-        } else {
-            // Client socket
-            if (event_flags & EPOLLIN) {
-                handleClientReadEvent(fd);
-            }
-            if (event_flags & EPOLLOUT) {
-                handleClientWriteEvent(fd);
-            }
-            if (event_flags & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)) {
-                removeSocket(fd);
-            }
-        }
-    }
-}
-
-void EventLoop::addServerSocket(int server_socket) {
-    struct epoll_event ev;
-    ev.events = EPOLLIN;
-    ev.data.fd = server_socket;
-    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, server_socket, &ev) == -1) {
-        throw std::runtime_error("Failed to add server socket to epoll");
-    }
-}
-
-void EventLoop::addClientSocket(int client_socket, ClientConnection client) {
-    struct epoll_event ev;
-    ev.events = EPOLLIN | EPOLLOUT | EPOLLET; // Edge-triggered mode
-    ev.data.fd = client_socket;
-    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_socket, &ev) == -1) {
-        throw std::runtime_error("Failed to add client socket to epoll");
-    }
-    clients[client_socket] = client;
-}
-
-void EventLoop::removeSocket(int socket_fd) {
-    epoll_ctl(epoll_fd, EPOLL_CTL_DEL, socket_fd, nullptr);
-    clients.erase(socket_fd);
-    close(socket_fd);
-}
 ```
 
-Implement the main server loop that initializes the EventLoop and runs it continuously.
+Implementation steps:
+1. Use getaddrinfo() to resolve host address
+2. Create socket with socket()
+3. Set socket options with setsockopt() (SO_REUSEADDR)
+4. Bind socket to address with bind()
+5. Set socket to non-blocking mode using fcntl()
+6. Start listening with listen()
+
+Ensure proper error handling for each system call.
 
 # Test Strategy:
-1. Unit tests for EventLoop class methods
-2. Test with mock epoll implementation to verify correct event handling
-3. Integration test with multiple simultaneous connections
-4. Test handling of various event types (read ready, write ready, errors)
-5. Stress test with many connections to verify scalability
-6. Test timeout behavior and error conditions
-7. Compare performance between epoll and poll implementations
-8. Test edge-triggered vs level-triggered notification modes
+1. Test socket creation with various host/port combinations
+2. Verify socket is properly set to non-blocking mode
+3. Test binding to already-in-use ports to ensure proper error handling
+4. Validate that the server can listen on multiple addresses if configured
 
 # Subtasks:
-## 1. Implement poll()/select() mechanism [done]
+## 1. Implement address resolution [done]
 ### Dependencies: None
-### Description: Create the core polling mechanism that will monitor file descriptors for activity
+### Description: Resolve server address and port for socket binding
 ### Details:
-Implement a cross-platform abstraction for poll()/select()/epoll/kqueue based on the target operating systems. Include performance benchmarks for different polling mechanisms. Handle system call interruptions (EINTR) and implement proper error reporting. Consider using edge-triggered vs level-triggered notifications where applicable. Optimize for large numbers of mostly-idle connections.
+Create functions to parse and validate IP address/hostname and port number. Implement address structure initialization for both IPv4 and IPv6. Handle conversion between string representation and binary network format. Include proper error handling for invalid addresses.
 
-## 2. Develop file descriptor registration system [done]
+## 2. Implement socket creation [done]
 ### Dependencies: 2.1
-### Description: Create a system to register, modify, and unregister file descriptors with the event loop
+### Description: Create the server socket with appropriate domain and type
 ### Details:
-Implement thread-safe methods for adding/removing file descriptors. Support different event types (read, write, error). Create efficient data structures for storing FD metadata and associated callbacks. Include validation to prevent duplicate registrations and handle invalid file descriptors. Implement proper cleanup for resources when FDs are unregistered.
+Implement socket() system call with proper error handling. Support both TCP and UDP socket types. Handle platform-specific socket creation differences. Include proper resource management to prevent socket descriptor leaks.
 
-## 3. Build event dispatching logic [done]
-### Dependencies: 2.1, 2.2
-### Description: Create the core event loop that dispatches events to appropriate handlers
+## 3. Implement socket option configuration [done]
+### Dependencies: 2.2
+### Description: Set socket options for optimal server performance
 ### Details:
-Implement the main event loop that processes ready events and dispatches to callbacks. Ensure proper ordering of events (e.g., prioritize certain event types). Handle high-throughput scenarios without starvation. Include metrics collection for monitoring event processing rates and latencies. Implement safeguards against callback functions that take too long to execute.
+Configure socket reuse address/port options to avoid 'Address already in use' errors. Set buffer sizes for optimal performance. Configure timeout values. Implement platform-specific optimizations like TCP_NODELAY or TCP_FASTOPEN where appropriate.
 
-## 4. Implement timeout handling [done]
-### Dependencies: 2.3
-### Description: Add support for timed events and operation timeouts
-### Details:
-Create an efficient timer wheel or priority queue for managing timeouts. Support one-shot and recurring timers with millisecond precision. Implement cancellation of pending timeouts. Handle system clock changes and time jumps. Optimize for scenarios with many timers but few expirations. Include jitter mechanisms to prevent thundering herd problems.
-
-## 5. Develop callback management system [done]
-### Dependencies: 2.3, 2.4
-### Description: Create a system to manage callback execution, including queuing and error handling
-### Details:
-Implement a callback queue with proper lifecycle management. Support different callback types (synchronous, deferred, prioritized). Handle exceptions in callbacks without crashing the event loop. Implement backpressure mechanisms for high load scenarios. Create debugging tools to track callback execution and timing. Support cancellation of pending callbacks.
-
-## 6. Implement error recovery and edge case handling [done]
-### Dependencies: 2.1, 2.2, 2.3, 2.4, 2.5
-### Description: Develop comprehensive error handling and recovery mechanisms for the event loop
-### Details:
-Implement graceful degradation during resource exhaustion (too many FDs, memory pressure). Create recovery mechanisms for system call failures. Handle partial writes and reads correctly. Implement proper cleanup during shutdown sequences. Create extensive logging for debugging event loop issues. Handle edge cases like closed FDs, zombie connections, and resource leaks. Develop stress tests that simulate various failure scenarios.
-
-## 7. Implement epoll-specific functionality [done]
+## 4. Implement socket binding [done]
 ### Dependencies: 2.1, 2.2, 2.3
-### Description: Update the event loop implementation to use epoll instead of poll
+### Description: Bind the socket to the resolved address and port
 ### Details:
-Refactor the existing implementation to use epoll_create1(), epoll_ctl(), and epoll_wait() instead of poll(). Implement proper initialization and cleanup of epoll file descriptor. Update event flags to use EPOLLIN, EPOLLOUT, etc. instead of POLLIN, POLLOUT. Implement edge-triggered notification mode (EPOLLET) for improved performance. Handle epoll-specific error conditions and edge cases.
+Implement bind() system call with proper error handling. Create retry mechanism for temporary binding failures. Implement fallback strategies for when preferred ports are unavailable. Verify successful binding with appropriate checks.
 
-## 8. Optimize for epoll performance characteristics [done]
-### Dependencies: 2.7
-### Description: Tune the event loop implementation to take advantage of epoll's performance characteristics
+## 5. Configure non-blocking socket behavior [done]
+### Dependencies: 2.4
+### Description: Set socket to non-blocking mode for asynchronous operation
 ### Details:
-Benchmark and optimize for epoll's specific performance characteristics. Implement batched event processing for high-throughput scenarios. Tune buffer sizes and event batch sizes for optimal performance. Compare level-triggered vs edge-triggered modes in different scenarios. Document best practices for using the epoll-based event loop.
+Implement platform-specific non-blocking socket configuration (fcntl() on UNIX, ioctlsocket() on Windows). Create abstraction layer to handle platform differences. Implement proper error handling for non-blocking mode setup. Verify socket state after configuration.
+
+## 6. Implement listening setup [done]
+### Dependencies: 2.5
+### Description: Configure socket to listen for incoming connections
+### Details:
+Implement listen() system call with appropriate backlog parameter. Calculate optimal backlog size based on expected connection rate. Add proper error handling for listen failures. Implement logging for successful listener establishment. Create health check mechanism to verify listener status.
 

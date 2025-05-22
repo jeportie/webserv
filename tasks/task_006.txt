@@ -1,132 +1,94 @@
 # Task ID: 6
-# Title: Implement Static File Serving
-# Status: pending
-# Dependencies: 3, 5
+# Title: Static File Handler
+# Status: done
+# Dependencies: 5
 # Priority: medium
-# Description: Create a handler for serving static files from the filesystem based on URL paths and route configurations.
+# Description: Implement a handler for serving static files from the filesystem, mapping URIs to file paths and generating appropriate responses.
 # Details:
-Implement a StaticFileHandler class that:
-1. Maps URL paths to filesystem paths based on route configuration
-2. Reads files from the filesystem and serves them to clients
-3. Determines appropriate content types based on file extensions
-4. Handles directory listing when enabled
-5. Serves index files when available
+Create a FileHandler class to serve static files:
 
-Pseudo-code:
 ```cpp
-class StaticFileHandler {
+class FileHandler {
 private:
-    // Map of file extensions to MIME types
-    static std::map<std::string, std::string> mime_types;
-    
-    std::string getContentType(const std::string& path) const;
-    std::string generateDirectoryListing(const std::string& path, const std::string& uri_path) const;
+    std::string _rootDir;
+    std::map<std::string, std::string> _mimeTypes;
     
 public:
-    HTTPResponse handleRequest(const HTTPRequest& request, const RouteConfig& route);
-    bool fileExists(const std::string& path) const;
-    bool isDirectory(const std::string& path) const;
+    FileHandler(const std::string& rootDir);
+    ~FileHandler();
+    
+    HTTPResponse handleGET(const std::string& uri);
+    HTTPResponse handlePOST(const std::string& uri, const std::string& body);
+    HTTPResponse handleDELETE(const std::string& uri);
+    
+private:
+    std::string getMimeType(const std::string& filename);
+    bool fileExists(const std::string& path);
+    std::string readFile(const std::string& path);
+    bool writeFile(const std::string& path, const std::string& content);
+    bool deleteFile(const std::string& path);
 };
-
-HTTPResponse StaticFileHandler::handleRequest(const HTTPRequest& request, const RouteConfig& route) {
-    HTTPResponse response;
-    
-    // Map URI to filesystem path
-    std::string uri_path = request.getURI();
-    // Remove query parameters if present
-    size_t query_pos = uri_path.find('?');
-    if (query_pos != std::string::npos) {
-        uri_path = uri_path.substr(0, query_pos);
-    }
-    
-    // Combine route root with URI path
-    std::string file_path = route.root + uri_path;
-    
-    // Check if path exists
-    if (!fileExists(file_path)) {
-        return HTTPResponse::makeErrorResponse(404);
-    }
-    
-    // If directory
-    if (isDirectory(file_path)) {
-        // Check for index file
-        if (!route.index_file.empty()) {
-            std::string index_path = file_path + "/" + route.index_file;
-            if (fileExists(index_path)) {
-                file_path = index_path;
-            } else if (route.directory_listing) {
-                // Generate directory listing
-                std::string listing = generateDirectoryListing(file_path, uri_path);
-                response.setBody(listing, "text/html");
-                return response;
-            } else {
-                return HTTPResponse::makeErrorResponse(403);
-            }
-        }
-    }
-    
-    // Read file content
-    std::ifstream file(file_path.c_str(), std::ios::binary);
-    if (!file) {
-        return HTTPResponse::makeErrorResponse(500);
-    }
-    
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    
-    // Set response body with appropriate content type
-    response.setBody(buffer.str(), getContentType(file_path));
-    
-    return response;
-}
 ```
 
-Implement the MIME type mapping and directory listing generation functions.
+Implementation steps:
+1. Map URI to filesystem path using the configured root directory
+2. Implement security checks to prevent directory traversal attacks
+3. Determine MIME type based on file extension
+4. Read file contents for GET requests
+5. Write file contents for POST requests
+6. Delete files for DELETE requests
+7. Generate appropriate HTTP responses based on operation results
+
+Use non-blocking I/O for file operations where possible.
 
 # Test Strategy:
-1. Unit tests for StaticFileHandler methods
-2. Test mapping of URLs to filesystem paths
-3. Test serving of various file types (HTML, CSS, images, etc.)
-4. Test directory listing generation
-5. Test index file serving
-6. Test error handling for missing files and forbidden directories
-7. Test with various route configurations
-8. Verify correct content types are set for different file types
+1. Test serving various file types (HTML, CSS, images, etc.)
+2. Verify correct MIME type detection
+3. Test directory traversal prevention
+4. Test handling of large files
+5. Verify POST and DELETE operations work correctly
+6. Test with non-existent files to ensure proper 404 responses
 
 # Subtasks:
-## 1. Implement URL to Filesystem Path Mapping [pending]
+## 1. Implement URI-to-path mapping [done]
 ### Dependencies: None
-### Description: Create a mechanism to map incoming URL paths to corresponding filesystem paths
+### Description: Create a function that maps URI requests to actual file system paths
 ### Details:
-Design and implement a function that converts URL paths to filesystem paths. Handle URL encoding/decoding, relative paths, and query parameters. Implement a configurable root directory setting. Security considerations: Ensure all paths are normalized and validated before use. Performance optimization: Cache frequently accessed path mappings.
+Develop a mechanism to translate incoming URI requests to corresponding file system paths. Handle path normalization, relative path resolution, and base directory configuration. Ensure the mapping is consistent across different operating systems.
 
-## 2. Develop File Reading and Serving Functionality [pending]
+## 2. Implement security checks for file access [done]
 ### Dependencies: 6.1
-### Description: Implement mechanisms to read files from the filesystem and serve them to clients
+### Description: Create validation functions to prevent directory traversal and unauthorized access
 ### Details:
-Create functions to read file contents efficiently using appropriate I/O methods (blocking vs non-blocking based on file size). Implement proper HTTP response generation with correct headers. Security considerations: Validate file permissions before serving. Performance optimization: Use streaming for large files to minimize memory usage, implement range requests support for partial content delivery.
+Develop security checks to prevent path traversal attacks (e.g., '../' in paths), validate file permissions, check for symbolic links, and ensure files are within allowed directories. Implement allowlists/denylists for file extensions if needed.
 
-## 3. Create Directory Listing Generation [pending]
+## 3. Implement MIME type detection [done]
 ### Dependencies: 6.1
-### Description: Implement functionality to generate HTML directory listings when a directory is requested
+### Description: Create a system to determine the correct MIME type for files
 ### Details:
-Design and implement a function that reads directory contents and generates an HTML representation. Include file names, sizes, modification dates, and navigation links. Security considerations: Make directory listing optional and disabled by default, filter out hidden files. Performance optimization: Paginate large directories, cache directory listings with appropriate invalidation.
+Build functionality to detect MIME types based on file extensions and/or content analysis. Include a comprehensive mapping of file extensions to MIME types, with fallback to application/octet-stream for unknown types. Consider using existing libraries if appropriate.
 
-## 4. Implement MIME Type Detection [pending]
-### Dependencies: 6.2
-### Description: Create a system to detect and set appropriate MIME types for served files
+## 4. Implement file reading functionality [done]
+### Dependencies: 6.1, 6.2
+### Description: Create functions to efficiently read files from the file system
 ### Details:
-Implement file extension to MIME type mapping. Use content-based detection as fallback. Set appropriate Content-Type headers. Security considerations: Default to safe MIME types for unknown file types. Performance optimization: Cache MIME type detection results, use a lookup table for common extensions.
+Develop file reading capabilities with support for different modes (binary/text), partial reads (ranges), streaming for large files, and proper error handling. Consider caching mechanisms for frequently accessed files.
 
-## 5. Implement Path Traversal Prevention [pending]
-### Dependencies: 6.1
-### Description: Develop comprehensive security measures to prevent path traversal attacks
+## 5. Implement file writing functionality [done]
+### Dependencies: 6.1, 6.2
+### Description: Create functions to safely write files to the file system
 ### Details:
-Implement path normalization to resolve '..' and '.' segments. Create a validation function to ensure paths don't escape the root directory. Add configurable path restrictions and blacklisted patterns. Security considerations: Use absolute paths internally, implement allowlist of permitted directories/files. Performance optimization: Validate paths early in the request processing pipeline to fail fast.
+Implement file writing with atomic operations where possible, proper locking mechanisms, permission handling, and directory creation if needed. Include support for both complete rewrites and appending to existing files.
 
-## 6. Implement Caching Mechanisms [pending]
-### Dependencies: 6.2, 6.4
-### Description: Develop HTTP caching mechanisms to improve performance and reduce server load
+## 6. Implement file deletion functionality [done]
+### Dependencies: 6.1, 6.2
+### Description: Create functions to safely delete files from the file system
 ### Details:
-Implement ETag generation based on file content or modification time. Add Last-Modified header support. Implement conditional GET handling (If-None-Match, If-Modified-Since). Add Cache-Control header configuration. Security considerations: Ensure cache headers don't expose sensitive timing information. Performance optimization: Use efficient ETag generation algorithms, implement in-memory cache for small, frequently accessed files.
+Develop file deletion capabilities with proper permission checks, optional recursive deletion for directories, and safeguards against accidental deletion of critical files. Include logging of deletion operations for audit purposes.
+
+## 7. Implement error response generation [done]
+### Dependencies: 6.2, 6.3, 6.4, 6.5, 6.6
+### Description: Create a system to generate appropriate HTTP error responses
+### Details:
+Develop error handling that generates appropriate HTTP status codes and messages for different failure scenarios (404 for not found, 403 for forbidden, 500 for server errors, etc.). Include detailed logging for debugging while ensuring sensitive information isn't exposed to clients.
 

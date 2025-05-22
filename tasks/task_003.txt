@@ -1,108 +1,90 @@
 # Task ID: 3
-# Title: Implement Configuration Parser
-# Status: in-progress
-# Dependencies: None
+# Title: Event Loop Implementation with I/O Multiplexing
+# Status: done
+# Dependencies: 2
 # Priority: high
-# Description: Create a parser for server configuration files that defines server behavior similar to NGINX configuration format.
+# Description: Implement a non-blocking event loop using poll(), select(), epoll(), or kqueue() to monitor multiple file descriptors for I/O events.
 # Details:
-Implement a ConfigParser class that:
-1. Reads and parses a configuration file in a format similar to NGINX
-2. Extracts settings for server blocks, including host, port, server_name, etc.
-3. Parses location blocks with path, allowed methods, root directory, etc.
-4. Validates configuration values and provides meaningful error messages
-5. Creates a structured representation of the configuration
-
-Define data structures for server and route configurations:
+Create an EventLoop class that manages the I/O multiplexing:
 
 ```cpp
-struct RouteConfig {
-    std::string path;
-    std::string root;
-    std::vector<std::string> allowed_methods;
-    bool directory_listing;
-    std::string index_file;
-    std::string cgi_path;
-    std::string upload_dir;
-    size_t client_max_body_size;
-    std::map<int, std::string> error_pages;
-    std::string redirect;
-};
-
-struct ServerConfig {
-    std::string host;
-    int port;
-    std::vector<std::string> server_names;
-    std::map<int, std::string> error_pages;
-    size_t client_max_body_size;
-    std::vector<RouteConfig> routes;
-};
-
-class ConfigParser {
+class EventLoop {
 private:
-    std::string config_file;
-    std::vector<ServerConfig> server_configs;
-    
-    // Helper methods for parsing
-    void parseServerBlock(std::ifstream& file);
-    void parseLocationBlock(std::ifstream& file, ServerConfig& server);
+    std::vector<struct pollfd> _pollfds;
+    std::map<int, Client*> _clients;
+    std::vector<Socket*> _serverSockets;
+    bool _running;
     
 public:
-    ConfigParser(const std::string& file) : config_file(file) {}
-    bool parse();
-    const std::vector<ServerConfig>& getServerConfigs() const;
+    EventLoop();
+    ~EventLoop();
+    
+    void addServerSocket(Socket* socket);
+    void addClient(int clientFd, Client* client);
+    void removeClient(int clientFd);
+    void run();
+    void stop();
 };
 ```
 
-Implement the parsing logic to handle the NGINX-like syntax, with proper nesting of blocks and directive parsing.
+Implementation steps:
+1. Initialize poll/epoll/select data structures
+2. Add server sockets to the monitored set
+3. In the main loop:
+   a. Wait for events with poll()/epoll_wait()/select()
+   b. Handle new connections on server sockets
+   c. Process I/O on client sockets
+   d. Remove clients that have timed out or closed connections
+4. Implement a simple timeout mechanism using timestamps
+
+Ensure all I/O operations are non-blocking and properly handled through the event loop.
 
 # Test Strategy:
-1. Unit tests for ConfigParser with various configuration file formats
-2. Test parsing of all supported directives and blocks
-3. Test validation of configuration values (ports, paths, etc.)
-4. Test error handling for malformed configuration files
-5. Test with complex configurations including multiple servers and routes
-6. Verify the parsed configuration matches expected structure
+1. Test with multiple concurrent connections
+2. Verify that the server doesn't block on any single client
+3. Test timeout handling by creating idle connections
+4. Measure performance under load to ensure efficient event handling
 
 # Subtasks:
-## 1. Lexical Analysis Implementation [done]
+## 1. Design and implement event loop data structures [done]
 ### Dependencies: None
-### Description: Develop the lexical analyzer (tokenizer) for the configuration file
+### Description: Create the core data structures needed for the event loop implementation
 ### Details:
-Implement a lexical analyzer that converts the configuration file text into tokens. Define token types for keywords (server, route, location), identifiers, strings, numbers, and special characters. Handle comments and whitespace appropriately. Implement error detection for invalid characters and malformed tokens. Include line and column tracking for error reporting. Provide clear error messages for lexical errors with context information.
+Define and implement the necessary data structures for the event loop, including event registration, event queue, file descriptor tracking, and callback management. Consider using appropriate data structures for efficient lookup and traversal such as hash maps for descriptor tracking and priority queues for timeout management.
 
-## 2. Server Block Parser Implementation [done]
+## 2. Implement server socket registration mechanism [done]
 ### Dependencies: 3.1
-### Description: Develop the parser for server blocks and their directives
+### Description: Create functionality to register server sockets with the event loop
 ### Details:
-Implement parsing logic for server blocks including host, port, and server_name directives. Validate that each server block has required directives. Implement validation for directive values (e.g., port numbers are valid integers in range 0-65535). Handle duplicate server blocks with same host:port combination. Detect and report missing closing braces or semicolons. Implement context-aware error messages that explain the specific validation failure.
+Develop the API and implementation for registering server sockets with the event loop. This should include setting up non-blocking mode for the sockets, registering them for read events, and associating appropriate callback handlers for accept operations.
 
-## 3. Route Block Parser Implementation [done]
-### Dependencies: 3.2
-### Description: Develop the parser for route blocks and their directives
+## 3. Implement event polling mechanism [done]
+### Dependencies: 3.1
+### Description: Create the core polling functionality using select/poll/epoll/kqueue
 ### Details:
-Implement parsing logic for route blocks including path, method, and handler directives. Validate route paths for correct format (starting with '/'). Validate HTTP methods against allowed values (GET, POST, etc.). Ensure each route has required directives. Detect conflicting routes with same path and method. Implement nested location block parsing if supported. Provide detailed error messages for invalid route configurations.
+Implement the event polling mechanism using the appropriate system call (select, poll, epoll on Linux, kqueue on BSD/macOS). This should efficiently wait for events on multiple file descriptors and return when activity is detected or a timeout occurs. Consider platform-specific optimizations and fallbacks.
 
-## 4. Directive Validation System [done]
-### Dependencies: 3.1, 3.2, 3.3
-### Description: Implement a comprehensive validation system for all directive types
+## 4. Implement new connection handling [done]
+### Dependencies: 3.2, 3.3
+### Description: Create functionality to accept and set up new client connections
 ### Details:
-Create a validation framework for all directive types. Implement type-specific validators (string, integer, size, path, etc.). Add support for range validation, regex pattern validation, and enum validation. Implement conditional validation based on context. Create a registry of all valid directives with their validation rules. Develop a clear error reporting mechanism that explains validation failures with suggestions for correction.
+Implement the logic to handle incoming connection events, accept new connections, set them to non-blocking mode, and register them with the event loop for subsequent I/O operations. Include error handling for connection failures and resource limits.
 
-## 5. Configuration Object Model Design [done]
-### Dependencies: 3.2, 3.3, 3.4
-### Description: Design and implement the object model to represent parsed configuration
+## 5. Implement client I/O processing [done]
+### Dependencies: 3.4
+### Description: Create read/write handlers for client socket I/O operations
 ### Details:
-Design class hierarchy for configuration objects (Config, Server, Route, etc.). Implement methods to access and manipulate configuration elements. Ensure immutability of configuration objects after parsing. Implement serialization/deserialization for configuration objects. Add methods for configuration validation and normalization. Include helper methods for common configuration queries (findServerByName, getRouteByPath, etc.).
+Develop the read and write event handlers for client sockets. This should include buffering mechanisms, partial read/write handling, and integration with the application logic. Ensure proper error handling for connection resets, broken pipes, and other I/O errors.
 
-## 6. Error Reporting System [done]
-### Dependencies: 3.1, 3.2, 3.3, 3.4
-### Description: Implement a comprehensive error reporting system for configuration parsing
+## 6. Implement timeout management system [done]
+### Dependencies: 3.3
+### Description: Create a system to handle operation timeouts and periodic events
 ### Details:
-Design error classes for different types of configuration errors (syntax, semantic, validation). Include source location information (file, line, column) in error reports. Implement context-aware error messages with suggestions for fixing issues. Add support for multiple error collection (continue parsing after error). Create formatted error output for console and logs. Implement error severity levels (warning, error, fatal).
+Implement a timeout management system that can efficiently track and trigger time-based events. This should include APIs for registering timeout callbacks, efficient storage and retrieval of timeout events, and integration with the main event loop to ensure timely execution without excessive polling.
 
-## 7. Configuration Reloading System [done]
-### Dependencies: 3.5, 3.6
-### Description: Implement support for hot reloading of configuration files
+## 7. Implement resource cleanup mechanisms [done]
+### Dependencies: 3.4, 3.5
+### Description: Create functionality to properly clean up resources when connections close
 ### Details:
-Implement file watching mechanism to detect configuration changes. Design a safe reloading process that validates new configuration before applying. Create a diff mechanism to identify what changed between configurations. Implement graceful transition between configurations without service interruption. Add rollback capability for failed configuration reloads. Implement logging and notification for configuration changes. Create an API for triggering manual configuration reloads.
+Develop comprehensive resource cleanup mechanisms to handle connection closures, both graceful and abrupt. This should include deregistering file descriptors from the event loop, freeing associated memory, closing socket handles, and ensuring no resource leaks occur during normal operation or error conditions.
 

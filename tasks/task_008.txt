@@ -1,203 +1,66 @@
 # Task ID: 8
-# Title: Implement CGI Execution
+# Title: Error Page Handler
 # Status: pending
-# Dependencies: 5, 7
-# Priority: medium
-# Description: Create a handler for executing CGI scripts and processing their output as HTTP responses.
+# Dependencies: 5, 6
+# Priority: low
+# Description: Implement handling of error pages, both default and custom, for various HTTP error codes.
 # Details:
-Implement a CGIHandler class that:
-1. Identifies requests for CGI scripts based on file extension or route configuration
-2. Sets up environment variables according to CGI specification
-3. Forks a process to execute the CGI script
-4. Passes request data to the script via stdin
-5. Captures script output and converts it to an HTTP response
-6. Handles timeouts and errors in CGI execution
+Create an ErrorHandler class to manage error responses:
 
-Pseudo-code:
 ```cpp
-class CGIHandler {
+class ErrorHandler {
 private:
-    bool isCGIScript(const std::string& path, const RouteConfig& route) const;
-    std::map<std::string, std::string> buildEnvironment(const HTTPRequest& request, const std::string& script_path) const;
+    std::map<int, std::string> _errorPages;
+    std::string _defaultErrorTemplate;
     
 public:
-    HTTPResponse handleRequest(const HTTPRequest& request, const RouteConfig& route);
+    ErrorHandler();
+    ~ErrorHandler();
+    
+    void setErrorPage(int statusCode, const std::string& path);
+    HTTPResponse getErrorResponse(int statusCode, const std::string& message = "");
+    
+private:
+    std::string generateDefaultErrorPage(int statusCode, const std::string& message);
 };
-
-HTTPResponse CGIHandler::handleRequest(const HTTPRequest& request, const RouteConfig& route) {
-    // Map URI to filesystem path
-    std::string uri_path = request.getURI();
-    // Remove query parameters if present
-    size_t query_pos = uri_path.find('?');
-    if (query_pos != std::string::npos) {
-        uri_path = uri_path.substr(0, query_pos);
-    }
-    
-    // Combine route root with URI path
-    std::string script_path = route.root + uri_path;
-    
-    // Check if it's a CGI script
-    if (!isCGIScript(script_path, route)) {
-        return HTTPResponse::makeErrorResponse(404);
-    }
-    
-    // Build environment variables
-    std::map<std::string, std::string> env = buildEnvironment(request, script_path);
-    
-    // Create pipes for communication with CGI script
-    int input_pipe[2];  // Server writes to CGI's stdin
-    int output_pipe[2]; // Server reads from CGI's stdout
-    
-    if (pipe(input_pipe) < 0 || pipe(output_pipe) < 0) {
-        return HTTPResponse::makeErrorResponse(500);
-    }
-    
-    // Fork process
-    pid_t pid = fork();
-    
-    if (pid < 0) {
-        // Fork failed
-        close(input_pipe[0]);
-        close(input_pipe[1]);
-        close(output_pipe[0]);
-        close(output_pipe[1]);
-        return HTTPResponse::makeErrorResponse(500);
-    }
-    
-    if (pid == 0) {
-        // Child process (CGI script)
-        
-        // Redirect stdin to input pipe
-        close(input_pipe[1]); // Close write end
-        dup2(input_pipe[0], STDIN_FILENO);
-        close(input_pipe[0]);
-        
-        // Redirect stdout to output pipe
-        close(output_pipe[0]); // Close read end
-        dup2(output_pipe[1], STDOUT_FILENO);
-        close(output_pipe[1]);
-        
-        // Set environment variables
-        for (const auto& var : env) {
-            setenv(var.first.c_str(), var.second.c_str(), 1);
-        }
-        
-        // Execute CGI script
-        execl(script_path.c_str(), script_path.c_str(), NULL);
-        
-        // If execl fails
-        exit(1);
-    }
-    
-    // Parent process (server)
-    close(input_pipe[0]); // Close read end
-    close(output_pipe[1]); // Close write end
-    
-    // Write request body to CGI's stdin
-    write(input_pipe[1], request.getBody().c_str(), request.getBody().length());
-    close(input_pipe[1]);
-    
-    // Read CGI output
-    char buffer[4096];
-    std::string cgi_output;
-    ssize_t bytes_read;
-    
-    while ((bytes_read = read(output_pipe[0], buffer, sizeof(buffer))) > 0) {
-        cgi_output.append(buffer, bytes_read);
-    }
-    
-    close(output_pipe[0]);
-    
-    // Wait for CGI process to finish
-    int status;
-    waitpid(pid, &status, 0);
-    
-    // Parse CGI output as HTTP response
-    // CGI output format: headers, blank line, body
-    HTTPResponse response;
-    
-    size_t header_end = cgi_output.find("\r\n\r\n");
-    if (header_end != std::string::npos) {
-        // Extract headers
-        std::string headers_str = cgi_output.substr(0, header_end);
-        std::string body = cgi_output.substr(header_end + 4);
-        
-        // Parse headers
-        std::istringstream headers_stream(headers_str);
-        std::string line;
-        while (std::getline(headers_stream, line)) {
-            if (line.empty() || line == "\r") continue;
-            
-            size_t colon_pos = line.find(':');
-            if (colon_pos != std::string::npos) {
-                std::string name = line.substr(0, colon_pos);
-                std::string value = line.substr(colon_pos + 1);
-                // Trim whitespace
-                value.erase(0, value.find_first_not_of(" \t"));
-                value.erase(value.find_last_not_of("\r\n \t") + 1);
-                
-                response.addHeader(name, value);
-            }
-        }
-        
-        // Set body
-        response.setBody(body);
-    } else {
-        // No headers, treat entire output as body
-        response.setBody(cgi_output);
-    }
-    
-    return response;
-}
 ```
 
-Implement the environment variable building and CGI script detection methods.
+Implementation steps:
+1. Create default error page templates for common HTTP errors (404, 500, etc.)
+2. Allow configuration of custom error pages via the config file
+3. Generate appropriate error responses with correct status codes
+4. Include helpful error messages in the response body
+
+Ensure error pages are properly formatted and provide useful information.
 
 # Test Strategy:
-1. Unit tests for CGIHandler methods
-2. Test environment variable generation
-3. Test CGI script detection
-4. Test execution of various CGI scripts (PHP, Python, etc.)
-5. Test handling of CGI output with and without headers
-6. Test error handling for script execution failures
-7. Test timeout handling
-8. Integration tests with the full request-response cycle
-9. Test with various HTTP methods and request bodies
+1. Test generation of default error pages for various status codes
+2. Verify custom error pages are correctly loaded and served
+3. Test with missing custom error pages to ensure fallback to defaults
+4. Validate that error responses have correct status codes and headers
 
 # Subtasks:
-## 1. Environment Variable Preparation [pending]
+## 1. Create default error page templates [pending]
 ### Dependencies: None
-### Description: Implement the preparation of environment variables for CGI script execution according to the CGI specification.
+### Description: Design and implement default error page templates for common HTTP error codes (404, 500, etc.)
 ### Details:
-Create a function that prepares all required CGI environment variables including HTTP headers, server information, and request metadata. Ensure proper sanitization of all variables to prevent injection attacks. Consider performance implications of environment size and creation overhead. Implement validation checks for environment variable names and values to ensure they conform to CGI specifications.
+Create HTML templates for standard error pages that provide clear error information while maintaining the application's look and feel. Include appropriate messaging for each error type and ensure they are responsive. Templates should include placeholders for dynamic error details.
 
-## 2. Process Creation and Execution [pending]
+## 2. Implement custom error page loading mechanism [pending]
 ### Dependencies: 8.1
-### Description: Implement secure process creation and execution mechanisms for CGI scripts.
+### Description: Develop a system to load custom error pages based on configuration settings
 ### Details:
-Develop a process management system that creates child processes with appropriate resource limits. Implement process isolation techniques to prevent one CGI process from affecting others. Consider performance implications of process creation overhead and implement pooling if necessary. Include mechanisms to verify script existence and permissions before execution. Implement resource throttling to prevent DoS attacks.
+Create a configuration interface that allows developers to specify custom error pages for different error types. Implement a loader that can find and retrieve these custom templates, falling back to the default templates when custom ones aren't specified.
 
-## 3. Input/Output Handling [pending]
-### Dependencies: 8.2
-### Description: Implement robust I/O handling for CGI processes including stdin data transfer and stdout/stderr capture.
+## 3. Build error response generation system [pending]
+### Dependencies: 8.1, 8.2
+### Description: Create a component that generates appropriate error responses with correct status codes and content
 ### Details:
-Create buffered I/O mechanisms for efficient data transfer to and from CGI processes. Implement non-blocking I/O to prevent deadlocks. Consider performance implications of buffer sizes and I/O operations. Include proper handling of binary data and different character encodings. Implement safeguards against excessive output that could lead to memory exhaustion.
+Develop a service that takes error information, selects the appropriate template, populates it with error details, and returns a properly formatted HTTP response with the correct status code. Handle content negotiation to return appropriate formats (HTML, JSON, etc.) based on request headers.
 
-## 4. Response Parsing [pending]
+## 4. Implement fallback logic for error handling [pending]
 ### Dependencies: 8.3
-### Description: Implement parsing of CGI script output into HTTP responses.
+### Description: Create robust fallback mechanisms for when primary error handling fails
 ### Details:
-Create a parser that correctly interprets CGI output format including headers and body separation. Implement validation of response headers for security and compliance. Consider performance implications of parsing operations and optimize for common cases. Include handling for malformed responses and implement fallback mechanisms. Ensure proper content-type and encoding handling.
-
-## 5. Error Handling and Timeout Management [pending]
-### Dependencies: 8.2, 8.3
-### Description: Implement comprehensive error handling and timeout mechanisms for CGI execution.
-### Details:
-Develop error detection for all possible failure modes including script errors, system errors, and timeouts. Implement graceful termination of processes that exceed time or resource limits. Consider performance implications of monitoring overhead. Create detailed logging for debugging purposes while preventing information disclosure. Implement customizable timeout settings based on script type or request parameters.
-
-## 6. Security Hardening [pending]
-### Dependencies: 8.1, 8.2, 8.3, 8.4, 8.5
-### Description: Implement comprehensive security measures for the CGI handler to prevent common attacks and vulnerabilities.
-### Details:
-Implement input validation and sanitization to prevent command injection attacks. Create a permission system to restrict which CGI scripts can be executed. Implement resource limits for CPU, memory, and file descriptors. Consider performance implications of security checks. Develop a chroot jail or similar containment mechanism for CGI processes. Implement protection against path traversal attacks and ensure proper handling of symbolic links. Create an audit logging system for security events.
+Implement cascading fallback logic that ensures users always receive some form of error information, even if parts of the error handling system fail. Include logging of error handling failures and implement a minimal plain-text fallback for worst-case scenarios where templates cannot be rendered.
 

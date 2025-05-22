@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Callback.cpp                                       :+:      :+:    :+:   */
+/*   CallbackQueue.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,24 +10,26 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#ifndef CALLBACKQUEUE_HPP
+#define CALLBACKQUEUE_HPP
+
+#include <queue>
 #include "Callback.hpp"
-#include "ErrorHandler.hpp"
-#include "../../include/webserv.h"
 
-Callback::Callback(int fd)
-: _fd(fd)
+class CallbackQueue
 {
-	// LOG_ERROR(DEBUG, CALLBACK_ERROR, "Callback Constructor called.",
-	// 	"Callback.cpp->Callback(int fd)");
-}
+public:
+    CallbackQueue();
+    ~CallbackQueue();
 
-Callback::~Callback()
-{
-	// LOG_ERROR(DEBUG, CALLBACK_ERROR, "Callback Destructor called.",
-	// 	   "Callback.cpp->~Callback()");
-}
+    void	push(Callback* callback);
+    void	processCallbacks();
+	bool	tryExecute(Callback* callback);
+    bool	isEmpty()	const;
+    size_t	size()		const;
 
-int Callback::getFd() const
-{
-    return _fd;
-}
+private:
+    std::queue<Callback*> _queue;
+};
+
+#endif  // ********************************************** CALLBACKQUEUE_HPP //

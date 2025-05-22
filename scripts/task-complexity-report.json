@@ -1,91 +1,91 @@
 {
   "meta": {
-    "generatedAt": "2025-05-08T13:51:35.987Z",
+    "generatedAt": "2025-05-22T10:04:08.916Z",
     "tasksAnalyzed": 10,
     "thresholdScore": 5,
     "projectName": "Taskmaster",
-    "usedResearch": false
+    "usedResearch": true
   },
   "complexityAnalysis": [
     {
       "taskId": 1,
-      "taskTitle": "Implement Socket Manager and Basic Server Setup",
-      "complexityScore": 7,
+      "taskTitle": "Configuration File Parser Implementation",
+      "complexityScore": 6,
       "recommendedSubtasks": 5,
-      "expansionPrompt": "Break down the Socket Manager implementation into detailed subtasks covering: IPv4/IPv6 socket creation, socket configuration (non-blocking, options), binding and listening functionality, connection acceptance and tracking, and resource management with proper cleanup procedures. Include error handling strategies for each subtask.",
-      "reasoning": "This task involves low-level socket programming with multiple components (creation, binding, listening, accepting). It requires careful error handling and resource management across different socket states. The existing 4 subtasks are good but could benefit from more granular breakdown, especially around error handling and IPv4/IPv6 support."
+      "expansionPrompt": "Break down the configuration file parser implementation into subtasks such as file reading, syntax parsing, error handling, data structure design, and default value management.",
+      "reasoning": "Parsing configuration files with error handling and data structure mapping is moderately complex, especially with C++98 constraints and no external libraries. The task involves multiple concerns: file I/O, parsing logic, error management, and data storage, each of which can be a subtask."
     },
     {
       "taskId": 2,
-      "taskTitle": "Implement Event Loop with Non-blocking I/O",
-      "complexityScore": 8,
+      "taskTitle": "Server Socket Initialization",
+      "complexityScore": 7,
       "recommendedSubtasks": 6,
-      "expansionPrompt": "Break down the Event Loop implementation into detailed subtasks covering: poll()/select() mechanism implementation, file descriptor registration system, event dispatching logic, timeout handling, callback management, and integration with the Socket Manager. For each subtask, include specific error handling and performance considerations.",
-      "reasoning": "Event loops are complex with many edge cases around non-blocking I/O, callback timing, and resource management. The current 5 subtasks are well-structured but could use an additional subtask focused on error recovery and edge case handling. This is a core component that will impact overall server performance and stability."
+      "expansionPrompt": "Expand server socket initialization into subtasks such as address resolution, socket creation, option setting, binding, non-blocking configuration, and listening setup.",
+      "reasoning": "Socket initialization requires careful handling of system calls, error management, and platform-specific nuances. Each step (address resolution, creation, binding, etc.) is distinct and error-prone, justifying multiple subtasks."
     },
     {
       "taskId": 3,
-      "taskTitle": "Implement Configuration Parser",
-      "complexityScore": 7,
+      "taskTitle": "Event Loop Implementation with I/O Multiplexing",
+      "complexityScore": 8,
       "recommendedSubtasks": 7,
-      "expansionPrompt": "Break down the Configuration Parser implementation into detailed subtasks covering: lexical analysis, server block parsing, route block parsing, directive validation, configuration object model design, error reporting, and configuration reloading/hot updates. For each subtask, include specific validation requirements and error handling strategies.",
-      "reasoning": "Parsing configuration files requires complex grammar handling, validation logic, and error reporting. The current 6 subtasks are comprehensive but adding a subtask for configuration reloading would be valuable. The parser needs to handle a variety of directives with different validation rules and complex nested structures."
+      "expansionPrompt": "Decompose event loop implementation into subtasks: data structure setup, server socket registration, event polling, new connection handling, client I/O processing, timeout management, and resource cleanup.",
+      "reasoning": "Implementing a robust event loop with non-blocking I/O and multiplexing is complex, involving concurrency, resource management, and integration with other components. Each aspect (polling, connection, I/O, timeouts) is a significant subtask."
     },
     {
       "taskId": 4,
-      "taskTitle": "Implement HTTP Request Parser",
-      "complexityScore": 8,
-      "recommendedSubtasks": 7,
-      "expansionPrompt": "Break down the HTTP Request Parser implementation into detailed subtasks covering: request line parsing, header parsing, content-length body handling, chunked transfer encoding, form data parsing (both URL-encoded and multipart), query parameter extraction, and security validation. For each subtask, include specific error handling and edge case considerations.",
-      "reasoning": "HTTP parsing is complex due to the many edge cases in the protocol and security considerations. The current 6 subtasks are good but should be expanded to include a dedicated security validation subtask to handle malicious inputs, oversized requests, and protocol violations."
+      "taskTitle": "HTTP Request Parser",
+      "complexityScore": 7,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Break down HTTP request parsing into subtasks: request line parsing, header parsing, body extraction, chunked encoding handling, partial request management, and HTTP/1.1 compliance validation.",
+      "reasoning": "HTTP parsing must handle various formats, partial data, and protocol compliance. Each parsing phase (line, headers, body, chunked encoding) is non-trivial and benefits from focused subtasks."
     },
     {
       "taskId": 5,
-      "taskTitle": "Implement HTTP Response Generator",
+      "taskTitle": "HTTP Response Generator",
       "complexityScore": 6,
       "recommendedSubtasks": 5,
-      "expansionPrompt": "Break down the HTTP Response Generator implementation into detailed subtasks covering: status code handling, header management, body content handling for different content types, response serialization, and compression/encoding support. For each subtask, include specific requirements for HTTP compliance and performance optimization.",
-      "reasoning": "Response generation is moderately complex with fewer edge cases than request parsing. The current 4 subtasks are good but should include a subtask for compression/encoding support (gzip, deflate, etc.) which is important for performance. The task requires careful attention to HTTP protocol compliance."
+      "expansionPrompt": "Expand HTTP response generation into subtasks: status code mapping, header management, body formatting, response serialization, and chunked encoding support.",
+      "reasoning": "Generating HTTP responses is moderately complex, requiring correct formatting, header management, and optional chunked encoding. Each responsibility can be a subtask."
     },
     {
       "taskId": 6,
-      "taskTitle": "Implement Static File Handler",
-      "complexityScore": 6,
-      "recommendedSubtasks": 6,
-      "expansionPrompt": "Break down the Static File Handler implementation into detailed subtasks covering: URL to filesystem path mapping, file reading and serving, directory listing generation, MIME type detection, security measures for path traversal prevention, and caching mechanisms. For each subtask, include specific security considerations and performance optimization strategies.",
-      "reasoning": "Static file handling involves filesystem interactions, security concerns, and performance optimizations. The current 5 subtasks are good but should include a subtask for implementing caching mechanisms (ETags, Last-Modified, etc.) which are important for performance. Security is a major concern with filesystem access."
+      "taskTitle": "Static File Handler",
+      "complexityScore": 7,
+      "recommendedSubtasks": 7,
+      "expansionPrompt": "Decompose static file handling into subtasks: URI-to-path mapping, security checks, MIME type detection, file reading, file writing, file deletion, and error response generation.",
+      "reasoning": "Serving static files involves security, MIME handling, and multiple file operations (read, write, delete), each with its own complexity and error cases."
     },
     {
       "taskId": 7,
-      "taskTitle": "Implement Route Handler and Server Logic",
-      "complexityScore": 9,
-      "recommendedSubtasks": 8,
-      "expansionPrompt": "Break down the Route Handler and Server Logic implementation into detailed subtasks covering: route matching algorithm, request method validation, handler dispatching mechanism, client connection management, request-response cycle orchestration, virtual host support, component integration, and performance monitoring/metrics collection. For each subtask, include specific requirements for extensibility and error handling.",
-      "reasoning": "This is the most complex task as it integrates all other components and manages the complete request lifecycle. The current 7 subtasks are comprehensive but should include an additional subtask for performance monitoring and metrics collection. This component needs to be highly extensible and robust to handle various error conditions."
+      "taskTitle": "Client Connection Handler",
+      "complexityScore": 8,
+      "recommendedSubtasks": 7,
+      "expansionPrompt": "Break down client connection handling into subtasks: connection acceptance, non-blocking read, request buffering, request processing, non-blocking write, keep-alive management, and timeout handling.",
+      "reasoning": "Managing client connections in a non-blocking, concurrent environment is complex, requiring careful state management and integration with the event loop. Each lifecycle phase is a logical subtask."
     },
     {
       "taskId": 8,
-      "taskTitle": "Implement CGI Handler",
-      "complexityScore": 8,
-      "recommendedSubtasks": 6,
-      "expansionPrompt": "Break down the CGI Handler implementation into detailed subtasks covering: environment variable preparation, process creation and execution, input/output handling, response parsing, error handling and timeout management, and security hardening. For each subtask, include specific security considerations and performance implications.",
-      "reasoning": "CGI handling involves process management, IPC, and security concerns. The current 5 subtasks are good but should include a dedicated subtask for security hardening to prevent command injection and resource exhaustion. Process management and IPC add significant complexity to this component."
+      "taskTitle": "Error Page Handler",
+      "complexityScore": 5,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Expand error page handling into subtasks: default template creation, custom error page loading, error response generation, and fallback logic implementation.",
+      "reasoning": "Error page handling is less complex but still involves template management, configuration integration, and fallback logic, each suitable as a subtask."
     },
     {
       "taskId": 9,
-      "taskTitle": "Implement File Upload Handler",
+      "taskTitle": "Request Router and Handler",
       "complexityScore": 7,
       "recommendedSubtasks": 6,
-      "expansionPrompt": "Break down the File Upload Handler implementation into detailed subtasks covering: multipart/form-data parsing, file extraction and temporary storage, file validation and sanitization, permanent storage management, cleanup and error handling, and progress tracking/resumable uploads. For each subtask, include specific security considerations and performance optimization strategies.",
-      "reasoning": "File uploads involve complex parsing, security concerns, and filesystem operations. The current 5 subtasks are good but should include a subtask for progress tracking and resumable uploads which are important for large file handling. Security is critical when accepting files from users."
+      "expansionPrompt": "Decompose request routing into subtasks: server config selection, method validation, URI validation, handler dispatch, special case handling (directory/index), and error response integration.",
+      "reasoning": "Routing requests involves multiple decision points and integration with other handlers, making it moderately complex and suitable for several subtasks."
     },
     {
       "taskId": 10,
-      "taskTitle": "Implement Error Handler and Logging System",
-      "complexityScore": 5,
-      "recommendedSubtasks": 5,
-      "expansionPrompt": "Break down the Error Handler and Logging System implementation into detailed subtasks covering: error response generation, logging infrastructure with multiple levels, request/response logging, log output management and formatting, and log rotation/archiving. For each subtask, include specific requirements for configurability and performance considerations.",
-      "reasoning": "Error handling and logging are relatively straightforward but important for debugging and user experience. The current 4 subtasks should be expanded to include log rotation and archiving. This component needs to be highly configurable and have minimal performance impact on the main server operations."
+      "taskTitle": "Main Server Integration and Testing",
+      "complexityScore": 9,
+      "recommendedSubtasks": 8,
+      "expansionPrompt": "Break down server integration and testing into subtasks: component initialization, signal handling, shutdown procedure, logging setup, integration testing, stress testing, NGINX comparison, and resource monitoring.",
+      "reasoning": "Integrating all components and ensuring robust operation under real-world conditions is highly complex, involving coordination, testing, and operational concerns, each requiring focused attention."
     }
   ]
 }

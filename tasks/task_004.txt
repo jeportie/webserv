@@ -1,129 +1,88 @@
 # Task ID: 4
-# Title: Implement HTTP Request Parser
-# Status: pending
-# Dependencies: 2
+# Title: HTTP Request Parser
+# Status: done
+# Dependencies: 3
 # Priority: high
-# Description: Create a parser for HTTP requests that extracts method, URI, headers, and body content.
+# Description: Implement an HTTP request parser that extracts method, URI, headers, and body from client requests.
 # Details:
-Implement an HTTPRequest class and parser that:
-1. Parses raw HTTP request data from client connections
-2. Extracts HTTP method, URI, HTTP version
-3. Parses and stores headers in a case-insensitive map
-4. Handles request body based on Content-Length or Transfer-Encoding
-5. Extracts query parameters from the URI
-6. Provides a clean interface for accessing request components
+Create an HTTPRequest class to parse and store HTTP request data:
 
-Pseudo-code:
 ```cpp
 class HTTPRequest {
 private:
-    std::string method;
-    std::string uri;
-    std::string http_version;
-    std::map<std::string, std::string> headers; // Case-insensitive
-    std::string body;
-    std::map<std::string, std::string> query_params;
-    bool parsed;
-    
-    // Parsing helper methods
-    bool parseRequestLine(const std::string& line);
-    bool parseHeaders(const std::string& headers_str);
-    void parseQueryParams();
+    std::string _method;
+    std::string _uri;
+    std::string _httpVersion;
+    std::map<std::string, std::string> _headers;
+    std::string _body;
+    bool _parsingComplete;
     
 public:
-    HTTPRequest() : parsed(false) {}
-    bool parse(const std::string& raw_request);
+    HTTPRequest();
+    ~HTTPRequest();
+    
+    bool parse(const std::string& rawRequest);
     bool isComplete() const;
     
     // Getters
     const std::string& getMethod() const;
     const std::string& getURI() const;
     const std::string& getHTTPVersion() const;
-    std::string getHeader(const std::string& name) const;
+    const std::map<std::string, std::string>& getHeaders() const;
     const std::string& getBody() const;
-    std::string getQueryParam(const std::string& name) const;
 };
-
-bool HTTPRequest::parse(const std::string& raw_request) {
-    // Find the end of headers (double CRLF)
-    size_t header_end = raw_request.find("\r\n\r\n");
-    if (header_end == std::string::npos) return false;
-    
-    // Split into lines
-    std::vector<std::string> lines;
-    // Split raw_request into lines
-    
-    // Parse request line (first line)
-    if (!parseRequestLine(lines[0])) return false;
-    
-    // Parse headers
-    std::string headers_str = raw_request.substr(lines[0].length() + 2, header_end - lines[0].length() - 2);
-    if (!parseHeaders(headers_str)) return false;
-    
-    // Parse body if present
-    if (header_end + 4 < raw_request.length()) {
-        body = raw_request.substr(header_end + 4);
-    }
-    
-    // Parse query parameters from URI
-    parseQueryParams();
-    
-    parsed = true;
-    return true;
-}
 ```
 
-Implement a ClientConnection class that buffers incoming data and uses the HTTPRequest parser to process complete requests.
+Implementation steps:
+1. Parse the request line to extract method, URI, and HTTP version
+2. Parse headers into a map of key-value pairs
+3. Handle chunked transfer encoding if present
+4. Extract the request body based on Content-Length or Transfer-Encoding
+5. Validate that the request conforms to HTTP/1.1 specification
+
+Ensure the parser can handle partial requests and continue parsing as more data arrives.
 
 # Test Strategy:
-1. Unit tests for HTTPRequest parser with various request formats
-2. Test parsing of different HTTP methods (GET, POST, DELETE)
-3. Test header parsing with various header formats
-4. Test query parameter extraction
-5. Test body parsing with Content-Length
-6. Test incomplete requests and request continuation
-7. Test with malformed requests to verify error handling
+1. Test with various HTTP request formats (GET, POST, DELETE)
+2. Verify correct parsing of headers with different capitalization
+3. Test with chunked transfer encoding
+4. Test with malformed requests to ensure robust error handling
+5. Verify handling of partial requests that arrive in multiple chunks
 
 # Subtasks:
 ## 1. Implement Request Line Parsing [done]
 ### Dependencies: None
 ### Description: Parse the HTTP request line to extract method, URI, and HTTP version
 ### Details:
-Create a function to parse the first line of an HTTP request. Extract the HTTP method (GET, POST, etc.), the request URI, and the HTTP version. Handle malformed request lines by returning appropriate error codes. Consider edge cases like whitespace handling, unsupported HTTP methods, and invalid HTTP versions. Implement validation for maximum URI length to prevent buffer overflow attacks.
+Create a function that takes a string input and extracts the three components of the request line. Handle malformed requests, validate HTTP methods (GET, POST, etc.), and properly decode URIs. Implement error handling for invalid request lines.
 
-## 2. Implement Header Parsing [done]
+## 2. Develop Header Parsing Logic [done]
 ### Dependencies: 4.1
 ### Description: Parse HTTP headers into a structured format with validation
 ### Details:
-Create a function to parse HTTP headers into a key-value map. Handle folded headers according to RFC specifications. Implement case-insensitive header name comparison. Validate header format and reject malformed headers. Set limits on header count and individual header size to prevent DoS attacks. Extract critical headers like Content-Length, Content-Type, and Transfer-Encoding for later processing stages.
+Implement header parsing that handles multiple headers, folded headers, and validates header format. Create a data structure to store headers efficiently. Handle case-insensitive header names and special headers like Content-Length and Transfer-Encoding.
 
-## 3. Implement Content-Length Body Handling [done]
+## 3. Create Body Extraction Mechanism [done]
 ### Dependencies: 4.2
-### Description: Parse request bodies with Content-Length header
+### Description: Extract and process the HTTP request body based on headers
 ### Details:
-Implement a function to read and parse request bodies when Content-Length header is present. Validate that Content-Length is a valid non-negative integer. Enforce maximum body size limits to prevent memory exhaustion. Handle timeouts for slow uploads. Implement proper buffer management for efficient memory usage. Detect and handle premature connection closures during body reading.
+Implement body extraction based on Content-Length or Transfer-Encoding headers. Handle different content types and properly manage memory for large request bodies. Implement validation for body size limits and content type restrictions.
 
-## 4. Implement Chunked Transfer Encoding [done]
-### Dependencies: 4.2
-### Description: Support HTTP chunked transfer encoding for request bodies
+## 4. Implement Chunked Encoding Handler [done]
+### Dependencies: 4.3
+### Description: Process chunked transfer-encoded HTTP requests
 ### Details:
-Create a parser for chunked transfer encoding according to HTTP specifications. Parse each chunk's size header and data. Handle chunk extensions (though they can be ignored). Process the final zero-length chunk and optional trailers. Implement timeout handling for slow chunk transfers. Set maximum chunk size and total body size limits. Validate chunk size format and handle malformed chunk headers appropriately.
+Create a specialized handler for chunked encoding that processes each chunk, handles chunk extensions, and properly terminates when the zero-length chunk is received. Implement trailer header processing and chunk size validation.
 
-## 5. Implement Form Data Parsing [done]
-### Dependencies: 4.3, 4.4
-### Description: Parse application/x-www-form-urlencoded and multipart/form-data request bodies
+## 5. Develop Partial Request Management [done]
+### Dependencies: 4.1, 4.2, 4.3, 4.4
+### Description: Handle incomplete HTTP requests and buffer management
 ### Details:
-Create parsers for both URL-encoded and multipart form data. For URL-encoded: decode percent-encoded characters, handle key-value pairs, and support nested parameters. For multipart: parse boundary delimiters, extract part headers including Content-Disposition, handle file uploads with proper temp file management, and implement memory-efficient streaming for large files. Set limits on form field count, field name length, and field value size.
+Implement a state machine to track parsing progress and handle partial data. Create buffer management for storing incomplete requests efficiently. Implement timeout handling for incomplete requests and proper resource cleanup.
 
-## 6. Implement Query Parameter Extraction [done]
-### Dependencies: 4.1
-### Description: Extract and parse query parameters from request URIs
+## 6. Implement HTTP/1.1 Compliance Validation [done]
+### Dependencies: 4.1, 4.2, 4.3, 4.4, 4.5
+### Description: Validate requests against HTTP/1.1 specification requirements
 ### Details:
-Create a function to extract and parse query parameters from the request URI. Handle URL decoding of parameter names and values. Support array parameters (same name with multiple values). Implement nested parameter parsing if using bracket notation. Set limits on query string length, parameter count, and individual parameter size. Properly handle malformed query strings and return appropriate errors.
-
-## 7. Implement Security Validation [in-progress]
-### Dependencies: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6
-### Description: Add comprehensive security checks for HTTP requests
-### Details:
-Implement security validations across all parsing stages. Detect and reject oversized requests before they consume resources. Validate protocol compliance strictly. Implement protection against HTTP request smuggling attacks by validating Content-Length and Transfer-Encoding headers. Add detection for NULL byte injection in headers and URI. Implement rate limiting for parsing complex requests. Create sanitization for header values to prevent header injection. Add logging for suspicious requests that might indicate attack attempts.
+Create validation checks for HTTP/1.1 compliance including required headers, protocol version compatibility, and proper formatting. Implement appropriate error responses for non-compliant requests. Handle protocol-specific features like keep-alive connections and expect headers.
 

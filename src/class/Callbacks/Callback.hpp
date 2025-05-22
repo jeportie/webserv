@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   CallbackQueue.hpp                                  :+:      :+:    :+:   */
+/*   Callback.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,25 +10,23 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CALLBACKQUEUE_HPP
-#define CALLBACKQUEUE_HPP
+#ifndef CALLBACK_HPP
+#define CALLBACK_HPP
 
-#include <queue>
-#include "Callback.hpp"
+#include <ctime>
 
-class CallbackQueue
+// Base class for all callbacks
+class Callback
 {
 public:
-    CallbackQueue();
-    ~CallbackQueue();
+    Callback(int fd);
+    virtual ~Callback();
 
-    void push(Callback* callback);
-    void processCallbacks();
-    bool isEmpty() const;
-    size_t size() const;
+    virtual void	execute() = 0;
+    int				getFd() const;
 
-private:
-    std::queue<Callback*> _queue;
+protected:
+    int _fd;  // File descriptor associated with this callback
 };
 
-#endif  // ********************************************** CALLBACKQUEUE_HPP //
+#endif  // ************************************************** CALLBACK_HPP //

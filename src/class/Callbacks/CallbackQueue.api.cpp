@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #include "CallbackQueue.hpp"
-#include "ErrorHandler.hpp"
+#include "../ErrorHandler.hpp"
 
 CallbackQueue::CallbackQueue()
 {

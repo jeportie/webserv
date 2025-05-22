@@ -35,6 +35,7 @@ ClientSocket::ClientSocket()
 , _bodyAccumulator()
 {
     // On initialise _clientAddr après l’appel à Socket()
+	//
     std::memset(&_clientAddr, 0, sizeof(_clientAddr));
 }
 

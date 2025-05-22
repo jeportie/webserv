@@ -2,788 +2,764 @@
   "tasks": [
     {
       "id": 1,
-      "title": "Implement Socket Manager and Basic Server Setup",
-      "description": "Create the foundation for the HTTP server by implementing socket creation, binding, and connection acceptance.",
-      "details": "Implement a Socket Manager class that handles:\n1. Creating server sockets using socket()\n2. Binding to specified host:port combinations\n3. Setting sockets to non-blocking mode using fcntl()\n4. Listening for incoming connections\n5. Accepting new client connections\n\nPseudo-code:\n```cpp\nclass SocketManager {\nprivate:\n    std::map<int, ServerConfig> server_sockets;\n    \npublic:\n    bool setupServerSockets(const std::vector<ServerConfig>& configs);\n    int acceptConnection(int server_socket);\n    void closeConnection(int client_socket);\n    // Helper methods for socket operations\n};\n\nbool SocketManager::setupServerSockets(const std::vector<ServerConfig>& configs) {\n    for (each config in configs) {\n        int sockfd = socket(AF_INET, SOCK_STREAM, 0);\n        if (sockfd < 0) return false;\n        \n        // Set socket options (SO_REUSEADDR)\n        setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));\n        \n        // Set non-blocking\n        fcntl(sockfd, F_SETFL, O_NONBLOCK);\n        \n        // Setup sockaddr_in structure with host:port\n        struct sockaddr_in address;\n        // Fill address structure with config values\n        \n        // Bind socket\n        if (bind(sockfd, (struct sockaddr*)&address, sizeof(address)) < 0) {\n            close(sockfd);\n            return false;\n        }\n        \n        // Listen\n        if (listen(sockfd, SOMAXCONN) < 0) {\n            close(sockfd);\n            return false;\n        }\n        \n        server_sockets[sockfd] = config;\n    }\n    return true;\n}\n```\n\nImplement a basic main function that initializes the server and enters a simple accept loop for testing the socket functionality.",
-      "testStrategy": "1. Unit tests for SocketManager class methods using mock socket interfaces\n2. Integration test that verifies the server can bind to ports and accept connections\n3. Test binding to multiple ports simultaneously\n4. Test error handling when ports are already in use\n5. Verify non-blocking behavior by connecting multiple clients\n6. Use tools like netcat or telnet to manually test connection acceptance",
-      "priority": "high",
-      "dependencies": [],
+      "title": "Configuration File Parser Implementation",
+      "description": "Implement a parser for the server configuration file that extracts host, port, root directory, maximum client body size, and error pages settings.",
       "status": "done",
+      "dependencies": [],
+      "priority": "high",
+      "details": "Create a ConfigParser class that reads and parses a configuration file in a simple format (e.g., similar to NGINX). The parser should:\n1. Open and read the configuration file\n2. Parse server blocks with their respective settings\n3. Store configuration in a data structure for later use\n4. Handle syntax errors gracefully\n\nExample implementation:\n```cpp\nclass ConfigParser {\nprivate:\n    std::map<std::string, ServerConfig> _servers;\n    \npublic:\n    ConfigParser(const std::string& configFile);\n    ~ConfigParser();\n    \n    bool parse();\n    const std::map<std::string, ServerConfig>& getServers() const;\n};\n\nstruct ServerConfig {\n    std::string host;\n    int port;\n    std::string root;\n    size_t maxBodySize;\n    std::map<int, std::string> errorPages;\n    // Additional configuration parameters\n};\n```\n\nUse only C++98 compatible features and avoid external libraries.",
+      "testStrategy": "1. Create test configuration files with valid and invalid syntax\n2. Verify parser correctly extracts all configuration parameters\n3. Test error handling with malformed configuration files\n4. Validate that default values are used when optional parameters are missing",
       "subtasks": [
         {
           "id": 1,
-          "title": "Implement dual-stack socket creation (IPv4/IPv6)",
-          "description": "Create a socket creation function that supports both IPv4 and IPv6 protocols with proper fallback mechanisms",
+          "title": "Design Configuration Data Structure",
+          "description": "Define the internal data structure to store configuration values after parsing",
           "dependencies": [],
-          "details": "Implement a function that attempts to create an IPv6 socket first with IPv6_V6ONLY option disabled to allow dual-stack operation. If IPv6 creation fails, fall back to IPv4 socket creation. Return appropriate error codes for socket creation failures. Include platform-specific considerations for Windows (WSA) vs POSIX systems. Document the address family selection process.",
+          "details": "Create a flexible data structure that can represent nested configuration sections, key-value pairs, and different data types (strings, numbers, booleans). Consider using maps, structs, or classes to organize the data. Ensure the design supports easy access to configuration values and handles default values when specific keys are not present.",
           "status": "done"
         },
         {
           "id": 2,
-          "title": "Implement socket configuration and options",
-          "description": "Configure socket properties including non-blocking mode, reuse address, and other performance options",
+          "title": "Implement File Reading Mechanism",
+          "description": "Create functions to read configuration files from the filesystem",
           "dependencies": [
             1
           ],
-          "details": "Create functions to set socket to non-blocking mode using platform-specific APIs (ioctl/FIONBIO for POSIX, ioctlsocket for Windows). Implement SO_REUSEADDR option setting. Add TCP_NODELAY for performance. Implement buffer size configuration (SO_RCVBUF, SO_SNDBUF). Create comprehensive error handling for each socket option with detailed error reporting. Include timeout configuration options.",
+          "details": "Develop file I/O functionality that can open, read, and close configuration files. Handle file not found errors and permission issues. Implement line-by-line reading for easier parsing. Consider supporting both absolute and relative file paths. Ensure proper resource management with C++98 constraints.",
           "status": "done"
         },
         {
           "id": 3,
-          "title": "Implement socket binding and listening",
-          "description": "Create functions to bind sockets to addresses/ports and establish listening state with proper error handling",
+          "title": "Develop Syntax Parser",
+          "description": "Create a parser to interpret the configuration file syntax",
           "dependencies": [
+            1,
             2
           ],
-          "details": "Implement address structure preparation for both IPv4/IPv6. Create bind() wrapper with comprehensive error handling (address in use, permission issues, etc.). Implement listen() functionality with configurable backlog parameter. Add validation for binding to specific interfaces. Implement wildcard address binding. Create detailed error reporting for binding and listening failures with suggestions for resolution.",
+          "details": "Implement a parser that can recognize the configuration file format (e.g., INI, simple key-value, etc.). Handle section headers, key-value pairs, comments, and whitespace. Create tokenization logic to break down lines into meaningful components. Support string escaping and quoting if needed. Ensure the parser can populate the data structure designed in subtask 1.",
           "status": "done"
         },
         {
           "id": 4,
-          "title": "Implement connection acceptance and client tracking",
-          "description": "Create a system to accept incoming connections and maintain a registry of active client connections",
+          "title": "Implement Error Handling System",
+          "description": "Create a robust error handling mechanism for parsing and validation errors",
           "dependencies": [
             3
           ],
-          "details": "Implement non-blocking accept() with proper error handling for EAGAIN/EWOULDBLOCK. Create a connection registry data structure to track active clients. Implement client metadata storage (address, connection time, statistics). Add connection limiting functionality. Implement client identification mechanism. Create comprehensive error handling for accept failures including resource exhaustion scenarios. Add logging for connection events.",
+          "details": "Develop an error reporting system that provides meaningful error messages with line numbers and context. Handle syntax errors, type mismatches, duplicate keys, and other parsing issues. Implement validation for required fields and value constraints. Create a strategy for whether to fail on error or continue parsing with warnings.",
           "status": "done"
         },
         {
           "id": 5,
-          "title": "Implement resource management and cleanup procedures",
-          "description": "Create robust cleanup mechanisms for socket resources with proper error handling",
+          "title": "Implement Default Value Management",
+          "description": "Create a system to handle default values for missing configuration entries",
           "dependencies": [
+            1,
             4
           ],
-          "details": "Implement graceful socket shutdown sequence (shutdown() before close()). Create cleanup functions for client connection registry. Implement platform-specific socket closure (close() for POSIX, closesocket() for Windows). Add resource leak detection mechanisms. Implement timeout-based cleanup for stale connections. Create comprehensive error handling for cleanup failures. Implement signal handlers for proper cleanup on program termination.",
+          "details": "Develop functionality to provide default values when configuration keys are missing. Implement a mechanism to distinguish between explicitly set values and default values. Create functions to check if a value exists before falling back to defaults. Consider implementing a hierarchical default system where values can be inherited from parent sections or global defaults.",
           "status": "done"
         }
       ]
     },
     {
       "id": 2,
-      "title": "Implement Event Loop with poll()",
-      "description": "Create a non-blocking event loop using epoll to handle multiple client connections simultaneously.",
+      "title": "Server Socket Initialization",
+      "description": "Initialize server sockets based on the parsed configuration, binding to specified host and port combinations, and setting them to non-blocking mode.",
       "status": "done",
-      "dependencies": [
-        1
-      ],
+      "dependencies": [],
       "priority": "high",
-      "details": "Implement an EventLoop class that:\n1. Uses epoll to monitor file descriptors for read/write readiness\n2. Maintains a collection of active client connections\n3. Handles events for server sockets (new connections) and client sockets (data ready, write ready)\n4. Provides a clean interface for the main server loop\n\nPseudo-code:\n```cpp\nclass EventLoop {\nprivate:\n    int epoll_fd;\n    std::map<int, ClientConnection> clients;\n    SocketManager& socket_manager;\n    \npublic:\n    EventLoop(SocketManager& sm) : socket_manager(sm) {\n        epoll_fd = epoll_create1(0);\n        if (epoll_fd == -1) {\n            throw std::runtime_error(\"epoll_create1 failed\");\n        }\n    }\n    ~EventLoop() {\n        close(epoll_fd);\n    }\n    void addServerSocket(int server_socket);\n    void addClientSocket(int client_socket, ClientConnection client);\n    void removeSocket(int socket_fd);\n    void run(int timeout_ms = -1);\n    // Event handlers\n    void handleServerEvent(int server_socket);\n    void handleClientReadEvent(int client_socket);\n    void handleClientWriteEvent(int client_socket);\n};\n\nvoid EventLoop::run(int timeout_ms) {\n    const int MAX_EVENTS = 64;\n    struct epoll_event events[MAX_EVENTS];\n    \n    int ready = epoll_wait(epoll_fd, events, MAX_EVENTS, timeout_ms);\n    if (ready <= 0) return; // Timeout or error\n    \n    for (int i = 0; i < ready; ++i) {\n        int fd = events[i].data.fd;\n        uint32_t event_flags = events[i].events;\n        \n        // Check if this is a server socket\n        if (is_server_socket(fd)) {\n            if (event_flags & EPOLLIN) {\n                handleServerEvent(fd);\n            }\n        } else {\n            // Client socket\n            if (event_flags & EPOLLIN) {\n                handleClientReadEvent(fd);\n            }\n            if (event_flags & EPOLLOUT) {\n                handleClientWriteEvent(fd);\n            }\n            if (event_flags & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)) {\n                removeSocket(fd);\n            }\n        }\n    }\n}\n\nvoid EventLoop::addServerSocket(int server_socket) {\n    struct epoll_event ev;\n    ev.events = EPOLLIN;\n    ev.data.fd = server_socket;\n    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, server_socket, &ev) == -1) {\n        throw std::runtime_error(\"Failed to add server socket to epoll\");\n    }\n}\n\nvoid EventLoop::addClientSocket(int client_socket, ClientConnection client) {\n    struct epoll_event ev;\n    ev.events = EPOLLIN | EPOLLOUT | EPOLLET; // Edge-triggered mode\n    ev.data.fd = client_socket;\n    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_socket, &ev) == -1) {\n        throw std::runtime_error(\"Failed to add client socket to epoll\");\n    }\n    clients[client_socket] = client;\n}\n\nvoid EventLoop::removeSocket(int socket_fd) {\n    epoll_ctl(epoll_fd, EPOLL_CTL_DEL, socket_fd, nullptr);\n    clients.erase(socket_fd);\n    close(socket_fd);\n}\n```\n\nImplement the main server loop that initializes the EventLoop and runs it continuously.",
-      "testStrategy": "1. Unit tests for EventLoop class methods\n2. Test with mock epoll implementation to verify correct event handling\n3. Integration test with multiple simultaneous connections\n4. Test handling of various event types (read ready, write ready, errors)\n5. Stress test with many connections to verify scalability\n6. Test timeout behavior and error conditions\n7. Compare performance between epoll and poll implementations\n8. Test edge-triggered vs level-triggered notification modes",
+      "details": "Create a Socket class that handles socket creation, binding, and listening:\n\n```cpp\nclass Socket {\nprivate:\n    int _socketFd;\n    struct sockaddr_in _address;\n    bool _isNonBlocking;\n    \npublic:\n    Socket(const std::string& host, int port);\n    ~Socket();\n    \n    bool create();\n    bool bind();\n    bool listen(int backlog = 10);\n    bool setNonBlocking();\n    int accept();\n    int getFd() const;\n};\n```\n\nImplementation steps:\n1. Use getaddrinfo() to resolve host address\n2. Create socket with socket()\n3. Set socket options with setsockopt() (SO_REUSEADDR)\n4. Bind socket to address with bind()\n5. Set socket to non-blocking mode using fcntl()\n6. Start listening with listen()\n\nEnsure proper error handling for each system call.",
+      "testStrategy": "1. Test socket creation with various host/port combinations\n2. Verify socket is properly set to non-blocking mode\n3. Test binding to already-in-use ports to ensure proper error handling\n4. Validate that the server can listen on multiple addresses if configured",
       "subtasks": [
         {
           "id": 1,
-          "title": "Implement poll()/select() mechanism",
-          "description": "Create the core polling mechanism that will monitor file descriptors for activity",
+          "title": "Implement address resolution",
+          "description": "Resolve server address and port for socket binding",
           "dependencies": [],
-          "details": "Implement a cross-platform abstraction for poll()/select()/epoll/kqueue based on the target operating systems. Include performance benchmarks for different polling mechanisms. Handle system call interruptions (EINTR) and implement proper error reporting. Consider using edge-triggered vs level-triggered notifications where applicable. Optimize for large numbers of mostly-idle connections.",
+          "details": "Create functions to parse and validate IP address/hostname and port number. Implement address structure initialization for both IPv4 and IPv6. Handle conversion between string representation and binary network format. Include proper error handling for invalid addresses.",
           "status": "done"
         },
         {
           "id": 2,
-          "title": "Develop file descriptor registration system",
-          "description": "Create a system to register, modify, and unregister file descriptors with the event loop",
+          "title": "Implement socket creation",
+          "description": "Create the server socket with appropriate domain and type",
           "dependencies": [
             1
           ],
-          "details": "Implement thread-safe methods for adding/removing file descriptors. Support different event types (read, write, error). Create efficient data structures for storing FD metadata and associated callbacks. Include validation to prevent duplicate registrations and handle invalid file descriptors. Implement proper cleanup for resources when FDs are unregistered.",
+          "details": "Implement socket() system call with proper error handling. Support both TCP and UDP socket types. Handle platform-specific socket creation differences. Include proper resource management to prevent socket descriptor leaks.",
           "status": "done"
         },
         {
           "id": 3,
-          "title": "Build event dispatching logic",
-          "description": "Create the core event loop that dispatches events to appropriate handlers",
+          "title": "Implement socket option configuration",
+          "description": "Set socket options for optimal server performance",
           "dependencies": [
-            1,
             2
           ],
-          "details": "Implement the main event loop that processes ready events and dispatches to callbacks. Ensure proper ordering of events (e.g., prioritize certain event types). Handle high-throughput scenarios without starvation. Include metrics collection for monitoring event processing rates and latencies. Implement safeguards against callback functions that take too long to execute.",
+          "details": "Configure socket reuse address/port options to avoid 'Address already in use' errors. Set buffer sizes for optimal performance. Configure timeout values. Implement platform-specific optimizations like TCP_NODELAY or TCP_FASTOPEN where appropriate.",
           "status": "done"
         },
         {
           "id": 4,
-          "title": "Implement timeout handling",
-          "description": "Add support for timed events and operation timeouts",
+          "title": "Implement socket binding",
+          "description": "Bind the socket to the resolved address and port",
           "dependencies": [
+            1,
+            2,
             3
           ],
-          "details": "Create an efficient timer wheel or priority queue for managing timeouts. Support one-shot and recurring timers with millisecond precision. Implement cancellation of pending timeouts. Handle system clock changes and time jumps. Optimize for scenarios with many timers but few expirations. Include jitter mechanisms to prevent thundering herd problems.",
+          "details": "Implement bind() system call with proper error handling. Create retry mechanism for temporary binding failures. Implement fallback strategies for when preferred ports are unavailable. Verify successful binding with appropriate checks.",
           "status": "done"
         },
         {
           "id": 5,
-          "title": "Develop callback management system",
-          "description": "Create a system to manage callback execution, including queuing and error handling",
+          "title": "Configure non-blocking socket behavior",
+          "description": "Set socket to non-blocking mode for asynchronous operation",
           "dependencies": [
-            3,
             4
           ],
-          "details": "Implement a callback queue with proper lifecycle management. Support different callback types (synchronous, deferred, prioritized). Handle exceptions in callbacks without crashing the event loop. Implement backpressure mechanisms for high load scenarios. Create debugging tools to track callback execution and timing. Support cancellation of pending callbacks.",
+          "details": "Implement platform-specific non-blocking socket configuration (fcntl() on UNIX, ioctlsocket() on Windows). Create abstraction layer to handle platform differences. Implement proper error handling for non-blocking mode setup. Verify socket state after configuration.",
           "status": "done"
         },
         {
           "id": 6,
-          "title": "Implement error recovery and edge case handling",
-          "description": "Develop comprehensive error handling and recovery mechanisms for the event loop",
+          "title": "Implement listening setup",
+          "description": "Configure socket to listen for incoming connections",
           "dependencies": [
-            1,
-            2,
-            3,
-            4,
             5
           ],
-          "details": "Implement graceful degradation during resource exhaustion (too many FDs, memory pressure). Create recovery mechanisms for system call failures. Handle partial writes and reads correctly. Implement proper cleanup during shutdown sequences. Create extensive logging for debugging event loop issues. Handle edge cases like closed FDs, zombie connections, and resource leaks. Develop stress tests that simulate various failure scenarios.",
-          "status": "done"
-        },
-        {
-          "id": 7,
-          "title": "Implement epoll-specific functionality",
-          "description": "Update the event loop implementation to use epoll instead of poll",
-          "dependencies": [
-            1,
-            2,
-            3
-          ],
-          "details": "Refactor the existing implementation to use epoll_create1(), epoll_ctl(), and epoll_wait() instead of poll(). Implement proper initialization and cleanup of epoll file descriptor. Update event flags to use EPOLLIN, EPOLLOUT, etc. instead of POLLIN, POLLOUT. Implement edge-triggered notification mode (EPOLLET) for improved performance. Handle epoll-specific error conditions and edge cases.",
-          "status": "done"
-        },
-        {
-          "id": 8,
-          "title": "Optimize for epoll performance characteristics",
-          "description": "Tune the event loop implementation to take advantage of epoll's performance characteristics",
-          "dependencies": [
-            7
-          ],
-          "details": "Benchmark and optimize for epoll's specific performance characteristics. Implement batched event processing for high-throughput scenarios. Tune buffer sizes and event batch sizes for optimal performance. Compare level-triggered vs edge-triggered modes in different scenarios. Document best practices for using the epoll-based event loop.",
+          "details": "Implement listen() system call with appropriate backlog parameter. Calculate optimal backlog size based on expected connection rate. Add proper error handling for listen failures. Implement logging for successful listener establishment. Create health check mechanism to verify listener status.",
           "status": "done"
         }
       ]
     },
     {
       "id": 3,
-      "title": "Implement Configuration Parser",
-      "description": "Create a parser for server configuration files that defines server behavior similar to NGINX configuration format.",
-      "details": "Implement a ConfigParser class that:\n1. Reads and parses a configuration file in a format similar to NGINX\n2. Extracts settings for server blocks, including host, port, server_name, etc.\n3. Parses location blocks with path, allowed methods, root directory, etc.\n4. Validates configuration values and provides meaningful error messages\n5. Creates a structured representation of the configuration\n\nDefine data structures for server and route configurations:\n\n```cpp\nstruct RouteConfig {\n    std::string path;\n    std::string root;\n    std::vector<std::string> allowed_methods;\n    bool directory_listing;\n    std::string index_file;\n    std::string cgi_path;\n    std::string upload_dir;\n    size_t client_max_body_size;\n    std::map<int, std::string> error_pages;\n    std::string redirect;\n};\n\nstruct ServerConfig {\n    std::string host;\n    int port;\n    std::vector<std::string> server_names;\n    std::map<int, std::string> error_pages;\n    size_t client_max_body_size;\n    std::vector<RouteConfig> routes;\n};\n\nclass ConfigParser {\nprivate:\n    std::string config_file;\n    std::vector<ServerConfig> server_configs;\n    \n    // Helper methods for parsing\n    void parseServerBlock(std::ifstream& file);\n    void parseLocationBlock(std::ifstream& file, ServerConfig& server);\n    \npublic:\n    ConfigParser(const std::string& file) : config_file(file) {}\n    bool parse();\n    const std::vector<ServerConfig>& getServerConfigs() const;\n};\n```\n\nImplement the parsing logic to handle the NGINX-like syntax, with proper nesting of blocks and directive parsing.",
-      "testStrategy": "1. Unit tests for ConfigParser with various configuration file formats\n2. Test parsing of all supported directives and blocks\n3. Test validation of configuration values (ports, paths, etc.)\n4. Test error handling for malformed configuration files\n5. Test with complex configurations including multiple servers and routes\n6. Verify the parsed configuration matches expected structure",
+      "title": "Event Loop Implementation with I/O Multiplexing",
+      "description": "Implement a non-blocking event loop using poll(), select(), epoll(), or kqueue() to monitor multiple file descriptors for I/O events.",
+      "status": "done",
+      "dependencies": [
+        2
+      ],
       "priority": "high",
-      "dependencies": [],
-      "status": "in-progress",
+      "details": "Create an EventLoop class that manages the I/O multiplexing:\n\n```cpp\nclass EventLoop {\nprivate:\n    std::vector<struct pollfd> _pollfds;\n    std::map<int, Client*> _clients;\n    std::vector<Socket*> _serverSockets;\n    bool _running;\n    \npublic:\n    EventLoop();\n    ~EventLoop();\n    \n    void addServerSocket(Socket* socket);\n    void addClient(int clientFd, Client* client);\n    void removeClient(int clientFd);\n    void run();\n    void stop();\n};\n```\n\nImplementation steps:\n1. Initialize poll/epoll/select data structures\n2. Add server sockets to the monitored set\n3. In the main loop:\n   a. Wait for events with poll()/epoll_wait()/select()\n   b. Handle new connections on server sockets\n   c. Process I/O on client sockets\n   d. Remove clients that have timed out or closed connections\n4. Implement a simple timeout mechanism using timestamps\n\nEnsure all I/O operations are non-blocking and properly handled through the event loop.",
+      "testStrategy": "1. Test with multiple concurrent connections\n2. Verify that the server doesn't block on any single client\n3. Test timeout handling by creating idle connections\n4. Measure performance under load to ensure efficient event handling",
       "subtasks": [
         {
           "id": 1,
-          "title": "Lexical Analysis Implementation",
-          "description": "Develop the lexical analyzer (tokenizer) for the configuration file",
+          "title": "Design and implement event loop data structures",
+          "description": "Create the core data structures needed for the event loop implementation",
           "dependencies": [],
-          "details": "Implement a lexical analyzer that converts the configuration file text into tokens. Define token types for keywords (server, route, location), identifiers, strings, numbers, and special characters. Handle comments and whitespace appropriately. Implement error detection for invalid characters and malformed tokens. Include line and column tracking for error reporting. Provide clear error messages for lexical errors with context information.",
+          "details": "Define and implement the necessary data structures for the event loop, including event registration, event queue, file descriptor tracking, and callback management. Consider using appropriate data structures for efficient lookup and traversal such as hash maps for descriptor tracking and priority queues for timeout management.",
           "status": "done"
         },
         {
           "id": 2,
-          "title": "Server Block Parser Implementation",
-          "description": "Develop the parser for server blocks and their directives",
+          "title": "Implement server socket registration mechanism",
+          "description": "Create functionality to register server sockets with the event loop",
           "dependencies": [
             1
           ],
-          "details": "Implement parsing logic for server blocks including host, port, and server_name directives. Validate that each server block has required directives. Implement validation for directive values (e.g., port numbers are valid integers in range 0-65535). Handle duplicate server blocks with same host:port combination. Detect and report missing closing braces or semicolons. Implement context-aware error messages that explain the specific validation failure.",
+          "details": "Develop the API and implementation for registering server sockets with the event loop. This should include setting up non-blocking mode for the sockets, registering them for read events, and associating appropriate callback handlers for accept operations.",
           "status": "done"
         },
         {
           "id": 3,
-          "title": "Route Block Parser Implementation",
-          "description": "Develop the parser for route blocks and their directives",
+          "title": "Implement event polling mechanism",
+          "description": "Create the core polling functionality using select/poll/epoll/kqueue",
           "dependencies": [
-            2
+            1
           ],
-          "details": "Implement parsing logic for route blocks including path, method, and handler directives. Validate route paths for correct format (starting with '/'). Validate HTTP methods against allowed values (GET, POST, etc.). Ensure each route has required directives. Detect conflicting routes with same path and method. Implement nested location block parsing if supported. Provide detailed error messages for invalid route configurations.",
+          "details": "Implement the event polling mechanism using the appropriate system call (select, poll, epoll on Linux, kqueue on BSD/macOS). This should efficiently wait for events on multiple file descriptors and return when activity is detected or a timeout occurs. Consider platform-specific optimizations and fallbacks.",
           "status": "done"
         },
         {
           "id": 4,
-          "title": "Directive Validation System",
-          "description": "Implement a comprehensive validation system for all directive types",
+          "title": "Implement new connection handling",
+          "description": "Create functionality to accept and set up new client connections",
           "dependencies": [
-            1,
             2,
             3
           ],
-          "details": "Create a validation framework for all directive types. Implement type-specific validators (string, integer, size, path, etc.). Add support for range validation, regex pattern validation, and enum validation. Implement conditional validation based on context. Create a registry of all valid directives with their validation rules. Develop a clear error reporting mechanism that explains validation failures with suggestions for correction.",
+          "details": "Implement the logic to handle incoming connection events, accept new connections, set them to non-blocking mode, and register them with the event loop for subsequent I/O operations. Include error handling for connection failures and resource limits.",
           "status": "done"
         },
         {
           "id": 5,
-          "title": "Configuration Object Model Design",
-          "description": "Design and implement the object model to represent parsed configuration",
+          "title": "Implement client I/O processing",
+          "description": "Create read/write handlers for client socket I/O operations",
           "dependencies": [
-            2,
-            3,
             4
           ],
-          "details": "Design class hierarchy for configuration objects (Config, Server, Route, etc.). Implement methods to access and manipulate configuration elements. Ensure immutability of configuration objects after parsing. Implement serialization/deserialization for configuration objects. Add methods for configuration validation and normalization. Include helper methods for common configuration queries (findServerByName, getRouteByPath, etc.).",
+          "details": "Develop the read and write event handlers for client sockets. This should include buffering mechanisms, partial read/write handling, and integration with the application logic. Ensure proper error handling for connection resets, broken pipes, and other I/O errors.",
           "status": "done"
         },
         {
           "id": 6,
-          "title": "Error Reporting System",
-          "description": "Implement a comprehensive error reporting system for configuration parsing",
+          "title": "Implement timeout management system",
+          "description": "Create a system to handle operation timeouts and periodic events",
           "dependencies": [
-            1,
-            2,
-            3,
-            4
+            3
           ],
-          "details": "Design error classes for different types of configuration errors (syntax, semantic, validation). Include source location information (file, line, column) in error reports. Implement context-aware error messages with suggestions for fixing issues. Add support for multiple error collection (continue parsing after error). Create formatted error output for console and logs. Implement error severity levels (warning, error, fatal).",
+          "details": "Implement a timeout management system that can efficiently track and trigger time-based events. This should include APIs for registering timeout callbacks, efficient storage and retrieval of timeout events, and integration with the main event loop to ensure timely execution without excessive polling.",
           "status": "done"
         },
         {
           "id": 7,
-          "title": "Configuration Reloading System",
-          "description": "Implement support for hot reloading of configuration files",
+          "title": "Implement resource cleanup mechanisms",
+          "description": "Create functionality to properly clean up resources when connections close",
           "dependencies": [
-            5,
-            6
+            4,
+            5
           ],
-          "details": "Implement file watching mechanism to detect configuration changes. Design a safe reloading process that validates new configuration before applying. Create a diff mechanism to identify what changed between configurations. Implement graceful transition between configurations without service interruption. Add rollback capability for failed configuration reloads. Implement logging and notification for configuration changes. Create an API for triggering manual configuration reloads.",
+          "details": "Develop comprehensive resource cleanup mechanisms to handle connection closures, both graceful and abrupt. This should include deregistering file descriptors from the event loop, freeing associated memory, closing socket handles, and ensuring no resource leaks occur during normal operation or error conditions.",
           "status": "done"
         }
       ]
     },
     {
       "id": 4,
-      "title": "Implement HTTP Request Parser",
-      "description": "Create a parser for HTTP requests that extracts method, URI, headers, and body content.",
-      "details": "Implement an HTTPRequest class and parser that:\n1. Parses raw HTTP request data from client connections\n2. Extracts HTTP method, URI, HTTP version\n3. Parses and stores headers in a case-insensitive map\n4. Handles request body based on Content-Length or Transfer-Encoding\n5. Extracts query parameters from the URI\n6. Provides a clean interface for accessing request components\n\nPseudo-code:\n```cpp\nclass HTTPRequest {\nprivate:\n    std::string method;\n    std::string uri;\n    std::string http_version;\n    std::map<std::string, std::string> headers; // Case-insensitive\n    std::string body;\n    std::map<std::string, std::string> query_params;\n    bool parsed;\n    \n    // Parsing helper methods\n    bool parseRequestLine(const std::string& line);\n    bool parseHeaders(const std::string& headers_str);\n    void parseQueryParams();\n    \npublic:\n    HTTPRequest() : parsed(false) {}\n    bool parse(const std::string& raw_request);\n    bool isComplete() const;\n    \n    // Getters\n    const std::string& getMethod() const;\n    const std::string& getURI() const;\n    const std::string& getHTTPVersion() const;\n    std::string getHeader(const std::string& name) const;\n    const std::string& getBody() const;\n    std::string getQueryParam(const std::string& name) const;\n};\n\nbool HTTPRequest::parse(const std::string& raw_request) {\n    // Find the end of headers (double CRLF)\n    size_t header_end = raw_request.find(\"\\r\\n\\r\\n\");\n    if (header_end == std::string::npos) return false;\n    \n    // Split into lines\n    std::vector<std::string> lines;\n    // Split raw_request into lines\n    \n    // Parse request line (first line)\n    if (!parseRequestLine(lines[0])) return false;\n    \n    // Parse headers\n    std::string headers_str = raw_request.substr(lines[0].length() + 2, header_end - lines[0].length() - 2);\n    if (!parseHeaders(headers_str)) return false;\n    \n    // Parse body if present\n    if (header_end + 4 < raw_request.length()) {\n        body = raw_request.substr(header_end + 4);\n    }\n    \n    // Parse query parameters from URI\n    parseQueryParams();\n    \n    parsed = true;\n    return true;\n}\n```\n\nImplement a ClientConnection class that buffers incoming data and uses the HTTPRequest parser to process complete requests.",
-      "testStrategy": "1. Unit tests for HTTPRequest parser with various request formats\n2. Test parsing of different HTTP methods (GET, POST, DELETE)\n3. Test header parsing with various header formats\n4. Test query parameter extraction\n5. Test body parsing with Content-Length\n6. Test incomplete requests and request continuation\n7. Test with malformed requests to verify error handling",
-      "priority": "high",
+      "title": "HTTP Request Parser",
+      "description": "Implement an HTTP request parser that extracts method, URI, headers, and body from client requests.",
+      "status": "done",
       "dependencies": [
-        2
+        3
       ],
-      "status": "pending",
+      "priority": "high",
+      "details": "Create an HTTPRequest class to parse and store HTTP request data:\n\n```cpp\nclass HTTPRequest {\nprivate:\n    std::string _method;\n    std::string _uri;\n    std::string _httpVersion;\n    std::map<std::string, std::string> _headers;\n    std::string _body;\n    bool _parsingComplete;\n    \npublic:\n    HTTPRequest();\n    ~HTTPRequest();\n    \n    bool parse(const std::string& rawRequest);\n    bool isComplete() const;\n    \n    // Getters\n    const std::string& getMethod() const;\n    const std::string& getURI() const;\n    const std::string& getHTTPVersion() const;\n    const std::map<std::string, std::string>& getHeaders() const;\n    const std::string& getBody() const;\n};\n```\n\nImplementation steps:\n1. Parse the request line to extract method, URI, and HTTP version\n2. Parse headers into a map of key-value pairs\n3. Handle chunked transfer encoding if present\n4. Extract the request body based on Content-Length or Transfer-Encoding\n5. Validate that the request conforms to HTTP/1.1 specification\n\nEnsure the parser can handle partial requests and continue parsing as more data arrives.",
+      "testStrategy": "1. Test with various HTTP request formats (GET, POST, DELETE)\n2. Verify correct parsing of headers with different capitalization\n3. Test with chunked transfer encoding\n4. Test with malformed requests to ensure robust error handling\n5. Verify handling of partial requests that arrive in multiple chunks",
       "subtasks": [
         {
           "id": 1,
           "title": "Implement Request Line Parsing",
           "description": "Parse the HTTP request line to extract method, URI, and HTTP version",
           "dependencies": [],
-          "details": "Create a function to parse the first line of an HTTP request. Extract the HTTP method (GET, POST, etc.), the request URI, and the HTTP version. Handle malformed request lines by returning appropriate error codes. Consider edge cases like whitespace handling, unsupported HTTP methods, and invalid HTTP versions. Implement validation for maximum URI length to prevent buffer overflow attacks.",
+          "details": "Create a function that takes a string input and extracts the three components of the request line. Handle malformed requests, validate HTTP methods (GET, POST, etc.), and properly decode URIs. Implement error handling for invalid request lines.",
           "status": "done"
         },
         {
           "id": 2,
-          "title": "Implement Header Parsing",
+          "title": "Develop Header Parsing Logic",
           "description": "Parse HTTP headers into a structured format with validation",
           "dependencies": [
             1
           ],
-          "details": "Create a function to parse HTTP headers into a key-value map. Handle folded headers according to RFC specifications. Implement case-insensitive header name comparison. Validate header format and reject malformed headers. Set limits on header count and individual header size to prevent DoS attacks. Extract critical headers like Content-Length, Content-Type, and Transfer-Encoding for later processing stages.",
+          "details": "Implement header parsing that handles multiple headers, folded headers, and validates header format. Create a data structure to store headers efficiently. Handle case-insensitive header names and special headers like Content-Length and Transfer-Encoding.",
           "status": "done"
         },
         {
           "id": 3,
-          "title": "Implement Content-Length Body Handling",
-          "description": "Parse request bodies with Content-Length header",
+          "title": "Create Body Extraction Mechanism",
+          "description": "Extract and process the HTTP request body based on headers",
           "dependencies": [
             2
           ],
-          "details": "Implement a function to read and parse request bodies when Content-Length header is present. Validate that Content-Length is a valid non-negative integer. Enforce maximum body size limits to prevent memory exhaustion. Handle timeouts for slow uploads. Implement proper buffer management for efficient memory usage. Detect and handle premature connection closures during body reading.",
+          "details": "Implement body extraction based on Content-Length or Transfer-Encoding headers. Handle different content types and properly manage memory for large request bodies. Implement validation for body size limits and content type restrictions.",
           "status": "done"
         },
         {
           "id": 4,
-          "title": "Implement Chunked Transfer Encoding",
-          "description": "Support HTTP chunked transfer encoding for request bodies",
+          "title": "Implement Chunked Encoding Handler",
+          "description": "Process chunked transfer-encoded HTTP requests",
           "dependencies": [
-            2
+            3
           ],
-          "details": "Create a parser for chunked transfer encoding according to HTTP specifications. Parse each chunk's size header and data. Handle chunk extensions (though they can be ignored). Process the final zero-length chunk and optional trailers. Implement timeout handling for slow chunk transfers. Set maximum chunk size and total body size limits. Validate chunk size format and handle malformed chunk headers appropriately.",
+          "details": "Create a specialized handler for chunked encoding that processes each chunk, handles chunk extensions, and properly terminates when the zero-length chunk is received. Implement trailer header processing and chunk size validation.",
           "status": "done"
         },
         {
           "id": 5,
-          "title": "Implement Form Data Parsing",
-          "description": "Parse application/x-www-form-urlencoded and multipart/form-data request bodies",
+          "title": "Develop Partial Request Management",
+          "description": "Handle incomplete HTTP requests and buffer management",
           "dependencies": [
+            1,
+            2,
             3,
             4
           ],
-          "details": "Create parsers for both URL-encoded and multipart form data. For URL-encoded: decode percent-encoded characters, handle key-value pairs, and support nested parameters. For multipart: parse boundary delimiters, extract part headers including Content-Disposition, handle file uploads with proper temp file management, and implement memory-efficient streaming for large files. Set limits on form field count, field name length, and field value size.",
+          "details": "Implement a state machine to track parsing progress and handle partial data. Create buffer management for storing incomplete requests efficiently. Implement timeout handling for incomplete requests and proper resource cleanup.",
           "status": "done"
         },
         {
           "id": 6,
-          "title": "Implement Query Parameter Extraction",
-          "description": "Extract and parse query parameters from request URIs",
+          "title": "Implement HTTP/1.1 Compliance Validation",
+          "description": "Validate requests against HTTP/1.1 specification requirements",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "details": "Create validation checks for HTTP/1.1 compliance including required headers, protocol version compatibility, and proper formatting. Implement appropriate error responses for non-compliant requests. Handle protocol-specific features like keep-alive connections and expect headers.",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "HTTP Response Generator",
+      "description": "Implement an HTTP response generator that creates properly formatted HTTP responses with appropriate status codes and headers.",
+      "status": "done",
+      "dependencies": [
+        4
+      ],
+      "priority": "high",
+      "details": "Create an HTTPResponse class to generate HTTP responses:\n\n```cpp\nclass HTTPResponse {\nprivate:\n    int _statusCode;\n    std::string _statusMessage;\n    std::map<std::string, std::string> _headers;\n    std::string _body;\n    \npublic:\n    HTTPResponse();\n    HTTPResponse(int statusCode);\n    ~HTTPResponse();\n    \n    void setStatusCode(int code);\n    void addHeader(const std::string& key, const std::string& value);\n    void setBody(const std::string& body);\n    \n    std::string toString() const;\n};\n```\n\nImplementation steps:\n1. Create a map of status codes to status messages (200 OK, 404 Not Found, etc.)\n2. Implement methods to set status code, add headers, and set response body\n3. Generate properly formatted HTTP/1.1 responses\n4. Add standard headers like Date, Content-Length, Content-Type, etc.\n5. Support for chunked transfer encoding if needed\n\nEnsure all responses conform to the HTTP/1.1 specification.",
+      "testStrategy": "1. Test generation of responses with various status codes\n2. Verify correct formatting of headers\n3. Test with different content types and body sizes\n4. Validate that responses conform to HTTP/1.1 specification\n5. Test with binary content to ensure proper handling",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement HTTP status code mapping",
+          "description": "Create a system to map application states to appropriate HTTP status codes",
+          "dependencies": [],
+          "details": "Develop a comprehensive mapping between application states/conditions and standard HTTP status codes (1xx, 2xx, 3xx, 4xx, 5xx). Include functionality to select the most appropriate status code based on the current application context. Create helper methods to easily set common status codes like 200 OK, 404 Not Found, 500 Internal Server Error, etc.",
+          "status": "done"
+        },
+        {
+          "id": 2,
+          "title": "Develop HTTP header management system",
+          "description": "Create functionality to add, modify, and validate HTTP response headers",
+          "dependencies": [],
+          "details": "Implement a system to manage HTTP headers including standard headers (Content-Type, Content-Length, etc.) and custom headers. Include validation for header names and values according to HTTP specifications. Provide methods for setting common headers and support for conditional headers (ETag, If-Modified-Since, etc.).",
+          "status": "done"
+        },
+        {
+          "id": 3,
+          "title": "Create HTTP response body formatting",
+          "description": "Implement functionality to format different types of response bodies",
+          "dependencies": [],
+          "details": "Develop methods to handle different response body formats including plain text, HTML, JSON, XML, and binary data. Implement proper content type detection and setting. Include support for compression (gzip, deflate) and character encoding management. Ensure proper handling of empty response bodies.",
+          "status": "done"
+        },
+        {
+          "id": 4,
+          "title": "Build HTTP response serialization",
+          "description": "Create a system to serialize complete HTTP responses into proper format",
+          "dependencies": [
+            1,
+            2,
+            3
+          ],
+          "details": "Implement functionality to combine status codes, headers, and body into a properly formatted HTTP response. Ensure correct formatting of the status line, headers, and body separation. Handle different HTTP versions (1.0, 1.1, 2.0) appropriately. Include validation to ensure the response meets HTTP specifications before sending.",
+          "status": "done"
+        },
+        {
+          "id": 5,
+          "title": "Implement chunked encoding support",
+          "description": "Add support for HTTP chunked transfer encoding",
+          "dependencies": [
+            4
+          ],
+          "details": "Develop functionality to support chunked transfer encoding for HTTP/1.1 responses. Implement proper chunk formatting with size prefixes and termination sequences. Create streaming interfaces for progressive response generation. Include support for trailers in chunked responses and ensure proper end-of-stream signaling.",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Static File Handler",
+      "description": "Implement a handler for serving static files from the filesystem, mapping URIs to file paths and generating appropriate responses.",
+      "status": "done",
+      "dependencies": [
+        5
+      ],
+      "priority": "medium",
+      "details": "Create a FileHandler class to serve static files:\n\n```cpp\nclass FileHandler {\nprivate:\n    std::string _rootDir;\n    std::map<std::string, std::string> _mimeTypes;\n    \npublic:\n    FileHandler(const std::string& rootDir);\n    ~FileHandler();\n    \n    HTTPResponse handleGET(const std::string& uri);\n    HTTPResponse handlePOST(const std::string& uri, const std::string& body);\n    HTTPResponse handleDELETE(const std::string& uri);\n    \nprivate:\n    std::string getMimeType(const std::string& filename);\n    bool fileExists(const std::string& path);\n    std::string readFile(const std::string& path);\n    bool writeFile(const std::string& path, const std::string& content);\n    bool deleteFile(const std::string& path);\n};\n```\n\nImplementation steps:\n1. Map URI to filesystem path using the configured root directory\n2. Implement security checks to prevent directory traversal attacks\n3. Determine MIME type based on file extension\n4. Read file contents for GET requests\n5. Write file contents for POST requests\n6. Delete files for DELETE requests\n7. Generate appropriate HTTP responses based on operation results\n\nUse non-blocking I/O for file operations where possible.",
+      "testStrategy": "1. Test serving various file types (HTML, CSS, images, etc.)\n2. Verify correct MIME type detection\n3. Test directory traversal prevention\n4. Test handling of large files\n5. Verify POST and DELETE operations work correctly\n6. Test with non-existent files to ensure proper 404 responses",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement URI-to-path mapping",
+          "description": "Create a function that maps URI requests to actual file system paths",
+          "dependencies": [],
+          "details": "Develop a mechanism to translate incoming URI requests to corresponding file system paths. Handle path normalization, relative path resolution, and base directory configuration. Ensure the mapping is consistent across different operating systems.",
+          "status": "done"
+        },
+        {
+          "id": 2,
+          "title": "Implement security checks for file access",
+          "description": "Create validation functions to prevent directory traversal and unauthorized access",
           "dependencies": [
             1
           ],
-          "details": "Create a function to extract and parse query parameters from the request URI. Handle URL decoding of parameter names and values. Support array parameters (same name with multiple values). Implement nested parameter parsing if using bracket notation. Set limits on query string length, parameter count, and individual parameter size. Properly handle malformed query strings and return appropriate errors.",
+          "details": "Develop security checks to prevent path traversal attacks (e.g., '../' in paths), validate file permissions, check for symbolic links, and ensure files are within allowed directories. Implement allowlists/denylists for file extensions if needed.",
+          "status": "done"
+        },
+        {
+          "id": 3,
+          "title": "Implement MIME type detection",
+          "description": "Create a system to determine the correct MIME type for files",
+          "dependencies": [
+            1
+          ],
+          "details": "Build functionality to detect MIME types based on file extensions and/or content analysis. Include a comprehensive mapping of file extensions to MIME types, with fallback to application/octet-stream for unknown types. Consider using existing libraries if appropriate.",
+          "status": "done"
+        },
+        {
+          "id": 4,
+          "title": "Implement file reading functionality",
+          "description": "Create functions to efficiently read files from the file system",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Develop file reading capabilities with support for different modes (binary/text), partial reads (ranges), streaming for large files, and proper error handling. Consider caching mechanisms for frequently accessed files.",
+          "status": "done"
+        },
+        {
+          "id": 5,
+          "title": "Implement file writing functionality",
+          "description": "Create functions to safely write files to the file system",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Implement file writing with atomic operations where possible, proper locking mechanisms, permission handling, and directory creation if needed. Include support for both complete rewrites and appending to existing files.",
+          "status": "done"
+        },
+        {
+          "id": 6,
+          "title": "Implement file deletion functionality",
+          "description": "Create functions to safely delete files from the file system",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Develop file deletion capabilities with proper permission checks, optional recursive deletion for directories, and safeguards against accidental deletion of critical files. Include logging of deletion operations for audit purposes.",
           "status": "done"
         },
         {
           "id": 7,
-          "title": "Implement Security Validation",
-          "description": "Add comprehensive security checks for HTTP requests",
+          "title": "Implement error response generation",
+          "description": "Create a system to generate appropriate HTTP error responses",
           "dependencies": [
-            1,
             2,
             3,
             4,
             5,
             6
           ],
-          "details": "Implement security validations across all parsing stages. Detect and reject oversized requests before they consume resources. Validate protocol compliance strictly. Implement protection against HTTP request smuggling attacks by validating Content-Length and Transfer-Encoding headers. Add detection for NULL byte injection in headers and URI. Implement rate limiting for parsing complex requests. Create sanitization for header values to prevent header injection. Add logging for suspicious requests that might indicate attack attempts.",
-          "status": "in-progress"
-        }
-      ]
-    },
-    {
-      "id": 5,
-      "title": "Implement HTTP Response Generator",
-      "description": "Create a response generator that creates properly formatted HTTP responses with status codes, headers, and body content.",
-      "details": "Implement an HTTPResponse class that:\n1. Constructs HTTP responses with status code, headers, and body\n2. Formats the response according to HTTP/1.1 specification\n3. Handles common headers like Content-Type, Content-Length, etc.\n4. Provides methods for setting status codes and adding headers\n5. Serializes the response for sending to clients\n\nPseudo-code:\n```cpp\nclass HTTPResponse {\nprivate:\n    int status_code;\n    std::string status_message;\n    std::map<std::string, std::string> headers;\n    std::string body;\n    \n    // Map of status codes to messages\n    static std::map<int, std::string> status_messages;\n    \npublic:\n    HTTPResponse() : status_code(200) {}\n    \n    void setStatusCode(int code);\n    void addHeader(const std::string& name, const std::string& value);\n    void setBody(const std::string& content, const std::string& content_type = \"text/html\");\n    \n    std::string serialize() const;\n    \n    // Static helper for common responses\n    static HTTPResponse makeErrorResponse(int code, const std::string& error_page = \"\");\n};\n\nstd::string HTTPResponse::serialize() const {\n    std::stringstream ss;\n    \n    // Status line\n    ss << \"HTTP/1.1 \" << status_code << \" \" << status_message << \"\\r\\n\";\n    \n    // Headers\n    for (const auto& header : headers) {\n        ss << header.first << \": \" << header.second << \"\\r\\n\";\n    }\n    \n    // Empty line separating headers from body\n    ss << \"\\r\\n\";\n    \n    // Body\n    ss << body;\n    \n    return ss.str();\n}\n\nvoid HTTPResponse::setBody(const std::string& content, const std::string& content_type) {\n    body = content;\n    addHeader(\"Content-Type\", content_type);\n    addHeader(\"Content-Length\", std::to_string(content.length()));\n}\n```\n\nImplement methods in the ClientConnection class to generate and send responses based on processed requests.",
-      "testStrategy": "1. Unit tests for HTTPResponse class methods\n2. Test generation of responses with various status codes\n3. Test header formatting and serialization\n4. Test body inclusion and Content-Length calculation\n5. Test generation of common responses (200 OK, 404 Not Found, etc.)\n6. Verify responses conform to HTTP/1.1 specification\n7. Test with various content types and encodings",
-      "priority": "high",
-      "dependencies": [
-        4
-      ],
-      "status": "pending",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Implement Status Code Handling",
-          "description": "Create a module to manage HTTP status codes and their associated messages",
-          "dependencies": [],
-          "details": "Implement a comprehensive status code handler that supports all standard HTTP status codes (1xx, 2xx, 3xx, 4xx, 5xx). Create a mapping between status codes and their standard messages. Implement validation to ensure only valid status codes are used. Support custom status messages when needed. Optimize lookup performance with O(1) access time. Include documentation for each status code and its typical use case.",
-          "status": "pending"
-        },
-        {
-          "id": 2,
-          "title": "Develop Header Management System",
-          "description": "Create a flexible and compliant HTTP header handling system",
-          "dependencies": [
-            1
-          ],
-          "details": "Implement case-insensitive header name storage as per HTTP spec. Support multiple values for the same header (e.g., Set-Cookie). Validate header names and values according to RFC 7230. Implement common header helpers for Content-Type, Content-Length, etc. Handle special headers like Transfer-Encoding correctly. Optimize memory usage for header storage. Include methods to add, remove, and query headers efficiently.",
-          "status": "pending"
-        },
-        {
-          "id": 3,
-          "title": "Implement Body Content Handling",
-          "description": "Create handlers for different content types in HTTP responses",
-          "dependencies": [
-            2
-          ],
-          "details": "Support multiple content types including text/plain, text/html, application/json, application/xml, and application/octet-stream. Implement proper Content-Type and Content-Length header setting. Create serialization helpers for common formats (JSON, XML). Support streaming for large response bodies to minimize memory usage. Implement chunked transfer encoding support. Handle character encoding correctly (UTF-8, etc.). Optimize serialization performance for large payloads.",
-          "status": "pending"
-        },
-        {
-          "id": 4,
-          "title": "Develop Response Serialization",
-          "description": "Create a system to serialize complete HTTP responses to byte streams",
-          "dependencies": [
-            1,
-            2,
-            3
-          ],
-          "details": "Implement efficient serialization of status line, headers, and body. Ensure proper formatting with CRLF line endings as per HTTP spec. Support both HTTP/1.0 and HTTP/1.1 serialization formats. Optimize for minimal memory allocations during serialization. Implement buffered writing for network performance. Add validation to ensure responses are well-formed. Create benchmarks to measure serialization performance under different loads.",
-          "status": "pending"
-        },
-        {
-          "id": 5,
-          "title": "Implement Compression and Encoding Support",
-          "description": "Add support for response compression and various content encodings",
-          "dependencies": [
-            3,
-            4
-          ],
-          "details": "Implement gzip, deflate, and brotli compression algorithms. Add proper Content-Encoding header management. Create configurable compression levels (balancing CPU vs. compression ratio). Support automatic content type-based compression decisions. Implement streaming compression for large responses. Add compression level auto-tuning based on content type. Optimize memory usage during compression. Include benchmarks comparing different compression algorithms and settings.",
-          "status": "pending"
-        }
-      ]
-    },
-    {
-      "id": 6,
-      "title": "Implement Static File Serving",
-      "description": "Create a handler for serving static files from the filesystem based on URL paths and route configurations.",
-      "details": "Implement a StaticFileHandler class that:\n1. Maps URL paths to filesystem paths based on route configuration\n2. Reads files from the filesystem and serves them to clients\n3. Determines appropriate content types based on file extensions\n4. Handles directory listing when enabled\n5. Serves index files when available\n\nPseudo-code:\n```cpp\nclass StaticFileHandler {\nprivate:\n    // Map of file extensions to MIME types\n    static std::map<std::string, std::string> mime_types;\n    \n    std::string getContentType(const std::string& path) const;\n    std::string generateDirectoryListing(const std::string& path, const std::string& uri_path) const;\n    \npublic:\n    HTTPResponse handleRequest(const HTTPRequest& request, const RouteConfig& route);\n    bool fileExists(const std::string& path) const;\n    bool isDirectory(const std::string& path) const;\n};\n\nHTTPResponse StaticFileHandler::handleRequest(const HTTPRequest& request, const RouteConfig& route) {\n    HTTPResponse response;\n    \n    // Map URI to filesystem path\n    std::string uri_path = request.getURI();\n    // Remove query parameters if present\n    size_t query_pos = uri_path.find('?');\n    if (query_pos != std::string::npos) {\n        uri_path = uri_path.substr(0, query_pos);\n    }\n    \n    // Combine route root with URI path\n    std::string file_path = route.root + uri_path;\n    \n    // Check if path exists\n    if (!fileExists(file_path)) {\n        return HTTPResponse::makeErrorResponse(404);\n    }\n    \n    // If directory\n    if (isDirectory(file_path)) {\n        // Check for index file\n        if (!route.index_file.empty()) {\n            std::string index_path = file_path + \"/\" + route.index_file;\n            if (fileExists(index_path)) {\n                file_path = index_path;\n            } else if (route.directory_listing) {\n                // Generate directory listing\n                std::string listing = generateDirectoryListing(file_path, uri_path);\n                response.setBody(listing, \"text/html\");\n                return response;\n            } else {\n                return HTTPResponse::makeErrorResponse(403);\n            }\n        }\n    }\n    \n    // Read file content\n    std::ifstream file(file_path.c_str(), std::ios::binary);\n    if (!file) {\n        return HTTPResponse::makeErrorResponse(500);\n    }\n    \n    std::stringstream buffer;\n    buffer << file.rdbuf();\n    \n    // Set response body with appropriate content type\n    response.setBody(buffer.str(), getContentType(file_path));\n    \n    return response;\n}\n```\n\nImplement the MIME type mapping and directory listing generation functions.",
-      "testStrategy": "1. Unit tests for StaticFileHandler methods\n2. Test mapping of URLs to filesystem paths\n3. Test serving of various file types (HTML, CSS, images, etc.)\n4. Test directory listing generation\n5. Test index file serving\n6. Test error handling for missing files and forbidden directories\n7. Test with various route configurations\n8. Verify correct content types are set for different file types",
-      "priority": "medium",
-      "dependencies": [
-        3,
-        5
-      ],
-      "status": "pending",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Implement URL to Filesystem Path Mapping",
-          "description": "Create a mechanism to map incoming URL paths to corresponding filesystem paths",
-          "dependencies": [],
-          "details": "Design and implement a function that converts URL paths to filesystem paths. Handle URL encoding/decoding, relative paths, and query parameters. Implement a configurable root directory setting. Security considerations: Ensure all paths are normalized and validated before use. Performance optimization: Cache frequently accessed path mappings.",
-          "status": "pending"
-        },
-        {
-          "id": 2,
-          "title": "Develop File Reading and Serving Functionality",
-          "description": "Implement mechanisms to read files from the filesystem and serve them to clients",
-          "dependencies": [
-            1
-          ],
-          "details": "Create functions to read file contents efficiently using appropriate I/O methods (blocking vs non-blocking based on file size). Implement proper HTTP response generation with correct headers. Security considerations: Validate file permissions before serving. Performance optimization: Use streaming for large files to minimize memory usage, implement range requests support for partial content delivery.",
-          "status": "pending"
-        },
-        {
-          "id": 3,
-          "title": "Create Directory Listing Generation",
-          "description": "Implement functionality to generate HTML directory listings when a directory is requested",
-          "dependencies": [
-            1
-          ],
-          "details": "Design and implement a function that reads directory contents and generates an HTML representation. Include file names, sizes, modification dates, and navigation links. Security considerations: Make directory listing optional and disabled by default, filter out hidden files. Performance optimization: Paginate large directories, cache directory listings with appropriate invalidation.",
-          "status": "pending"
-        },
-        {
-          "id": 4,
-          "title": "Implement MIME Type Detection",
-          "description": "Create a system to detect and set appropriate MIME types for served files",
-          "dependencies": [
-            2
-          ],
-          "details": "Implement file extension to MIME type mapping. Use content-based detection as fallback. Set appropriate Content-Type headers. Security considerations: Default to safe MIME types for unknown file types. Performance optimization: Cache MIME type detection results, use a lookup table for common extensions.",
-          "status": "pending"
-        },
-        {
-          "id": 5,
-          "title": "Implement Path Traversal Prevention",
-          "description": "Develop comprehensive security measures to prevent path traversal attacks",
-          "dependencies": [
-            1
-          ],
-          "details": "Implement path normalization to resolve '..' and '.' segments. Create a validation function to ensure paths don't escape the root directory. Add configurable path restrictions and blacklisted patterns. Security considerations: Use absolute paths internally, implement allowlist of permitted directories/files. Performance optimization: Validate paths early in the request processing pipeline to fail fast.",
-          "status": "pending"
-        },
-        {
-          "id": 6,
-          "title": "Implement Caching Mechanisms",
-          "description": "Develop HTTP caching mechanisms to improve performance and reduce server load",
-          "dependencies": [
-            2,
-            4
-          ],
-          "details": "Implement ETag generation based on file content or modification time. Add Last-Modified header support. Implement conditional GET handling (If-None-Match, If-Modified-Since). Add Cache-Control header configuration. Security considerations: Ensure cache headers don't expose sensitive timing information. Performance optimization: Use efficient ETag generation algorithms, implement in-memory cache for small, frequently accessed files.",
-          "status": "pending"
+          "details": "Develop error handling that generates appropriate HTTP status codes and messages for different failure scenarios (404 for not found, 403 for forbidden, 500 for server errors, etc.). Include detailed logging for debugging while ensuring sensitive information isn't exposed to clients.",
+          "status": "done"
         }
       ]
     },
     {
       "id": 7,
-      "title": "Implement Route Handler and HTTP Method Support",
-      "description": "Create a route handler that matches requests to configured routes and implements support for GET, POST, and DELETE HTTP methods.",
-      "details": "Implement a RouteHandler class that:\n1. Matches incoming requests to configured routes based on URI path\n2. Verifies the HTTP method is allowed for the matched route\n3. Dispatches the request to appropriate handlers based on method\n4. Implements GET, POST, and DELETE method handling\n5. Handles redirects defined in route configuration\n\nPseudo-code:\n```cpp\nclass RouteHandler {\nprivate:\n    StaticFileHandler file_handler;\n    // Will add CGIHandler and other handlers later\n    \n    const RouteConfig* findMatchingRoute(const HTTPRequest& request, const ServerConfig& server) const;\n    bool isMethodAllowed(const std::string& method, const RouteConfig& route) const;\n    \npublic:\n    HTTPResponse handleRequest(const HTTPRequest& request, const ServerConfig& server);\n    HTTPResponse handleGET(const HTTPRequest& request, const RouteConfig& route);\n    HTTPResponse handlePOST(const HTTPRequest& request, const RouteConfig& route);\n    HTTPResponse handleDELETE(const HTTPRequest& request, const RouteConfig& route);\n};\n\nHTTPResponse RouteHandler::handleRequest(const HTTPRequest& request, const ServerConfig& server) {\n    // Find matching route\n    const RouteConfig* route = findMatchingRoute(request, server);\n    if (!route) {\n        return HTTPResponse::makeErrorResponse(404);\n    }\n    \n    // Check for redirect\n    if (!route->redirect.empty()) {\n        HTTPResponse response;\n        response.setStatusCode(301);\n        response.addHeader(\"Location\", route->redirect);\n        return response;\n    }\n    \n    // Check if method is allowed\n    if (!isMethodAllowed(request.getMethod(), *route)) {\n        return HTTPResponse::makeErrorResponse(405);\n    }\n    \n    // Dispatch based on method\n    if (request.getMethod() == \"GET\") {\n        return handleGET(request, *route);\n    } else if (request.getMethod() == \"POST\") {\n        return handlePOST(request, *route);\n    } else if (request.getMethod() == \"DELETE\") {\n        return handleDELETE(request, *route);\n    }\n    \n    // Unsupported method\n    return HTTPResponse::makeErrorResponse(501);\n}\n\nHTTPResponse RouteHandler::handleGET(const HTTPRequest& request, const RouteConfig& route) {\n    // For now, just use the static file handler\n    return file_handler.handleRequest(request, route);\n}\n\nHTTPResponse RouteHandler::handleDELETE(const HTTPRequest& request, const RouteConfig& route) {\n    std::string uri_path = request.getURI();\n    // Remove query parameters if present\n    size_t query_pos = uri_path.find('?');\n    if (query_pos != std::string::npos) {\n        uri_path = uri_path.substr(0, query_pos);\n    }\n    \n    // Map to filesystem path\n    std::string file_path = route.root + uri_path;\n    \n    // Check if file exists\n    if (!file_handler.fileExists(file_path)) {\n        return HTTPResponse::makeErrorResponse(404);\n    }\n    \n    // Delete the file\n    if (remove(file_path.c_str()) != 0) {\n        return HTTPResponse::makeErrorResponse(500);\n    }\n    \n    // Return success response\n    HTTPResponse response;\n    response.setStatusCode(200);\n    response.setBody(\"{\\\"status\\\": \\\"success\\\", \\\"message\\\": \\\"File deleted\\\"}\", \"application/json\");\n    return response;\n}\n```\n\nImplement the POST method handler and route matching logic.",
-      "testStrategy": "1. Unit tests for RouteHandler methods\n2. Test route matching with various URI patterns\n3. Test method validation against allowed methods\n4. Test GET method for file retrieval\n5. Test POST method for file creation\n6. Test DELETE method for file removal\n7. Test redirect handling\n8. Test error responses for invalid methods and routes\n9. Integration tests with the full request-response cycle",
-      "priority": "medium",
+      "title": "Client Connection Handler",
+      "description": "Implement a client connection handler that manages the lifecycle of client connections, from acceptance to closure.",
+      "status": "pending",
       "dependencies": [
         3,
-        5,
-        6
+        4,
+        5
       ],
-      "status": "pending",
+      "priority": "medium",
+      "details": "Create a Client class to manage client connections:\n\n```cpp\nclass Client {\nprivate:\n    int _socketFd;\n    std::string _buffer;\n    HTTPRequest _request;\n    HTTPResponse _response;\n    time_t _lastActivity;\n    bool _keepAlive;\n    size_t _maxBodySize;\n    \npublic:\n    Client(int socketFd, size_t maxBodySize);\n    ~Client();\n    \n    bool readRequest();\n    bool writeResponse();\n    bool hasTimedOut(time_t currentTime, int timeout) const;\n    void updateActivity();\n    int getSocketFd() const;\n    bool isKeepAlive() const;\n    void setResponse(const HTTPResponse& response);\n};\n```\n\nImplementation steps:\n1. Accept new client connections in the event loop\n2. Read data from client socket in a non-blocking manner\n3. Buffer incoming data until a complete HTTP request is received\n4. Process the request and generate a response\n5. Write the response to the client socket in a non-blocking manner\n6. Handle keep-alive connections\n7. Implement timeout mechanism to close idle connections\n\nEnsure all socket operations are non-blocking and properly integrated with the event loop.",
+      "testStrategy": "1. Test handling of multiple concurrent clients\n2. Verify proper buffering of partial requests\n3. Test keep-alive connection handling\n4. Verify timeout mechanism closes idle connections\n5. Test with slow clients to ensure non-blocking behavior\n6. Validate proper cleanup of client resources on disconnection",
       "subtasks": [
         {
           "id": 1,
-          "title": "Implement Route Matching Algorithm",
-          "description": "Design and implement an efficient algorithm for matching incoming request paths to registered routes",
+          "title": "Implement connection acceptance",
+          "description": "Create a mechanism to accept incoming client connections efficiently",
           "dependencies": [],
-          "details": "Create a trie-based route matching system that supports path parameters, wildcards, and regex patterns. Include fallback mechanisms for 404 handling. Ensure O(log n) or better matching performance. Implement extensibility points for custom matching logic. Handle edge cases like trailing slashes, case sensitivity options, and normalization of paths. Include comprehensive error handling for malformed routes.",
+          "details": "Implement a socket listener that accepts new client connections, configures them as non-blocking, and registers them with the event loop. Include error handling for connection failures and implement backpressure mechanisms when the server is under high load.",
           "status": "pending"
         },
         {
           "id": 2,
-          "title": "Develop Request Method Validation",
-          "description": "Create a system to validate HTTP methods against allowed methods for each route",
+          "title": "Implement non-blocking read operations",
+          "description": "Develop a system to read data from client sockets without blocking the event loop",
           "dependencies": [
             1
           ],
-          "details": "Implement method validation that supports standard HTTP methods (GET, POST, PUT, DELETE, etc.) and custom methods. Include middleware hooks for pre-validation logic. Build a configurable response system for method not allowed (405) errors with appropriate headers. Design for extensibility to support protocol upgrades and custom method handling. Implement proper error handling with detailed logging.",
+          "details": "Create a non-blocking read mechanism that processes incoming data when available without waiting. Handle partial reads, implement buffering for incomplete data, and manage read events through the event loop. Include error handling for connection resets and other read failures.",
           "status": "pending"
         },
         {
           "id": 3,
-          "title": "Build Handler Dispatching Mechanism",
-          "description": "Create a system to efficiently dispatch requests to the appropriate handler functions",
+          "title": "Implement request buffering",
+          "description": "Create a buffering system to accumulate and manage partial request data",
           "dependencies": [
-            1,
             2
           ],
-          "details": "Implement a dispatcher that supports middleware chains, handler functions, and controller classes. Include support for async handlers and proper error propagation. Design for extensibility with plugin hooks before and after dispatch. Implement handler resolution strategies (lazy loading, dependency injection). Create comprehensive error handling with fallback handlers and error transformation capabilities.",
+          "details": "Design a buffer management system that efficiently accumulates partial request data until a complete request is received. Implement buffer size limits to prevent memory exhaustion attacks, and create a mechanism to detect when a complete request has been received and is ready for processing.",
           "status": "pending"
         },
         {
           "id": 4,
-          "title": "Implement Client Connection Management",
-          "description": "Develop systems to manage client connections, timeouts, and connection pooling",
-          "dependencies": [],
-          "details": "Create connection lifecycle management with configurable timeouts, keep-alive support, and graceful termination. Implement connection pooling for efficient resource usage. Add support for WebSockets and HTTP/2 multiplexing. Design for extensibility with connection event hooks. Include robust error handling for network issues, timeouts, and client disconnects with proper resource cleanup.",
+          "title": "Implement request processing",
+          "description": "Create a system to parse and process complete client requests",
+          "dependencies": [
+            3
+          ],
+          "details": "Develop a request processing pipeline that parses the buffered request data, validates it, and routes it to the appropriate handler. Implement error handling for malformed requests and create a mechanism to generate appropriate responses based on the request content.",
           "status": "pending"
         },
         {
           "id": 5,
-          "title": "Orchestrate Request-Response Cycle",
-          "description": "Build the core logic to manage the complete lifecycle of requests and responses",
+          "title": "Implement non-blocking write operations",
+          "description": "Develop a system to write response data to client sockets without blocking",
           "dependencies": [
-            3,
             4
           ],
-          "details": "Implement the full request-response pipeline including parsing, routing, handling, and response generation. Support streaming responses and partial content. Add compression and content negotiation capabilities. Design for extensibility with lifecycle hooks at each stage. Create comprehensive error handling with appropriate status codes, error templates, and recovery strategies.",
+          "details": "Create a non-blocking write mechanism that sends response data when the socket is ready for writing. Handle partial writes, implement output buffering, and manage write events through the event loop. Include error handling for connection failures during writes.",
           "status": "pending"
         },
         {
           "id": 6,
-          "title": "Develop Virtual Host Support",
-          "description": "Implement support for virtual hosts to handle multiple domains on a single server",
+          "title": "Implement keep-alive connection management",
+          "description": "Create a system to manage persistent connections efficiently",
           "dependencies": [
-            1,
             5
           ],
-          "details": "Create a virtual host system that routes requests based on hostname. Support wildcard domains and port-based routing. Implement host-specific configurations and middleware. Design for extensibility with custom host resolution strategies. Include error handling for misconfigured hosts and domain resolution issues.",
+          "details": "Develop a keep-alive management system that maintains client connections across multiple requests. Implement connection pooling, idle connection tracking, and mechanisms to gracefully close connections when appropriate. Include support for HTTP keep-alive headers and connection reuse.",
           "status": "pending"
         },
         {
           "id": 7,
-          "title": "Integrate Server Components",
-          "description": "Connect all server components into a cohesive system with clean interfaces",
+          "title": "Implement timeout handling",
+          "description": "Create a system to manage connection timeouts and resource cleanup",
           "dependencies": [
-            5,
             6
           ],
-          "details": "Integrate routing, middleware, handlers, and response generation into a unified API. Implement a plugin system for extending server functionality. Create a clean configuration interface for all components. Design for extensibility with dependency injection and service location. Implement comprehensive error handling across component boundaries with centralized logging and monitoring.",
-          "status": "pending"
-        },
-        {
-          "id": 8,
-          "title": "Implement Performance Monitoring and Metrics Collection",
-          "description": "Develop a system to track server performance metrics and provide monitoring capabilities",
-          "dependencies": [
-            7
-          ],
-          "details": "Create instrumentation points throughout the request lifecycle to collect timing and resource usage metrics. Implement configurable logging levels and formats. Add support for distributed tracing (OpenTelemetry). Design for extensibility with custom metric collectors and exporters. Build a health check system with readiness/liveness probes. Include error handling for monitoring failures that won't impact core server operations.",
+          "details": "Develop a timeout management system that tracks idle connections and terminates them after appropriate timeout periods. Implement different timeout policies for various connection states (connecting, reading, processing, writing) and ensure proper resource cleanup when connections are closed due to timeouts.",
           "status": "pending"
         }
       ]
     },
     {
       "id": 8,
-      "title": "Implement CGI Execution",
-      "description": "Create a handler for executing CGI scripts and processing their output as HTTP responses.",
-      "details": "Implement a CGIHandler class that:\n1. Identifies requests for CGI scripts based on file extension or route configuration\n2. Sets up environment variables according to CGI specification\n3. Forks a process to execute the CGI script\n4. Passes request data to the script via stdin\n5. Captures script output and converts it to an HTTP response\n6. Handles timeouts and errors in CGI execution\n\nPseudo-code:\n```cpp\nclass CGIHandler {\nprivate:\n    bool isCGIScript(const std::string& path, const RouteConfig& route) const;\n    std::map<std::string, std::string> buildEnvironment(const HTTPRequest& request, const std::string& script_path) const;\n    \npublic:\n    HTTPResponse handleRequest(const HTTPRequest& request, const RouteConfig& route);\n};\n\nHTTPResponse CGIHandler::handleRequest(const HTTPRequest& request, const RouteConfig& route) {\n    // Map URI to filesystem path\n    std::string uri_path = request.getURI();\n    // Remove query parameters if present\n    size_t query_pos = uri_path.find('?');\n    if (query_pos != std::string::npos) {\n        uri_path = uri_path.substr(0, query_pos);\n    }\n    \n    // Combine route root with URI path\n    std::string script_path = route.root + uri_path;\n    \n    // Check if it's a CGI script\n    if (!isCGIScript(script_path, route)) {\n        return HTTPResponse::makeErrorResponse(404);\n    }\n    \n    // Build environment variables\n    std::map<std::string, std::string> env = buildEnvironment(request, script_path);\n    \n    // Create pipes for communication with CGI script\n    int input_pipe[2];  // Server writes to CGI's stdin\n    int output_pipe[2]; // Server reads from CGI's stdout\n    \n    if (pipe(input_pipe) < 0 || pipe(output_pipe) < 0) {\n        return HTTPResponse::makeErrorResponse(500);\n    }\n    \n    // Fork process\n    pid_t pid = fork();\n    \n    if (pid < 0) {\n        // Fork failed\n        close(input_pipe[0]);\n        close(input_pipe[1]);\n        close(output_pipe[0]);\n        close(output_pipe[1]);\n        return HTTPResponse::makeErrorResponse(500);\n    }\n    \n    if (pid == 0) {\n        // Child process (CGI script)\n        \n        // Redirect stdin to input pipe\n        close(input_pipe[1]); // Close write end\n        dup2(input_pipe[0], STDIN_FILENO);\n        close(input_pipe[0]);\n        \n        // Redirect stdout to output pipe\n        close(output_pipe[0]); // Close read end\n        dup2(output_pipe[1], STDOUT_FILENO);\n        close(output_pipe[1]);\n        \n        // Set environment variables\n        for (const auto& var : env) {\n            setenv(var.first.c_str(), var.second.c_str(), 1);\n        }\n        \n        // Execute CGI script\n        execl(script_path.c_str(), script_path.c_str(), NULL);\n        \n        // If execl fails\n        exit(1);\n    }\n    \n    // Parent process (server)\n    close(input_pipe[0]); // Close read end\n    close(output_pipe[1]); // Close write end\n    \n    // Write request body to CGI's stdin\n    write(input_pipe[1], request.getBody().c_str(), request.getBody().length());\n    close(input_pipe[1]);\n    \n    // Read CGI output\n    char buffer[4096];\n    std::string cgi_output;\n    ssize_t bytes_read;\n    \n    while ((bytes_read = read(output_pipe[0], buffer, sizeof(buffer))) > 0) {\n        cgi_output.append(buffer, bytes_read);\n    }\n    \n    close(output_pipe[0]);\n    \n    // Wait for CGI process to finish\n    int status;\n    waitpid(pid, &status, 0);\n    \n    // Parse CGI output as HTTP response\n    // CGI output format: headers, blank line, body\n    HTTPResponse response;\n    \n    size_t header_end = cgi_output.find(\"\\r\\n\\r\\n\");\n    if (header_end != std::string::npos) {\n        // Extract headers\n        std::string headers_str = cgi_output.substr(0, header_end);\n        std::string body = cgi_output.substr(header_end + 4);\n        \n        // Parse headers\n        std::istringstream headers_stream(headers_str);\n        std::string line;\n        while (std::getline(headers_stream, line)) {\n            if (line.empty() || line == \"\\r\") continue;\n            \n            size_t colon_pos = line.find(':');\n            if (colon_pos != std::string::npos) {\n                std::string name = line.substr(0, colon_pos);\n                std::string value = line.substr(colon_pos + 1);\n                // Trim whitespace\n                value.erase(0, value.find_first_not_of(\" \\t\"));\n                value.erase(value.find_last_not_of(\"\\r\\n \\t\") + 1);\n                \n                response.addHeader(name, value);\n            }\n        }\n        \n        // Set body\n        response.setBody(body);\n    } else {\n        // No headers, treat entire output as body\n        response.setBody(cgi_output);\n    }\n    \n    return response;\n}\n```\n\nImplement the environment variable building and CGI script detection methods.",
-      "testStrategy": "1. Unit tests for CGIHandler methods\n2. Test environment variable generation\n3. Test CGI script detection\n4. Test execution of various CGI scripts (PHP, Python, etc.)\n5. Test handling of CGI output with and without headers\n6. Test error handling for script execution failures\n7. Test timeout handling\n8. Integration tests with the full request-response cycle\n9. Test with various HTTP methods and request bodies",
-      "priority": "medium",
+      "title": "Error Page Handler",
+      "description": "Implement handling of error pages, both default and custom, for various HTTP error codes.",
+      "status": "pending",
       "dependencies": [
         5,
-        7
+        6
       ],
-      "status": "pending",
+      "priority": "low",
+      "details": "Create an ErrorHandler class to manage error responses:\n\n```cpp\nclass ErrorHandler {\nprivate:\n    std::map<int, std::string> _errorPages;\n    std::string _defaultErrorTemplate;\n    \npublic:\n    ErrorHandler();\n    ~ErrorHandler();\n    \n    void setErrorPage(int statusCode, const std::string& path);\n    HTTPResponse getErrorResponse(int statusCode, const std::string& message = \"\");\n    \nprivate:\n    std::string generateDefaultErrorPage(int statusCode, const std::string& message);\n};\n```\n\nImplementation steps:\n1. Create default error page templates for common HTTP errors (404, 500, etc.)\n2. Allow configuration of custom error pages via the config file\n3. Generate appropriate error responses with correct status codes\n4. Include helpful error messages in the response body\n\nEnsure error pages are properly formatted and provide useful information.",
+      "testStrategy": "1. Test generation of default error pages for various status codes\n2. Verify custom error pages are correctly loaded and served\n3. Test with missing custom error pages to ensure fallback to defaults\n4. Validate that error responses have correct status codes and headers",
       "subtasks": [
         {
           "id": 1,
-          "title": "Environment Variable Preparation",
-          "description": "Implement the preparation of environment variables for CGI script execution according to the CGI specification.",
+          "title": "Create default error page templates",
+          "description": "Design and implement default error page templates for common HTTP error codes (404, 500, etc.)",
           "dependencies": [],
-          "details": "Create a function that prepares all required CGI environment variables including HTTP headers, server information, and request metadata. Ensure proper sanitization of all variables to prevent injection attacks. Consider performance implications of environment size and creation overhead. Implement validation checks for environment variable names and values to ensure they conform to CGI specifications.",
+          "details": "Create HTML templates for standard error pages that provide clear error information while maintaining the application's look and feel. Include appropriate messaging for each error type and ensure they are responsive. Templates should include placeholders for dynamic error details.",
           "status": "pending"
         },
         {
           "id": 2,
-          "title": "Process Creation and Execution",
-          "description": "Implement secure process creation and execution mechanisms for CGI scripts.",
+          "title": "Implement custom error page loading mechanism",
+          "description": "Develop a system to load custom error pages based on configuration settings",
           "dependencies": [
             1
           ],
-          "details": "Develop a process management system that creates child processes with appropriate resource limits. Implement process isolation techniques to prevent one CGI process from affecting others. Consider performance implications of process creation overhead and implement pooling if necessary. Include mechanisms to verify script existence and permissions before execution. Implement resource throttling to prevent DoS attacks.",
+          "details": "Create a configuration interface that allows developers to specify custom error pages for different error types. Implement a loader that can find and retrieve these custom templates, falling back to the default templates when custom ones aren't specified.",
           "status": "pending"
         },
         {
           "id": 3,
-          "title": "Input/Output Handling",
-          "description": "Implement robust I/O handling for CGI processes including stdin data transfer and stdout/stderr capture.",
+          "title": "Build error response generation system",
+          "description": "Create a component that generates appropriate error responses with correct status codes and content",
           "dependencies": [
+            1,
             2
           ],
-          "details": "Create buffered I/O mechanisms for efficient data transfer to and from CGI processes. Implement non-blocking I/O to prevent deadlocks. Consider performance implications of buffer sizes and I/O operations. Include proper handling of binary data and different character encodings. Implement safeguards against excessive output that could lead to memory exhaustion.",
+          "details": "Develop a service that takes error information, selects the appropriate template, populates it with error details, and returns a properly formatted HTTP response with the correct status code. Handle content negotiation to return appropriate formats (HTML, JSON, etc.) based on request headers.",
           "status": "pending"
         },
         {
           "id": 4,
-          "title": "Response Parsing",
-          "description": "Implement parsing of CGI script output into HTTP responses.",
+          "title": "Implement fallback logic for error handling",
+          "description": "Create robust fallback mechanisms for when primary error handling fails",
           "dependencies": [
             3
           ],
-          "details": "Create a parser that correctly interprets CGI output format including headers and body separation. Implement validation of response headers for security and compliance. Consider performance implications of parsing operations and optimize for common cases. Include handling for malformed responses and implement fallback mechanisms. Ensure proper content-type and encoding handling.",
-          "status": "pending"
-        },
-        {
-          "id": 5,
-          "title": "Error Handling and Timeout Management",
-          "description": "Implement comprehensive error handling and timeout mechanisms for CGI execution.",
-          "dependencies": [
-            2,
-            3
-          ],
-          "details": "Develop error detection for all possible failure modes including script errors, system errors, and timeouts. Implement graceful termination of processes that exceed time or resource limits. Consider performance implications of monitoring overhead. Create detailed logging for debugging purposes while preventing information disclosure. Implement customizable timeout settings based on script type or request parameters.",
-          "status": "pending"
-        },
-        {
-          "id": 6,
-          "title": "Security Hardening",
-          "description": "Implement comprehensive security measures for the CGI handler to prevent common attacks and vulnerabilities.",
-          "dependencies": [
-            1,
-            2,
-            3,
-            4,
-            5
-          ],
-          "details": "Implement input validation and sanitization to prevent command injection attacks. Create a permission system to restrict which CGI scripts can be executed. Implement resource limits for CPU, memory, and file descriptors. Consider performance implications of security checks. Develop a chroot jail or similar containment mechanism for CGI processes. Implement protection against path traversal attacks and ensure proper handling of symbolic links. Create an audit logging system for security events.",
+          "details": "Implement cascading fallback logic that ensures users always receive some form of error information, even if parts of the error handling system fail. Include logging of error handling failures and implement a minimal plain-text fallback for worst-case scenarios where templates cannot be rendered.",
           "status": "pending"
         }
       ]
     },
     {
       "id": 9,
-      "title": "Implement File Upload Handling",
-      "description": "Create a handler for processing multipart/form-data requests and saving uploaded files to the filesystem.",
-      "details": "Implement a FileUploadHandler class that:\n1. Parses multipart/form-data request bodies\n2. Extracts file content and metadata (filename, content type)\n3. Saves uploaded files to the configured upload directory\n4. Enforces upload size limits from configuration\n5. Generates appropriate responses for successful and failed uploads\n\nPseudo-code:\n```cpp\nclass FileUploadHandler {\nprivate:\n    struct UploadedFile {\n        std::string filename;\n        std::string content_type;\n        std::string content;\n    };\n    \n    std::vector<UploadedFile> parseMultipartFormData(const HTTPRequest& request) const;\n    bool saveUploadedFile(const UploadedFile& file, const std::string& upload_dir) const;\n    \npublic:\n    HTTPResponse handleRequest(const HTTPRequest& request, const RouteConfig& route);\n};\n\nstd::vector<FileUploadHandler::UploadedFile> FileUploadHandler::parseMultipartFormData(const HTTPRequest& request) const {\n    std::vector<UploadedFile> files;\n    \n    // Get Content-Type header\n    std::string content_type = request.getHeader(\"Content-Type\");\n    \n    // Extract boundary\n    size_t boundary_pos = content_type.find(\"boundary=\");\n    if (boundary_pos == std::string::npos) return files;\n    \n    std::string boundary = content_type.substr(boundary_pos + 9);\n    std::string delimiter = \"--\" + boundary;\n    std::string end_delimiter = delimiter + \"--\";\n    \n    const std::string& body = request.getBody();\n    \n    // Split body by delimiter\n    size_t pos = body.find(delimiter);\n    while (pos != std::string::npos) {\n        // Find next delimiter\n        size_t next_pos = body.find(delimiter, pos + delimiter.length());\n        if (next_pos == std::string::npos) break;\n        \n        // Extract part\n        std::string part = body.substr(pos + delimiter.length() + 2, next_pos - pos - delimiter.length() - 2);\n        \n        // Find headers end\n        size_t headers_end = part.find(\"\\r\\n\\r\\n\");\n        if (headers_end == std::string::npos) continue;\n        \n        // Extract headers and content\n        std::string headers_str = part.substr(0, headers_end);\n        std::string content = part.substr(headers_end + 4);\n        \n        // Parse headers\n        std::map<std::string, std::string> headers;\n        std::istringstream headers_stream(headers_str);\n        std::string line;\n        while (std::getline(headers_stream, line)) {\n            if (line.empty() || line == \"\\r\") continue;\n            \n            size_t colon_pos = line.find(':');\n            if (colon_pos != std::string::npos) {\n                std::string name = line.substr(0, colon_pos);\n                std::string value = line.substr(colon_pos + 1);\n                // Trim whitespace\n                value.erase(0, value.find_first_not_of(\" \\t\"));\n                value.erase(value.find_last_not_of(\"\\r\\n \\t\") + 1);\n                \n                headers[name] = value;\n            }\n        }\n        \n        // Check if this is a file upload\n        std::string content_disposition = headers[\"Content-Disposition\"];\n        if (content_disposition.find(\"filename=\") != std::string::npos) {\n            // Extract filename\n            size_t filename_pos = content_disposition.find(\"filename=\\\"\");\n            size_t filename_end = content_disposition.find(\"\\\"\", filename_pos + 10);\n            std::string filename = content_disposition.substr(filename_pos + 10, filename_end - filename_pos - 10);\n            \n            // Create uploaded file\n            UploadedFile file;\n            file.filename = filename;\n            file.content_type = headers[\"Content-Type\"];\n            file.content = content;\n            \n            files.push_back(file);\n        }\n        \n        pos = next_pos;\n    }\n    \n    return files;\n}\n\nHTTPResponse FileUploadHandler::handleRequest(const HTTPRequest& request, const RouteConfig& route) {\n    // Check if this is a multipart/form-data request\n    std::string content_type = request.getHeader(\"Content-Type\");\n    if (content_type.find(\"multipart/form-data\") == std::string::npos) {\n        return HTTPResponse::makeErrorResponse(400, \"Not a multipart/form-data request\");\n    }\n    \n    // Check upload directory\n    if (route.upload_dir.empty()) {\n        return HTTPResponse::makeErrorResponse(500, \"No upload directory configured\");\n    }\n    \n    // Check body size limit\n    if (route.client_max_body_size > 0 && request.getBody().length() > route.client_max_body_size) {\n        return HTTPResponse::makeErrorResponse(413, \"Request entity too large\");\n    }\n    \n    // Parse multipart/form-data\n    std::vector<UploadedFile> files = parseMultipartFormData(request);\n    \n    if (files.empty()) {\n        return HTTPResponse::makeErrorResponse(400, \"No files uploaded\");\n    }\n    \n    // Save files\n    std::vector<std::string> saved_files;\n    for (const auto& file : files) {\n        if (saveUploadedFile(file, route.upload_dir)) {\n            saved_files.push_back(file.filename);\n        }\n    }\n    \n    // Generate response\n    HTTPResponse response;\n    response.setStatusCode(200);\n    \n    // Create JSON response\n    std::stringstream json;\n    json << \"{\\\"status\\\": \\\"success\\\", \\\"files\\\": [\";\n    for (size_t i = 0; i < saved_files.size(); ++i) {\n        if (i > 0) json << \", \";\n        json << \"\\\"\" << saved_files[i] << \"\\\"\";\n    }\n    json << \"]}\";\n    \n    response.setBody(json.str(), \"application/json\");\n    return response;\n}\n```\n\nImplement the saveUploadedFile method to write files to the filesystem.",
-      "testStrategy": "1. Unit tests for FileUploadHandler methods\n2. Test multipart/form-data parsing with various boundary formats\n3. Test extraction of file metadata (filename, content type)\n4. Test saving files to the filesystem\n5. Test handling of size limits\n6. Test with single and multiple file uploads\n7. Test error handling for invalid requests\n8. Integration tests with the full request-response cycle\n9. Test with various file types and sizes",
-      "priority": "medium",
+      "title": "Request Router and Handler",
+      "description": "Implement a router that directs HTTP requests to appropriate handlers based on method and URI.",
+      "status": "pending",
       "dependencies": [
         4,
-        7
+        5,
+        6,
+        8
       ],
-      "status": "pending",
+      "priority": "medium",
+      "details": "Create a RequestHandler class to route and process requests:\n\n```cpp\nclass RequestHandler {\nprivate:\n    std::map<std::string, ServerConfig> _serverConfigs;\n    std::map<std::string, FileHandler*> _fileHandlers;\n    ErrorHandler _errorHandler;\n    \npublic:\n    RequestHandler(const std::map<std::string, ServerConfig>& configs);\n    ~RequestHandler();\n    \n    HTTPResponse handleRequest(const HTTPRequest& request, const std::string& serverName);\n    \nprivate:\n    ServerConfig& getMatchingConfig(const std::string& serverName);\n    bool isMethodAllowed(const std::string& method);\n};\n```\n\nImplementation steps:\n1. Determine which server configuration applies to the request\n2. Validate the HTTP method (GET, POST, DELETE)\n3. Check if the request URI is valid\n4. Route the request to the appropriate handler based on method and URI\n5. Handle special cases like directory listings or index files\n6. Generate error responses for invalid requests\n\nEnsure proper separation of concerns between routing and handling.",
+      "testStrategy": "1. Test routing of requests to correct handlers\n2. Verify handling of different HTTP methods\n3. Test with invalid methods to ensure proper error responses\n4. Validate virtual host routing based on Host header\n5. Test directory listing and index file handling",
       "subtasks": [
         {
           "id": 1,
-          "title": "Implement multipart/form-data parsing",
-          "description": "Create a robust parser for multipart/form-data requests that can handle file uploads efficiently",
+          "title": "Implement server configuration selection",
+          "description": "Create a mechanism to select the appropriate server configuration based on the incoming request's host and port.",
           "dependencies": [],
-          "details": "Develop a parser that can: 1) Identify and extract boundaries in multipart requests, 2) Process request streams incrementally to minimize memory usage, 3) Handle various content encodings, 4) Implement timeout mechanisms for incomplete uploads, 5) Add proper error handling for malformed requests. Security considerations: Implement size limits for individual parts to prevent DoS attacks. Performance optimization: Use streaming parsers instead of buffering the entire request in memory.",
+          "details": "Develop a function that examines the incoming request's host header and port to determine which server configuration should handle the request. This should support virtual hosting where multiple server blocks may exist in the configuration.",
           "status": "pending"
         },
         {
           "id": 2,
-          "title": "Implement file extraction and temporary storage",
-          "description": "Extract file data from parsed requests and store it in a secure temporary location",
+          "title": "Implement HTTP method validation",
+          "description": "Create a validation system to check if the incoming request method is supported by the selected server configuration.",
           "dependencies": [
             1
           ],
-          "details": "Create a system that: 1) Extracts file metadata (name, type, size) from request headers, 2) Streams file content to temporary storage, 3) Generates unique identifiers for each upload, 4) Implements configurable storage quotas, 5) Handles concurrent uploads efficiently. Security considerations: Use a separate, non-executable directory for temporary files with appropriate permissions. Performance optimization: Write files directly to disk using streaming to avoid memory pressure, and consider using memory-mapped files for very large uploads.",
+          "details": "Develop logic to verify that the HTTP method (GET, POST, etc.) in the incoming request is allowed according to the server configuration. Return appropriate error codes (405 Method Not Allowed) when methods are not supported.",
           "status": "pending"
         },
         {
           "id": 3,
-          "title": "Implement file validation and sanitization",
-          "description": "Validate uploaded files for security, content type, and other application-specific requirements",
+          "title": "Implement URI validation and normalization",
+          "description": "Create a system to validate and normalize the request URI according to HTTP standards and server configuration.",
           "dependencies": [
-            2
+            1
           ],
-          "details": "Build validation mechanisms that: 1) Verify MIME types against allowed lists, 2) Scan for malware or malicious content, 3) Validate file extensions match actual content, 4) Check file integrity with checksums, 5) Sanitize filenames to prevent path traversal attacks. Security considerations: Implement content type verification beyond just checking extensions, and consider using external virus scanning tools. Performance optimization: Perform basic checks before expensive operations, and implement validation pipeline that can abort early on failure.",
+          "details": "Implement URI validation that handles path normalization (removing '../', './', etc.), checks for valid characters, and enforces maximum length restrictions. The system should also decode percent-encoded characters where appropriate.",
           "status": "pending"
         },
         {
           "id": 4,
-          "title": "Implement permanent storage management",
-          "description": "Move validated files from temporary storage to their permanent location with proper organization",
+          "title": "Implement request handler dispatch mechanism",
+          "description": "Create a system to match validated requests to the appropriate handler based on location blocks and other configuration directives.",
           "dependencies": [
+            1,
+            2,
             3
           ],
-          "details": "Create a storage system that: 1) Organizes files using a structured directory scheme, 2) Handles filename collisions gracefully, 3) Updates database records with file locations, 4) Implements appropriate access controls, 5) Supports different storage backends (local, cloud, etc.). Security considerations: Ensure files are stored outside the web root, implement proper permissions, and consider encrypting sensitive uploads. Performance optimization: Use asynchronous operations for moving files to permanent storage, and implement efficient indexing for quick file retrieval.",
+          "details": "Develop a dispatcher that selects the correct handler for a request based on the URI path and server configuration. This should support location block matching with various modifiers (exact, prefix, regex, etc.) and handle priority rules correctly.",
           "status": "pending"
         },
         {
           "id": 5,
-          "title": "Implement cleanup and error handling",
-          "description": "Ensure proper cleanup of temporary files and comprehensive error handling throughout the upload process",
+          "title": "Implement special case handling for directories and index files",
+          "description": "Create specialized handling for directory requests and index file resolution.",
           "dependencies": [
-            2,
-            3,
             4
           ],
-          "details": "Develop mechanisms that: 1) Clean up temporary files after successful processing or on errors, 2) Implement scheduled cleanup for orphaned files, 3) Create detailed error reporting for failed uploads, 4) Handle edge cases like disk full scenarios, 5) Implement transaction-like behavior for file operations. Security considerations: Ensure cleanup routines cannot be exploited to delete legitimate files, and implement secure logging that doesn't expose sensitive information. Performance optimization: Use background processes for cleanup operations, and implement efficient file discovery for orphaned temporary files.",
+          "details": "Implement logic to handle requests for directories, including directory listing (if enabled) and automatic index file selection based on the configured index directive. This should properly handle trailing slashes and redirects as needed.",
           "status": "pending"
         },
         {
           "id": 6,
-          "title": "Implement progress tracking and resumable uploads",
-          "description": "Create a system for tracking upload progress and supporting resumable uploads for large files",
+          "title": "Implement error response integration",
+          "description": "Create a system to generate appropriate error responses when routing fails at any stage.",
           "dependencies": [
-            1,
-            2
+            2,
+            3,
+            4,
+            5
           ],
-          "details": "Build functionality that: 1) Tracks and reports upload progress in real-time, 2) Implements chunked upload protocols, 3) Stores upload state for resumption after interruptions, 4) Provides client-side APIs for progress visualization, 5) Handles timeout and reconnection scenarios gracefully. Security considerations: Implement secure token-based authentication for resumable upload chunks, and validate that chunks belong to the authorized user. Performance optimization: Use efficient storage for tracking partial uploads, implement parallel chunk processing where appropriate, and consider using WebSockets for real-time progress updates.",
+          "details": "Develop an error handling system that generates appropriate HTTP error responses (400, 403, 404, 405, etc.) when routing fails. This should integrate with custom error pages if configured in the server and provide meaningful error messages.",
           "status": "pending"
         }
       ]
     },
     {
       "id": 10,
-      "title": "Implement Error Handling and Multiple Server Support",
-      "description": "Create a comprehensive error handling system and support for multiple virtual servers on different host:port combinations.",
-      "details": "Implement error handling and multiple server support:\n\n1. Error Handling:\n   - Create an ErrorHandler class that generates appropriate error responses\n   - Support custom error pages from configuration\n   - Log detailed error information\n   - Handle various HTTP error codes (400, 403, 404, 405, 413, 500, etc.)\n\n2. Multiple Server Support:\n   - Enhance the server to handle multiple virtual servers\n   - Route requests to the correct server based on Host header\n   - Support default server for unmatched hosts\n   - Handle different configurations for each server\n\nPseudo-code for ErrorHandler:\n```cpp\nclass ErrorHandler {\nprivate:\n    std::map<int, std::string> default_error_pages;\n    \n    std::string readErrorPage(const std::string& path) const;\n    \npublic:\n    ErrorHandler();\n    HTTPResponse makeErrorResponse(int status_code, const std::map<int, std::string>& custom_error_pages = std::map<int, std::string>());\n};\n\nErrorHandler::ErrorHandler() {\n    // Initialize default error pages\n    default_error_pages[400] = \"<html><body><h1>400 Bad Request</h1></body></html>\";\n    default_error_pages[403] = \"<html><body><h1>403 Forbidden</h1></body></html>\";\n    default_error_pages[404] = \"<html><body><h1>404 Not Found</h1></body></html>\";\n    default_error_pages[405] = \"<html><body><h1>405 Method Not Allowed</h1></body></html>\";\n    default_error_pages[413] = \"<html><body><h1>413 Request Entity Too Large</h1></body></html>\";\n    default_error_pages[500] = \"<html><body><h1>500 Internal Server Error</h1></body></html>\";\n    default_error_pages[501] = \"<html><body><h1>501 Not Implemented</h1></body></html>\";\n    default_error_pages[502] = \"<html><body><h1>502 Bad Gateway</h1></body></html>\";\n    default_error_pages[504] = \"<html><body><h1>504 Gateway Timeout</h1></body></html>\";\n}\n\nHTTPResponse ErrorHandler::makeErrorResponse(int status_code, const std::map<int, std::string>& custom_error_pages) {\n    HTTPResponse response;\n    response.setStatusCode(status_code);\n    \n    // Check for custom error page\n    if (custom_error_pages.find(status_code) != custom_error_pages.end()) {\n        std::string page_path = custom_error_pages.at(status_code);\n        std::string content = readErrorPage(page_path);\n        if (!content.empty()) {\n            response.setBody(content, \"text/html\");\n            return response;\n        }\n    }\n    \n    // Use default error page\n    if (default_error_pages.find(status_code) != default_error_pages.end()) {\n        response.setBody(default_error_pages.at(status_code), \"text/html\");\n    } else {\n        // Generic error page\n        response.setBody(\"<html><body><h1>Error \" + std::to_string(status_code) + \"</h1></body></html>\", \"text/html\");\n    }\n    \n    return response;\n}\n```\n\nPseudo-code for multiple server support in the main server class:\n```cpp\nclass WebServer {\nprivate:\n    SocketManager socket_manager;\n    EventLoop event_loop;\n    std::vector<ServerConfig> server_configs;\n    RouteHandler route_handler;\n    ErrorHandler error_handler;\n    \n    const ServerConfig* findServerConfig(const std::string& host, int port) const;\n    \npublic:\n    WebServer(const std::vector<ServerConfig>& configs);\n    bool start();\n    void handleRequest(int client_socket, const std::string& request_data);\n};\n\nconst ServerConfig* WebServer::findServerConfig(const std::string& host, int port) const {\n    // First, try to find exact match for host:port\n    for (const auto& config : server_configs) {\n        if (config.port == port) {\n            for (const auto& name : config.server_names) {\n                if (name == host) {\n                    return &config;\n                }\n            }\n        }\n    }\n    \n    // If no exact match, find default server for this port\n    for (const auto& config : server_configs) {\n        if (config.port == port && config.server_names.empty()) {\n            return &config;\n        }\n    }\n    \n    // If no default server, use first server for this port\n    for (const auto& config : server_configs) {\n        if (config.port == port) {\n            return &config;\n        }\n    }\n    \n    return nullptr;\n}\n\nvoid WebServer::handleRequest(int client_socket, const std::string& request_data) {\n    // Parse HTTP request\n    HTTPRequest request;\n    if (!request.parse(request_data)) {\n        // Bad request\n        HTTPResponse response = error_handler.makeErrorResponse(400);\n        // Send response\n        send(client_socket, response.serialize().c_str(), response.serialize().length(), 0);\n        return;\n    }\n    \n    // Extract host and find matching server config\n    std::string host = request.getHeader(\"Host\");\n    // Remove port from host if present\n    size_t colon_pos = host.find(':');\n    if (colon_pos != std::string::npos) {\n        host = host.substr(0, colon_pos);\n    }\n    \n    // Get client address info to determine port\n    struct sockaddr_in addr;\n    socklen_t addr_len = sizeof(addr);\n    getsockname(client_socket, (struct sockaddr*)&addr, &addr_len);\n    int port = ntohs(addr.sin_port);\n    \n    // Find server config\n    const ServerConfig* server = findServerConfig(host, port);\n    if (!server) {\n        // No matching server\n        HTTPResponse response = error_handler.makeErrorResponse(404);\n        send(client_socket, response.serialize().c_str(), response.serialize().length(), 0);\n        return;\n    }\n    \n    // Handle request with route handler\n    HTTPResponse response = route_handler.handleRequest(request, *server);\n    \n    // Send response\n    send(client_socket, response.serialize().c_str(), response.serialize().length(), 0);\n}\n```\n\nIntegrate these components into the main server implementation.",
-      "testStrategy": "1. Unit tests for ErrorHandler methods\n2. Test generation of error responses for various status codes\n3. Test custom error page loading and fallback to defaults\n4. Test server configuration matching based on host and port\n5. Test request routing to the correct virtual server\n6. Test default server behavior when no exact match is found\n7. Integration tests with multiple server configurations\n8. Test with various Host headers and port combinations\n9. Test error handling across the entire request-response cycle",
-      "priority": "medium",
-      "dependencies": [
-        3,
-        5,
-        7
-      ],
+      "title": "Main Server Integration and Testing",
+      "description": "Integrate all components into a cohesive server application and implement comprehensive testing.",
       "status": "pending",
+      "dependencies": [
+        1,
+        2,
+        3,
+        7,
+        9
+      ],
+      "priority": "high",
+      "details": "Create a Server class that integrates all components:\n\n```cpp\nclass Server {\nprivate:\n    ConfigParser _configParser;\n    std::vector<Socket*> _sockets;\n    EventLoop _eventLoop;\n    RequestHandler _requestHandler;\n    \npublic:\n    Server(const std::string& configFile);\n    ~Server();\n    \n    bool initialize();\n    void run();\n    void stop();\n};\n\nint main(int argc, char** argv) {\n    if (argc != 2) {\n        std::cerr << \"Usage: \" << argv[0] << \" <config_file>\" << std::endl;\n        return 1;\n    }\n    \n    Server server(argv[1]);\n    if (!server.initialize()) {\n        std::cerr << \"Failed to initialize server\" << std::endl;\n        return 1;\n    }\n    \n    server.run();\n    return 0;\n}\n```\n\nImplementation steps:\n1. Create a main server class that initializes all components\n2. Implement proper signal handling (SIGINT, SIGTERM)\n3. Create a clean shutdown procedure\n4. Implement logging for debugging and monitoring\n5. Create a comprehensive test suite\n6. Compare behavior with NGINX for validation\n\nEnsure all components work together seamlessly and the server handles edge cases gracefully.",
+      "testStrategy": "1. Create integration tests with tools like curl and telnet\n2. Test server with real browsers\n3. Implement stress testing to verify stability under load\n4. Compare responses with NGINX for validation\n5. Test graceful shutdown and resource cleanup\n6. Verify memory usage remains stable over time",
       "subtasks": [
         {
           "id": 1,
-          "title": "Implement Error Response Generation",
-          "description": "Create a standardized error response system that generates consistent error messages across the application",
+          "title": "Component Initialization Implementation",
+          "description": "Develop the initialization sequence for server components ensuring proper startup order and dependency handling.",
           "dependencies": [],
-          "details": "Develop a centralized error handling module that: 1) Creates standardized JSON error responses with appropriate HTTP status codes, 2) Supports different error types (validation, authentication, server, etc.), 3) Includes configurable error detail levels based on environment (development vs production), 4) Implements error codes for client-side interpretation, 5) Ensures minimal performance overhead with efficient error object creation",
+          "details": "Create a robust initialization system that handles component dependencies, configuration loading, and graceful handling of initialization failures. Implement health checks during startup and establish proper communication channels between components.",
           "status": "pending"
         },
         {
           "id": 2,
-          "title": "Build Logging Infrastructure with Multiple Levels",
-          "description": "Implement a comprehensive logging system with configurable severity levels",
-          "dependencies": [],
-          "details": "Create a logging infrastructure that: 1) Supports multiple log levels (debug, info, warn, error, fatal), 2) Allows runtime configuration of minimum log level, 3) Includes context information with each log entry (timestamp, request ID, user ID if available), 4) Provides async logging capabilities to minimize performance impact, 5) Implements a plugin architecture for different logging destinations (console, file, external services)",
+          "title": "Signal Handling Implementation",
+          "description": "Implement comprehensive signal handling to manage server lifecycle events.",
+          "dependencies": [
+            1
+          ],
+          "details": "Develop handlers for SIGTERM, SIGINT, SIGHUP and other relevant signals. Ensure signals trigger appropriate actions like graceful shutdown, configuration reloading, or worker process management. Include proper logging of signal events.",
           "status": "pending"
         },
         {
           "id": 3,
-          "title": "Implement Request/Response Logging",
-          "description": "Create middleware for logging incoming requests and outgoing responses",
+          "title": "Shutdown Procedure Development",
+          "description": "Create a robust shutdown sequence that ensures clean termination of all server processes.",
           "dependencies": [
             2
           ],
-          "details": "Develop request/response logging that: 1) Logs request details (method, URL, headers, body) with configurable sanitization of sensitive data, 2) Records response status, timing information, and size, 3) Includes correlation IDs to track requests through the system, 4) Provides performance optimization options (sampling rate, minimal logging for high-traffic routes), 5) Supports conditional logging based on request characteristics",
+          "details": "Implement orderly shutdown of components in reverse dependency order, ensure all connections are properly closed, resources are released, and in-flight requests are completed or properly terminated. Add timeout mechanisms for components that fail to shut down promptly.",
           "status": "pending"
         },
         {
           "id": 4,
-          "title": "Develop Log Output Management and Formatting",
-          "description": "Create configurable log formatting and output management system",
+          "title": "Logging System Setup",
+          "description": "Configure comprehensive logging throughout the server components.",
           "dependencies": [
-            2
+            1
           ],
-          "details": "Implement log formatting that: 1) Supports multiple output formats (JSON, plain text, structured), 2) Allows custom format templates, 3) Includes colorization options for console output, 4) Provides compression options for stored logs, 5) Implements batching capabilities for high-volume logging scenarios to minimize I/O operations, 6) Ensures thread-safety for concurrent logging operations",
+          "details": "Implement structured logging with appropriate severity levels, component tagging, and context information. Set up log rotation, compression, and retention policies. Ensure sensitive information is properly redacted. Add performance metrics logging integration.",
           "status": "pending"
         },
         {
           "id": 5,
-          "title": "Implement Log Rotation and Archiving",
-          "description": "Create a system for log file rotation, archiving, and retention management",
+          "title": "Integration Testing Framework",
+          "description": "Develop a comprehensive integration testing framework for the server.",
           "dependencies": [
+            1,
             2,
+            3,
             4
           ],
-          "details": "Develop log rotation and archiving that: 1) Rotates logs based on configurable criteria (size, time), 2) Compresses archived logs to minimize storage requirements, 3) Implements configurable retention policies, 4) Provides hooks for external archiving solutions (S3, cloud storage), 5) Ensures no log data is lost during rotation, 6) Includes cleanup utilities for managing log storage, 7) Optimizes file operations to minimize performance impact during rotation events",
+          "details": "Create test suites that verify correct interaction between all server components. Include tests for startup/shutdown sequences, configuration changes, error conditions, and expected functionality. Implement automated test runners and reporting.",
+          "status": "pending"
+        },
+        {
+          "id": 6,
+          "title": "Stress Testing Implementation",
+          "description": "Develop and execute stress tests to evaluate server performance under load.",
+          "dependencies": [
+            5
+          ],
+          "details": "Create benchmarking tools to simulate high concurrency, large payloads, and sustained traffic. Measure response times, throughput, error rates, and resource utilization. Identify bottlenecks and failure points under extreme conditions.",
+          "status": "pending"
+        },
+        {
+          "id": 7,
+          "title": "NGINX Comparison Benchmarking",
+          "description": "Conduct comparative performance analysis against NGINX.",
+          "dependencies": [
+            6
+          ],
+          "details": "Set up equivalent NGINX configurations for comparison testing. Measure and document performance metrics including requests per second, latency, memory usage, and CPU utilization across various workloads. Analyze strengths and weaknesses relative to NGINX.",
+          "status": "pending"
+        },
+        {
+          "id": 8,
+          "title": "Resource Monitoring System",
+          "description": "Implement comprehensive resource monitoring for the server.",
+          "dependencies": [
+            4,
+            5
+          ],
+          "details": "Develop real-time monitoring of CPU, memory, network, and disk usage. Implement alerting thresholds for resource constraints. Create dashboards for visualizing performance metrics and resource utilization trends. Add profiling capabilities for detailed analysis.",
           "status": "pending"
         }
       ]
