@@ -10,37 +10,40 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <cctype> // isspace, isdigit
-#include <cerrno> // errno
+#include <cctype>  // isspace, isdigit
+#include <cerrno>  // errno
 #include <cstdlib>
-#include <cstring> // strerror
-#include <iostream>
-#include <sstream> // pour stringstream si besoin
+#include <cstring>  // strerror
 #include "HttpException.hpp"
 #include "HttpParser.hpp"
-#include <cstdlib>   // pour strtol
-#include <cctype>    // pour isxdigit
+#include <cstdlib>  // pour strtol
+#include <cctype>   // pour isxdigit
 
-std::string urlDecode(const std::string &s)
+std::string urlDecode(const std::string& s)
 {
     std::string out;
+    size_t      i;
+    char        hex[3];
+    char        decoded;
+
     out.reserve(s.size());  // au moins la taille d'origine
 
-    for (size_t i = 0; i < s.size(); ++i)
+    for (i = 0; i < s.size(); ++i)
     {
         if (s[i] == '%')
         {
             // doit avoir deux caractères hex suivant
-            if (i + 2 >= s.size() ||
-                !std::isxdigit(static_cast<unsigned char>(s[i+1])) ||
-                !std::isxdigit(static_cast<unsigned char>(s[i+2])))
+            if (i + 2 >= s.size() || !std::isxdigit(static_cast<unsigned char>(s[i + 1]))
+                || !std::isxdigit(static_cast<unsigned char>(s[i + 2])))
             {
                 throw HttpException(400, "Bad Request");
             }
 
             // lire les deux hex, les convertir
-            char hex[3] = { s[i+1], s[i+2], '\0' };
-            char decoded = static_cast<char>(std::strtol(hex, NULL, 16));
+            hex[0]  = s[i + 1];
+            hex[1]  = s[i + 2];
+            hex[2]  = '\0';
+            decoded = static_cast<char>(std::strtol(hex, NULL, 16));
             out += decoded;
             i += 2;  // on a consommé %xx
         }
@@ -59,38 +62,36 @@ std::string urlDecode(const std::string &s)
 
 
 // découpe "a=b" en clé et valeur (URL-decode)
-void	splitKeyVal(const std::string &token, std::string &key,
-		std::string &val)
+void splitKeyVal(const std::string& token, std::string& key, std::string& val)
 {
-	size_t	pos;
+    size_t pos;
 
-	pos = token.find('=');
-	if (pos == std::string::npos)
-	{
-		key = urlDecode(token);
-		val.clear();
-	}
-	else
-	{
-		key = urlDecode(token.substr(0, pos));
-		val = urlDecode(token.substr(pos + 1));
-	}
-	if (key.empty())
-    	throw HttpException(400, "Bad Request");
-
+    pos = token.find('=');
+    if (pos == std::string::npos)
+    {
+        key = urlDecode(token);
+        val.clear();
+    }
+    else
+    {
+        key = urlDecode(token.substr(0, pos));
+        val = urlDecode(token.substr(pos + 1));
+    }
+    if (key.empty())
+        throw HttpException(400, "Bad Request");
 }
 
-std::string trim(const std::string &s)
+std::string trim(const std::string& s)
 {
-	size_t	b;
-	size_t	e;
+    size_t b;
+    size_t e;
 
-	b = 0, b = 0, e = s.size();
-	while (b < e && isspace(s[b]))
-		++b;
-	while (e > b && isspace(s[e - 1]))
-		--e;
-	return (s.substr(b, e - b));
+    b = 0, b = 0, e = s.size();
+    while (b < e && isspace(s[b]))
+        ++b;
+    while (e > b && isspace(s[e - 1]))
+        --e;
+    return (s.substr(b, e - b));
 }
 
 bool containsCtl(const std::string& s)
@@ -114,8 +115,8 @@ bool pathEscapesRoot(const std::string& path)
         return true;
 
     std::vector<std::string> stack;
-    std::string segment;
-    size_t i = 1;  // on skippe le '/' initial
+    std::string              segment;
+    size_t                   i = 1;  // on skippe le '/' initial
 
     while (i <= path.size())
     {
@@ -141,10 +142,6 @@ bool pathEscapesRoot(const std::string& path)
 
         i = j + 1;
     }
-
     // si on n'a jamais débordé la racine, tout va bien
     return false;
 }
-
-
-

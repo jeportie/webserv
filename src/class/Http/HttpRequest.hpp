@@ -10,20 +10,20 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#ifndef HTTPREQUEST_HPP
+#define HTTPREQUEST_HPP
+
+#define SVSMAP std::map<std::string, std::vector<std::string> > 
+#define SSMAP  std::map<std::string, std::string>
+
 #include <string>
 #include <map>
 #include <vector>
 
-#ifndef HTTPREQUEST_HPP
-#define HTTPREQUEST_HPP
-
-
-#include <string>
-#include <map>
-
-struct HttpRequest {
-    // 1) Déclaration de l’énum **une seule fois**
-    enum Method {
+struct HttpRequest
+{
+    enum Method
+    {
         METHOD_GET,
         METHOD_POST,
         METHOD_PUT,
@@ -31,19 +31,17 @@ struct HttpRequest {
         METHOD_INVALID
     };
 
-    // 2) Constructeur par défaut déclaré
-    HttpRequest();
+    HttpRequest(void);
 
-    // 3) Champs de la requête complète
-    Method                                method;
-    std::string                           path;
-    std::string                           raw_query;
-    int                                   http_major;
-    int                                   http_minor;
-    std::map<std::string,std::vector<std::string> >    headers;
-    std::string                           body;
-    std::map<std::string, std::string>    query_params;
-    std::map<std::string, std::string>    form_data;
+    Method      method;
+    std::string path;
+    std::string raw_query;
+    int         http_major;
+    int         http_minor;
+    SVSMAP		headers;
+    std::string body;
+    SSMAP       query_params;
+    SSMAP       form_data;
 };
 
-#endif // HTTPREQUEST_HPP
+#endif  // ************************************************** HTTPREQUEST_HPP //

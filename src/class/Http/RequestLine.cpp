@@ -11,10 +11,14 @@
 /* ************************************************************************** */
 
 #include "RequestLine.hpp"
+#include "../../../include/webserv.h"
 
 RequestLine::RequestLine()
   : method(HttpRequest::METHOD_INVALID)
   , target()
   , http_major(0)
   , http_minor(0)
-{}
+{
+	LOG_ERROR(DEBUG, HTTP_REQ_ERROR, "RequestLine constructor called.",
+		"RequestLine::HttpRequest");
+}

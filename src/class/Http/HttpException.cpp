@@ -11,7 +11,8 @@
 /* ************************************************************************** */
 
 #include "HttpException.hpp"
-#include <exception>
+#include "../../../include/webserv.h"
+
 #include <sstream>
 #include <string>
 #include <unistd.h>
@@ -19,11 +20,13 @@
 HttpException::HttpException(int status,
 	const std::string &reason) : _status(status), _reason(reason)
 {
+	LOG_ERROR(DEBUG, HTTP_REQ_ERROR, "HttpException constructor called.", "");
 }
 
 HttpException::~HttpException() throw() 
-{}
-
+{
+	LOG_ERROR(DEBUG, HTTP_REQ_ERROR, "HttpException destructor called.", "");
+}
 
 int HttpException::status() const
 {
@@ -37,6 +40,7 @@ const char *HttpException::what() const throw()
 void	sendErrorResponse(int fd, int status, const std::string &reason)
 {
 	std::ostringstream oss;
+
 	oss << "HTTP/1.1 " << status << " " << reason << "\r\n"
 		<< "Content-Type: text/plain\r\n"
 		<< "Content-Length: " << reason.size() << "\r\n"

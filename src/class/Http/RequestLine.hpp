@@ -14,18 +14,17 @@
 #define REQUESTLINE_HPP
 
 #include <string>
-#include "HttpRequest.hpp"  // pour récupérer HttpRequest::Method
-struct RequestLine {
-    // Constructeur par défaut déclaré
-    RequestLine();
+#include "HttpRequest.hpp"
 
-    // On réutilise **HttpRequest::Method**
-    HttpRequest::Method method; // Il faut savoir quel verbe exécuter,
-    std::string         target;   // sur quoi,
-    int                 http_major; // et selon quelle version du protocole (certaines réponses ou headers se comportent différemment entre 1.0 et 1.1).
-    int                 http_minor;
+struct RequestLine
+{
+	RequestLine();
+
+    HttpRequest::Method method;  // Il faut savoir quel verbe exécuter,
+    std::string         target;  // sur quoi,
+    int					http_major; // et selon quelle version du protocole 
+	// (certaines réponses ou headers se comportent différemment entre 1.0 et 1.1).
+    int					http_minor;
 };
 
-// 
-
-#endif // REQUESTLINE_HPP
+#endif  // ************************************************** REQUESTLINE_HPP //

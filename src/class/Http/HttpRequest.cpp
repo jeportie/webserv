@@ -10,17 +10,20 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-
 #include "HttpRequest.hpp"
+#include "../../../include/webserv.h"
 
 HttpRequest::HttpRequest()
-  : method(METHOD_INVALID)
-  , path()
-  , raw_query()
-  , http_major(0)
-  , http_minor(0)
-  , headers()
-  , body()
-  , query_params()
-  , form_data()
-{}
+: method(METHOD_INVALID)
+, path()
+, raw_query()
+, http_major(0)
+, http_minor(0)
+, headers()
+, body()
+, query_params()
+, form_data()
+{
+	LOG_ERROR(DEBUG, HTTP_REQ_ERROR, "HttpRequest constructor called.",
+		"HttpRequest::HttpRequest");
+}

@@ -10,22 +10,21 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef HTTP_EXCEPTION_HPP
-#define HTTP_EXCEPTION_HPP
+#ifndef HTTPEXCEPTION_HPP
+# define HTTPEXCEPTION_HPP
 
 #include <exception>
 #include <string>
 
-class HttpException : public std::exception {
+class HttpException : public std::exception
+{
 public:
     HttpException(int status, const std::string& reason);
     ~HttpException() throw();
 
-    int   status()  const ;
-
+    int status() const;
     // raison (sera exposée en Content-Type: text/plain)
     const char* what() const throw();
-    
 
 private:
     int         _status;
@@ -34,5 +33,4 @@ private:
 
 void sendErrorResponse(int fd, int status, const std::string& reason);
 
-
-#endif 
+#endif  // ************************************************ HTTPEXCEPTION_HPP //

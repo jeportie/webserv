@@ -37,7 +37,8 @@ enum ErrorCategory
     TIMER_ERROR,     // Timer-related errors
     RESOURCE_ERROR,  // Resource exhaustion errors
     SYSTEM_ERROR,    // System call errors
-    INTERNAL_ERROR   // Internal logic errors
+    INTERNAL_ERROR,  // Internal logic errors
+	HTTP_REQ_ERROR	 // Http Request errors
 };
 
 class ErrorHandler
