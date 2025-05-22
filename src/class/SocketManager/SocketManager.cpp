@@ -22,13 +22,13 @@
 #include <unistd.h>
 #include <sstream>
 
+#include "SocketManager.hpp"
 #include "../../../include/webserv.h"
 #include "../Callbacks/AcceptCallback.hpp"
 #include "../Callbacks/ErrorCallback.hpp"
 #include "../Callbacks/ReadCallback.hpp"
 #include "../Callbacks/TimeoutCallback.hpp"
 #include "../Http/RequestLine.hpp"
-#include "SocketManager.hpp"
 #include "../Sockets/ClientSocket.hpp"
 
 #include "../Http/HttpParser.hpp"
@@ -176,8 +176,6 @@ ServerSocket& SocketManager::getServerSocket() { return _serverSocket; }
 
 CallbackQueue& SocketManager::getCallbackQueue() { return _callbackQueue; }
 
-#include <sstream>
-#include "ErrorHandler.hpp"
 
 void SocketManager::cleanupClientSocket(int fd, int epoll_fd)
 {

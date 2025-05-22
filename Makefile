@@ -23,24 +23,24 @@ ARGS=$(filter-out $@,$(MAKECMDGOALS))
 #### BEGIN AUTO GENERATED FILES ###
 # List of source files:
 SRC = \
-  src/class/HttpException.cpp \
-  src/class/HttpParser.cpp \
-  src/class/HttpParser_utils.cpp \
-  src/class/HttpRequest.cpp \
-  src/class/RequestLine.cpp \
-  src/class/ClientSocket.cpp \
+  src/class/Callbacks/AcceptCallback.cpp \
+  src/class/Callbacks/CallbackQueue.cpp \
   src/class/Callbacks/ErrorCallback.cpp \
   src/class/Callbacks/WriteCallback.cpp \
-  src/class/Callbacks/CallbackQueue.cpp \
+  src/class/Callbacks/Callback.cpp \
   src/class/Callbacks/CallbackQueue.api.cpp \
   src/class/Callbacks/TimeoutCallback.cpp \
-  src/class/Callbacks/Callback.cpp \
   src/class/Callbacks/ReadCallback.cpp \
-  src/class/Callbacks/AcceptCallback.cpp \
-  src/class/SocketManager.cpp \
-  src/class/ErrorHandler.cpp \
-  src/class/ServerSocket.cpp \
-  src/class/Socket.cpp \
+  src/class/Http/HttpException.cpp \
+  src/class/Http/HttpParser.cpp \
+  src/class/Http/HttpParser_utils.cpp \
+  src/class/Http/HttpRequest.cpp \
+  src/class/Http/RequestLine.cpp \
+  src/class/Sockets/Socket.cpp \
+  src/class/Sockets/ClientSocket.cpp \
+  src/class/Sockets/ServerSocket.cpp \
+  src/class/Errors/ErrorHandler.cpp \
+  src/class/SocketManager/SocketManager.cpp 
 ### END AUTO GENERATED FILES ###
 
 # Create object for main.cpp
