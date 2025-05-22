@@ -1,33 +1,33 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Callback.cpp                                       :+:      :+:    :+:   */
+/*   ReadCallback.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/05/20 10:00:00 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/22 12:47:18 by jeportie         ###   ########.fr       */
+/*   Created: 2025/05/22 12:59:00 by jeportie          #+#    #+#             */
+/*   Updated: 2025/05/22 13:06:59 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#ifndef READCALLBACK_HPP
+# define READCALLBACK_HPP
+
 #include "Callback.hpp"
-#include "../ErrorHandler.hpp"
-#include "../../../include/webserv.h"
 
-Callback::Callback(int fd)
-: _fd(fd)
-{
-	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "Callback Constructor called.",
-	 	"Callback::Callback(int fd)");
-}
+// Forward declaration
+class SocketManager;
 
-Callback::~Callback()
+// Read data from client callback
+class ReadCallback : public Callback
 {
-	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "Callback Destructor called.",
-	 	   "Callback::~Callback()");
-}
+public:
+    ReadCallback(int clientFd, SocketManager* manager);
+    virtual ~ReadCallback();
+    virtual void execute();
 
-int Callback::getFd() const
-{
-    return _fd;
-}
+private:
+    SocketManager* _manager;
+};
+
+#endif  // ************************************************* READCALLBACK_HPP //

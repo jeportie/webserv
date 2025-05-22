@@ -28,14 +28,19 @@ SRC = \
   src/class/HttpParser_utils.cpp \
   src/class/HttpRequest.cpp \
   src/class/RequestLine.cpp \
-  src/class/Callback.cpp \
-  src/class/CallbackQueue.cpp \
-  src/class/SocketCallbacks.cpp \
+  src/class/ClientSocket.cpp \
+  src/class/Callbacks/ErrorCallback.cpp \
+  src/class/Callbacks/WriteCallback.cpp \
+  src/class/Callbacks/CallbackQueue.cpp \
+  src/class/Callbacks/CallbackQueue.api.cpp \
+  src/class/Callbacks/TimeoutCallback.cpp \
+  src/class/Callbacks/Callback.cpp \
+  src/class/Callbacks/ReadCallback.cpp \
+  src/class/Callbacks/AcceptCallback.cpp \
+  src/class/SocketManager.cpp \
   src/class/ErrorHandler.cpp \
   src/class/ServerSocket.cpp \
   src/class/Socket.cpp \
-  src/class/ClientSocket.cpp \
-  src/class/SocketManager.cpp 
 ### END AUTO GENERATED FILES ###
 
 # Create object for main.cpp

@@ -12,81 +12,67 @@
 
 #include "CallbackQueue.hpp"
 #include "../ErrorHandler.hpp"
-
-CallbackQueue::CallbackQueue()
-{
-}
-
-CallbackQueue::~CallbackQueue()
-{
-    // Clean up any remaining callbacks
-    while (!_queue.empty())
-    {
-        Callback* callback = _queue.front();
-        _queue.pop();
-        delete callback;
-    }
-}
+#include "../ErrorHandler.hpp"
+#include "../../../include/webserv.h"
 
 void CallbackQueue::push(Callback* callback)
 {
-    const size_t MAX_QUEUE_SIZE = 1000;  // Adjust as needed
-
     if (_queue.size() >= MAX_QUEUE_SIZE)
     {
         // Queue is full, reject the callback
+		LOG_SYSTEM_ERROR(ERROR, CALLBACK_ERROR,
+				"Error: Callback Queu is full!", "CallbackQueue::push");
         delete callback;
         return;
     }
     _queue.push(callback);
 }
 
+bool CallbackQueue::tryExecute(Callback* callback)
+{
+    try
+    {
+        if (callback)
+        {
+            callback->execute();
+        }
+        else
+        {
+            LOG_ERROR(WARNING, CALLBACK_ERROR,
+				"Null callback in queue", "CallbackQueue::processCallbacks");
+            return (false);  // Skip to next callback
+        }
+    }
+    catch (const std::exception& e)
+    {
+        std::string errorMsg = "Error executing callback: ";
+        errorMsg += e.what();
+        LOG_ERROR(ERROR, CALLBACK_ERROR, errorMsg, "CallbackQueue::processCallbacks");
+    }
+    catch (...)
+    {
+        LOG_ERROR(ERROR, CALLBACK_ERROR, "Unknown error executing callback",
+			"CallbackQueue::processCallbacks");
+    }
+	return (true);
+}
+
 void CallbackQueue::processCallbacks()
 {
+    Callback* callback;
+	
     while (!_queue.empty())
     {
-        Callback* callback = _queue.front();
+        callback = _queue.front();
         _queue.pop();
 
-        try
-        {
-            if (callback) // Check if callback is valid
-            {
-                callback->execute();
-            }
-            else
-            {
-                ErrorHandler::getInstance().logError(
-                    WARNING, CALLBACK_ERROR, "Null callback in queue", "CallbackQueue::processCallbacks");
-                continue; // Skip to next callback
-            }
-        }
-        catch (const std::exception& e)
-        {
-            std::string errorMsg = "Error executing callback: ";
-            errorMsg += e.what();
-            ErrorHandler::getInstance().logError(
-                ERROR, CALLBACK_ERROR, errorMsg, "CallbackQueue::processCallbacks");
-        }
-        catch (...)
-        {
-            ErrorHandler::getInstance().logError(ERROR,
-                                                 CALLBACK_ERROR,
-                                                 "Unknown error executing callback",
-                                                 "CallbackQueue::processCallbacks");
-        }
-
-        delete callback; // Always delete the callback after execution
+		if (!tryExecute(callback))
+			continue ;
+		else
+			delete callback;
     }
 }
 
-bool CallbackQueue::isEmpty() const
-{
-    return _queue.empty();
-}
+bool CallbackQueue::isEmpty() const { return _queue.empty(); }
 
-size_t CallbackQueue::size() const
-{
-    return _queue.size();
-}
-
+size_t CallbackQueue::size() const { return _queue.size(); }

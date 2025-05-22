@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/19 17:32:38 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/22 13:21:45 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,11 @@
 #include <sstream>
 
 #include "../../include/webserv.h"
+#include "Callbacks/AcceptCallback.hpp"
+#include "Callbacks/ErrorCallback.hpp"
+#include "Callbacks/ReadCallback.hpp"
+#include "Callbacks/TimeoutCallback.hpp"
 #include "RequestLine.hpp"
-#include "SocketCallbacks.hpp"
 #include "SocketManager.hpp"
 #include "ClientSocket.hpp"
 
