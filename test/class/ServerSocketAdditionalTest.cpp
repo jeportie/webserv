@@ -15,7 +15,7 @@
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include "../../src/class/ServerSocket.hpp"
+#include "../../src/class/Sockets/ServerSocket.hpp"
 
 // Mock class for testing ServerSocket with controlled failures
 class MockServerSocket : public ServerSocket {

@@ -15,7 +15,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <string>
-#include "../../src/class/ClientSocket.hpp"
+#include "../../src/class/Sockets/ClientSocket.hpp"
 
 // Enhanced mock class for testing ClientSocket with simulated data reception
 class MockClientSocket : public ClientSocket {

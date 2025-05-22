@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #include <gtest/gtest.h>
-#include "../../src/class/Socket.hpp"
+#include "../../src/class/Sockets/Socket.hpp"
 
 // Since Socket is an abstract class, we need a concrete implementation for testing
 class TestSocket : public Socket {

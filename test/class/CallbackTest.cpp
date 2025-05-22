@@ -11,8 +11,8 @@
 /* ************************************************************************** */
 
 #include <gtest/gtest.h>
-#include "../../src/class/Callback.hpp"
-#include "../../src/class/CallbackQueue.hpp"
+#include "../../src/class/Callbacks/Callback.hpp"
+#include "../../src/class/Callbacks/CallbackQueue.hpp"
 
 // A simple test callback that increments a counter
 class TestCallback : public Callback {

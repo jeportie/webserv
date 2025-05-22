@@ -14,7 +14,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include "../../src/class/ClientSocket.hpp"
+#include "../../src/class/Sockets/ClientSocket.hpp"
 
 // Mock class for testing ClientSocket without actual network operations
 class MockClientSocket : public ClientSocket {

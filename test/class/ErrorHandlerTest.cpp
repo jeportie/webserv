@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #include <gtest/gtest.h>
-#include "../../src/class/ErrorHandler.hpp"
+#include "../../src/class/Errors/ErrorHandler.hpp"
 
 TEST(ErrorHandlerTest, Singleton)
 {

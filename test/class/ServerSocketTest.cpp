@@ -13,7 +13,7 @@
 #include <gtest/gtest.h>
 #include <sys/socket.h>
 #include <fcntl.h>
-#include "../../src/class/ServerSocket.hpp"
+#include "../../src/class/Sockets/ServerSocket.hpp"
 
 // Mock class for testing ServerSocket without actual network operations
 class MockServerSocket : public ServerSocket {

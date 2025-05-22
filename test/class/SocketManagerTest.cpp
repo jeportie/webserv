@@ -5,22 +5,29 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-<<<<<<< HEAD
-/*   Created: 2025/05/15 15:02:45 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/15 15:03:12 by jeportie         ###   ########.fr       */
-=======
 /*   Created: 2025/05/08 01:28:02 by jeportie          #+#    #+#             */
 /*   Updated: 2025/05/19 17:26:23 by anastruc         ###   ########.fr       */
->>>>>>> Antoine
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <gtest/gtest.h>
-<<<<<<< HEAD
-#include "../../src/class/SocketManager.hpp"
-#include "../../src/class/ClientSocket.hpp"
-#include "../../src/class/Callback.hpp"
-#include "../../src/class/CallbackQueue.hpp"
+#include <gmock/gmock.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <thread>
+#include <chrono>
+#include <dirent.h>  // For DIR, opendir, readdir, closedir
+#include <sys/epoll.h>  // For epoll functions
+#include <string.h>  
+
+#include "../../src/class/SocketManager/SocketManager.hpp"
+#include "../../src/class/Sockets/ClientSocket.hpp"
+#include "../../src/class/Callbacks/Callback.hpp"
+#include "../../src/class/Callbacks/CallbackQueue.hpp"
 
 // Dummy callback for testing
 class DummyCallback : public Callback {
@@ -67,24 +74,15 @@ TEST(SocketManagerTest, EpollFdCreation) {
     close(epoll_fd);
 }
 
-=======
-#include <gmock/gmock.h>
-#include "../src/class/HttpLimits.hpp"
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <thread>
-#include <chrono>
-#include <dirent.h>  // For DIR, opendir, readdir, closedir
-#include <sys/epoll.h>  // For epoll functions
-#include <string.h>  // For strerror() and strlen()
+// For strerror() and strlen()
+
 #define private public
 #define protected public
-#include "../src/class/SocketManager.hpp"
-#include "../src/class/HttpException.hpp"
+
+#include "../../src/class/Http/HttpLimits.hpp"
+#include "../../src/class/SocketManager/SocketManager.hpp"
+#include "../../src/class/Http/HttpException.hpp"
+
 #undef private
 #undef protected
 
@@ -734,4 +732,3 @@ TEST_F(SocketManagerCommTest, Communication_CompleteRequest) {
     EXPECT_FALSE(clientSock->headersParsed());
     EXPECT_TRUE(clientSock->getBuffer().empty());
 }
->>>>>>> Antoine

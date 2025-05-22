@@ -12,15 +12,12 @@
 
 #include <gtest/gtest.h>
 #include <arpa/inet.h>
-#include "../src/class/HttpParser.hpp"
-#include <thread>
-#include <chrono>
+#include "../../src/class/Http/HttpParser.hpp"
 #define private public
 #define protected public
-#include "../src/class/SocketManager.hpp"
 #undef private
 #undef protected
-#include "../src/class/HttpException.hpp"
+#include "../../src/class/Http/HttpException.hpp"
 
 
 // test/HttpParserTest.cpp
