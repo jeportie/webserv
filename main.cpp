@@ -21,10 +21,13 @@
 
 int main()
 {
+    std::stringstream ss;
+
 	std::string Start("Server starting on port ");
 	std::string RunT("Runtime Error: ");
 	std::string Excp("Exception Error: ");
 	std::string Ukwn("Unknown Error: ");
+	std::string Crit("Critical error occurred, shutting down server");
 
     // Initialize error handler
     ErrorHandler& errorHandler = ErrorHandler::getInstance();
@@ -36,7 +39,6 @@ int main()
         std::cout << "Starting webserv on port " << PORT << std::endl;
         SocketManager theSocketMaster;
 
-        std::stringstream ss;
         ss << PORT;
         LOG_ERROR(INFO, INTERNAL_ERROR, Start + ss.str(), "main");
 
@@ -62,9 +64,10 @@ int main()
     // Check if we should shut down due to critical errors
     if (errorHandler.shouldShutdown())
     {
-		errorHandler.logSystemError(CRITICAL, INTERNAL_ERROR, "Critical error occurred, shutting down server");
-        std::cerr << "Critical error occurred, shutting down server" << std::endl;
+		errorHandler.logSystemError(CRITICAL, INTERNAL_ERROR, Crit);
+        std::cerr << Crit << std::endl;
 		exit(EXIT_FAILURE);
     }
+    std::cout << "Server shutdown without errors" << PORT << std::endl;
     return (0);
 }

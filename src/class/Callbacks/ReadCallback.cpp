@@ -13,6 +13,7 @@
 #include "../SocketManager/SocketManager.hpp"
 #include "../Errors/ErrorHandler.hpp"
 #include "../../../include/webserv.h"
+#include "../Http/HttpException.hpp"
 #include "ReadCallback.hpp"
 #include "ErrorCallback.hpp"
 
@@ -50,6 +51,13 @@ void ReadCallback::execute()
                 "ReadCallback::execute");
             _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1));
         }
+    }
+    catch (const HttpException& he)
+    {
+        // Erreur de la requête (4xx / 5xx) :
+        sendErrorResponse(_fd, he.status(), he.what());
+        // closeConnection(fd, epoll_fd);       // retire de epoll, delete ClientSocket, close(fd)
+        return false;  // on arrête là pour ce fd
     }
     catch (const std::exception& e)
     {

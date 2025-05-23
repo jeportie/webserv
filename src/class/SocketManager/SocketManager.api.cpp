@@ -60,10 +60,10 @@ void SocketManager::init_connect(void)
 
 void SocketManager::eventLoop(int epoll_fd)
 {
-    std::vector<epoll_event> events;
-    int checkIntervalMs;
-    bool running;
-    int n;
+    std::vector<epoll_event>    events;
+    int                         checkIntervalMs;
+    bool                        running;
+    int                         n;
 
     events = std::vector<epoll_event>(MAXEVENTS);
     checkIntervalMs = getCheckIntervalMs();
