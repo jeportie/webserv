@@ -16,6 +16,10 @@
 #include "../Http/HttpException.hpp"
 #include "ReadCallback.hpp"
 #include "ErrorCallback.hpp"
+#include "../Http/RequestLine.hpp"
+#include "../Http/HttpRequest.hpp"
+
+
 
 #include <unistd.h>
 #include <sys/epoll.h>
@@ -38,10 +42,42 @@ ReadCallback::~ReadCallback()
 
 void ReadCallback::execute()
 {
+    ClientSocket* client;
     std::ostringstream oss;
 
+    const std::map<int, ClientSocket*>& map = _manager->getClientMap();
+    std::map<int, ClientSocket*>::const_iterator it = map.find(_fd);
+    (it != map.end()) ? client = it->second : NULL;
+
+    
     try
     {
+    if (!readFromClient(_fd))
+        return ;
+
+    if (!parseClientHeaders(client))
+        return ;
+
+    if (parseClientBody(client))
+        return ;
+
+    HttpRequest req = buildHttpRequest(client);
+
+    // handleHttpRequest(fd, req);
+
+    cleanupRequest(client);
+
+    req.headers.count("Connection") && req.headers["Connection"][0] == "close")
+    {
+        return false;  // plus de traitement sur cette socket
+                           // closeConnection(fd, epoll_fd); REPLACER DASN EVENT LOOOP
+    }
+
+
+
+    
+    
+    
         // communication() returns false if the socket should be closed
         if (!_manager->communication(_fd))
         {
@@ -70,3 +106,5 @@ void ReadCallback::execute()
         _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1));
     }
 }
+
+

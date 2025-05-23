@@ -49,25 +49,20 @@ public:
     void scanClientTimeouts(int epoll_fd);
     int  getServerSocketFd(void) const;
     int  getClientSocketFd(void) const;
+    const std::map<int, ClientSocket*>& getClientMap(void) const;  
+    
 
-private:
+    private:
     SocketManager(const SocketManager& src);
     SocketManager& operator=(const SocketManager& rhs);
 
-    ServerSocket                 _serverSocket;    ///< The server socket
     std::map<int, ClientSocket*> _clientSockets;   ///< Map of client sockets by file descriptor
+    ServerSocket                 _serverSocket;    ///< The server socket
     int                          _serverSocketFd;  ///< Server socket file descriptor
     int                          _clientSocketFd;  ///< Client socket file descriptor (most recent)
     CallbackQueue                _callbackQueue;   ///< Simple callback queue
 
 
-    void        closeConnection(int fd, int epoll_fd);
-    bool        readFromClient(int fd);
-    bool        parseClientHeaders(ClientSocket* client);
-    bool        parseClientBody(ClientSocket* client);
-    HttpRequest buildHttpRequest(ClientSocket* client);
-    void        handleHttpRequest(int fd, HttpRequest& req);
-    void        cleanupRequest(ClientSocket* client);
 };
 
 #endif  // ************************************************ SOCKETMANAGER_HPP //

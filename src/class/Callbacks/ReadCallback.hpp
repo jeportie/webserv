@@ -27,6 +27,15 @@ public:
 
 private:
     SocketManager* _manager;
+
+    
+    void        closeConnection(int fd, int epoll_fd);
+    bool        readFromClient(int fd);
+    bool        parseClientHeaders(ClientSocket* client);
+    bool        parseClientBody(ClientSocket* client);
+    HttpRequest buildHttpRequest(ClientSocket* client);
+    void        handleHttpRequest(int fd, HttpRequest& req);
+    void        cleanupRequest(ClientSocket* client);
 };
 
 #endif  // ************************************************* READCALLBACK_HPP //
