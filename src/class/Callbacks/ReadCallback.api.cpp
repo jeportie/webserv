@@ -10,12 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../SocketManager/SocketManager.hpp"
-#include "../Errors/ErrorHandler.hpp"
-#include "../../../include/webserv.h"
 #include "../Http/HttpException.hpp"
-#include "ReadCallback.hpp"
-#include "ErrorCallback.hpp"
 
 #include <unistd.h>
 #include <sys/epoll.h>
@@ -32,12 +27,7 @@
 #include <unistd.h>
 #include <sstream>
 
-#include "SocketManager.hpp"
-#include "../../../include/webserv.h"
-#include "../Callbacks/AcceptCallback.hpp"
-#include "../Callbacks/ErrorCallback.hpp"
 #include "../Callbacks/ReadCallback.hpp"
-#include "../Callbacks/TimeoutCallback.hpp"
 #include "../Http/RequestLine.hpp"
 #include "../Sockets/ClientSocket.hpp"
 
@@ -46,9 +36,8 @@
 #include "../Http/HttpException.hpp"
 #include "../Http/HttpLimits.hpp"
 
-bool ReadCallback::readFromClient(int fd)
+bool ReadCallback::readFromClient(int fd, ClientSocket* client)
 {
-    ClientSocket* client = _manager;
     std::string&  buf    = client->getBuffer();
     char          tmp[4096];
 
@@ -195,30 +184,4 @@ HttpRequest ReadCallback::buildHttpRequest(ClientSocket* client)
 
 void ReadCallback::cleanupRequest(ClientSocket* client) { client->resetParserState(); }
 
-void ReadCallback::closeConnection(int fd, int epoll_fd)
-{
-    // 1) Deregister from epoll if applicable
-    if (epoll_fd >= 0)
-    {
-        if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1)
-        {
-            // Log error but continue cleanup
-            std::cerr << "epoll_ctl DEL failed for fd " << fd << ": " << strerror(errno)
-                      << std::endl;
-        }
-    }
 
-    // 2) Delete the ClientSocket object
-    std::map<int, ClientSocket*>::iterator it = _clientSockets.find(fd);
-    if (it != _clientSockets.end())
-    {
-        delete it->second;
-        _clientSockets.erase(it);
-    }
-
-    // 3) Close the file descriptor
-    if (close(fd) == -1)
-    {
-        std::cerr << "close() failed for fd " << fd << ": " << strerror(errno) << std::endl;
-    }
-}bool ReadCallback::parseClientHeaders(ClientSocket* client)

@@ -28,13 +28,9 @@
 #include "../Callbacks/ErrorCallback.hpp"
 #include "../Callbacks/ReadCallback.hpp"
 #include "../Callbacks/TimeoutCallback.hpp"
-#include "../Http/RequestLine.hpp"
 #include "../Sockets/ClientSocket.hpp"
-
-#include "../Http/HttpParser.hpp"
 #include "../Http/HttpRequest.hpp"
 #include "../Http/HttpException.hpp"
-#include "../Http/HttpLimits.hpp"
 
 void SocketManager::init_connect(void)
 {
@@ -95,11 +91,10 @@ int SocketManager::getCheckIntervalMs(void)
     return 1000;
 }
 
-const std::map<int, ClientSocket*>& SocketManager::getClientMap(void)
+const std::map<int, ClientSocket*>& SocketManager::getClientMap(void) const
 {
     return (_clientSockets);
 }
-
 
 void SocketManager::enqueueReadyCallbacks(int n, std::vector<epoll_event>& events, int epoll_fd)
 {
@@ -119,7 +114,7 @@ void SocketManager::enqueueReadyCallbacks(int n, std::vector<epoll_event>& event
         }
         else if ((ev & EPOLLIN) && fd != _serverSocketFd)
         {
-            _callbackQueue.push(new ReadCallback(fd, this));
+            _callbackQueue.push(new ReadCallback(fd, this, epoll_fd));
         }
         else if (ev & (EPOLLERR | EPOLLHUP))
         {
@@ -167,13 +162,18 @@ CallbackQueue& SocketManager::getCallbackQueue() { return _callbackQueue; }
 
 void SocketManager::cleanupClientSocket(int fd, int epoll_fd)
 {
-    // Remove from epoll first
+    // 1) Deregister from epoll if applicable
     if (epoll_fd >= 0)
     {
-        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
+        if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1)
+        {
+            // Log error but continue cleanup
+            std::cerr << "epoll_ctl DEL failed for fd " << fd << ": " << strerror(errno)
+                      << std::endl;
+        }
     }
 
-    // Then delete the client socket object
+    // 2) Delete the ClientSocket object
     std::map<int, ClientSocket*>::iterator it = _clientSockets.find(fd);
     if (it != _clientSockets.end())
     {
@@ -181,8 +181,11 @@ void SocketManager::cleanupClientSocket(int fd, int epoll_fd)
         _clientSockets.erase(it);
     }
 
-    // Finally close the file descriptor
-    close(fd);
+    // 3) Close the file descriptor
+    if (close(fd) == -1)
+    {
+        std::cerr << "close() failed for fd " << fd << ": " << strerror(errno) << std::endl;
+    }
 }
 
 
@@ -215,47 +218,3 @@ int SocketManager::safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll
 int SocketManager::getServerSocketFd(void) const { return (_serverSocketFd); }
 
 int SocketManager::getClientSocketFd(void) const { return (_clientSocketFd); }
-
-
-bool SocketManager::communication(int fd)
-{
-    ClientSocket* client = _clientSockets[fd];
-
-    // 1) Lire toutes les données disponibles
-    try
-    {
-        if (!readFromClient(fd))
-            return false;
-
-        // 2) Parser les en-têtes si ce n'est pas déjà fait
-        if (!parseClientHeaders(client))
-            return false;
-
-        // 3) Parser ou accumuler le corps (mode Content-Length ou chunked)
-        if (!parseClientBody(client))
-            return false;
-
-        // 4) Construire l'objet HttpRequest complet
-        HttpRequest req = buildHttpRequest(client);
-
-        // 5) Passer la requête au handler
-        // handleHttpRequest(fd, req);
-
-        // 6) Nettoyer pour la requête suivante (pipeline ou fermeture)
-        cleanupRequest(client);
-        // Si le client a demandé explicitement la fermeture…
-        if (req.headers.count("Connection") && req.headers["Connection"][0] == "close")
-        {
-            return false;  // plus de traitement sur cette socket
-                           // closeConnection(fd, epoll_fd); REPLACER DASN EVENT LOOOP
-        }
-    }
-    catch (const HttpException& he)
-    {
-        // Erreur de la requête (4xx / 5xx) :
-        sendErrorResponse(fd, he.status(), he.what());
-        // closeConnection(fd, epoll_fd);       // retire de epoll, delete ClientSocket, close(fd)
-        return false;  // on arrête là pour ce fd
-    }
-    return true;  // on garde la connexion ouverte
-}

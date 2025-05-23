@@ -18,10 +18,8 @@
 #include <sys/epoll.h>
 
 #include "../Sockets/ServerSocket.hpp"
-#include "../Http/HttpRequest.hpp"
 #include "../Sockets/ClientSocket.hpp"
 #include "../Callbacks/CallbackQueue.hpp"
-
 
 class Callback;
 
@@ -35,7 +33,6 @@ public:
     void eventLoop(int epoll_fd);
     void cleanupClientSocket(int fd, int epoll_fd);
 
-    bool communication(int fd);
     int  setNonBlockingServer(int fd);
     int  safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event* event);
     void safeRegisterToEpoll(int epoll_fd);
@@ -50,9 +47,8 @@ public:
     int  getServerSocketFd(void) const;
     int  getClientSocketFd(void) const;
     const std::map<int, ClientSocket*>& getClientMap(void) const;  
-    
 
-    private:
+private:
     SocketManager(const SocketManager& src);
     SocketManager& operator=(const SocketManager& rhs);
 

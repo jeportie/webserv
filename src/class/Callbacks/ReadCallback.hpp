@@ -14,6 +14,8 @@
 # define READCALLBACK_HPP
 
 #include "Callback.hpp"
+#include "../Http/HttpRequest.hpp"
+#include "../Sockets/ClientSocket.hpp"
 
 class SocketManager;
 
@@ -21,16 +23,16 @@ class SocketManager;
 class ReadCallback : public Callback
 {
 public:
-    ReadCallback(int clientFd, SocketManager* manager);
+    ReadCallback(int clientFd, SocketManager* manager, int epoll_fd);
     virtual ~ReadCallback();
     virtual void execute();
 
 private:
-    SocketManager* _manager;
+    SocketManager*     _manager;
+    int                _epoll_fd;
 
-    
     void        closeConnection(int fd, int epoll_fd);
-    bool        readFromClient(int fd);
+    bool        readFromClient(int fd, ClientSocket* client);
     bool        parseClientHeaders(ClientSocket* client);
     bool        parseClientBody(ClientSocket* client);
     HttpRequest buildHttpRequest(ClientSocket* client);
