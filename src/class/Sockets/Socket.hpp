@@ -26,24 +26,24 @@ public:
     Socket(void);
     virtual ~Socket(void);
 
-    bool socketCreate(void);
+    bool		socketCreate(void);
     
     virtual int setNonBlocking(int fd) = 0;
 	virtual int safeFcntl(int fd, int cmd, int flag) = 0;
     
-    bool setReuseAddr(bool reuse = true);
-    int getFd(void) const;
-    void setFd(int fd);
-    bool isValid(void) const;
-    bool isNonBlocking(void) const;
-    void closeSocket(void);
+    bool		setReuseAddr(bool reuse = true);
+    int			getFd(void) const;
+    void		setFd(int fd);
+    bool		isValid(void) const;
+    bool		isNonBlocking(void) const;
+    void		closeSocket(void);
 
 protected:
     Socket(const Socket& src);
-    Socket& operator=(const Socket& rhs);
+    Socket&		operator=(const Socket& rhs);
 
-    int _socketFd;       ///< Socket file descriptor
-    bool _isNonBlocking; ///< Flag indicating if socket is in non-blocking mode
+    int			_socketFd;
+    bool		_isNonBlocking;
 };
 
 #endif  // ******************************************************* SOCKET_HPP //

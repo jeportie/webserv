@@ -23,10 +23,10 @@ ARGS=$(filter-out $@,$(MAKECMDGOALS))
 #### BEGIN AUTO GENERATED FILES ###
 # List of source files:
 SRC = \
-  src/class/Callbacks/AcceptCallback.cpp \
   src/class/Callbacks/CallbackQueue.cpp \
   src/class/Callbacks/ErrorCallback.cpp \
   src/class/Callbacks/WriteCallback.cpp \
+  src/class/Callbacks/AcceptCallback.cpp \
   src/class/Callbacks/Callback.cpp \
   src/class/Callbacks/CallbackQueue.api.cpp \
   src/class/Callbacks/TimeoutCallback.cpp \
@@ -37,13 +37,15 @@ SRC = \
   src/class/Http/HttpParser_utils.cpp \
   src/class/Http/HttpRequest.cpp \
   src/class/Http/RequestLine.cpp \
+  src/class/Sockets/ServerSocket.api.cpp \
   src/class/Sockets/ClientSocket.cpp \
-  src/class/Sockets/ServerSocket.cpp \
+  src/class/Sockets/Socket.api.cpp \
   src/class/Sockets/Socket.cpp \
+  src/class/Sockets/ServerSocket.cpp \
   src/class/Errors/ErrorHandler.cpp \
   src/class/Errors/ErrorHandler.api.cpp \
-  src/class/SocketManager/SocketManager.api.cpp \
-  src/class/SocketManager/SocketManager.cpp 
+  src/class/SocketManager/SocketManager.cpp \
+  src/class/SocketManager/SocketManager.api.cpp 
 ### END AUTO GENERATED FILES ###
 
 # Create object for main.cpp

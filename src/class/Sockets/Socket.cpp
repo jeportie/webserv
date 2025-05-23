@@ -6,11 +6,13 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:32:17 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/07 23:14:38 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/23 16:36:16 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Socket.hpp"
+#include "../../../include/webserv.h"
+
 #include <cmath>
 #include <cstring>
 #include <unistd.h>
@@ -18,21 +20,27 @@
 #include <fcntl.h>
 #include <cstdio>
 #include <sys/socket.h>
-#include <iostream>
 #include <cerrno>
 
 Socket::Socket(void)
 : _socketFd(-1)
 , _isNonBlocking(false)
 {
+	LOG_ERROR(DEBUG, SOCKET_ERROR, "Socket Constructor called", "Socket::Socket()");
 }
 
-Socket::~Socket(void) { closeSocket(); }
+Socket::~Socket(void)
+{
+	LOG_ERROR(DEBUG, SOCKET_ERROR, "Socket Desstructor called", "Socket::~Socket()");
+	closeSocket(); 
+}
 
 Socket::Socket(const Socket& src)
 : _socketFd(-1)
 , _isNonBlocking(false)
 {
+	LOG_ERROR(DEBUG, SOCKET_ERROR, "Socket Copy constructor called",
+		"Socket::Socket(const Socket& src)");
     *this = src;
 }
 
@@ -41,50 +49,4 @@ Socket& Socket::operator=(const Socket& rhs)
     if (this != &rhs)
         _isNonBlocking = rhs._isNonBlocking;
     return (*this);
-}
-
-bool Socket::socketCreate(void)
-{
-    _socketFd = socket(AF_INET, SOCK_STREAM, 0);
-    if (_socketFd < 0)
-    {
-        std::cerr << "Error creating socket: " << strerror(errno) << std::endl;
-        return false;
-    }
-    return true;
-}
-
-bool Socket::setReuseAddr(bool reuse)
-{
-    if (!isValid())
-    {
-        std::cerr << "Cannot set SO_REUSEADDR on invalid socket" << std::endl;
-        return false;
-    }
-
-    int option = reuse ? 1 : 0;
-    if (setsockopt(_socketFd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0)
-    {
-        std::cerr << "Error setting SO_REUSEADDR: " << strerror(errno) << std::endl;
-        return false;
-    }
-    return true;
-}
-
-int Socket::getFd(void) const { return (_socketFd); }
-
-void Socket::setFd(int fd) { _socketFd = fd; }
-
-bool Socket::isValid(void) const { return (_socketFd != -1); }
-
-bool Socket::isNonBlocking(void) const { return (_isNonBlocking); }
-
-void Socket::closeSocket(void)
-{
-    if (isValid())
-    {
-        close(_socketFd);
-        _socketFd      = -1;
-        _isNonBlocking = false;
-    }
 }
