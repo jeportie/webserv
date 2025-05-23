@@ -43,14 +43,23 @@ void ReadCallback::execute()
     ClientSocket* client;
     std::ostringstream oss;
 
+	client = NULL;
     const std::map<int, ClientSocket*>& map = _manager->getClientMap();
     std::map<int, ClientSocket*>::const_iterator it = map.find(_fd);
     (it != map.end()) ? client = it->second : NULL;
+    if (!client)
+	{
+        LOG_ERROR(ERROR, CALLBACK_ERROR, "ClientSocket not found for fd", "ReadCallback::execute");
+        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1));
+        return;
+    }
 
     try
     {
         if (!readFromClient(_fd, client))
             return ;
+
+		std::cout << client->getBuffer() << std::endl;
 
         if (!parseClientHeaders(client))
             return ;
@@ -94,3 +103,7 @@ void ReadCallback::execute()
         _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1));
     }
 }
+
+/* TODO:
+mettre le sendErrorResponde des requete Http en cas de soucis dans la requete dans le Error pour suivre la meme logique consistant a mettre un evenement dans la queu et de la traiter apres.
+*/

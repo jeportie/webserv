@@ -92,13 +92,21 @@ ClientSocket* ServerSocket::safeAccept(int epoll_fd)
             CRITICAL, SOCKET_ERROR, "Cannot accept on invalid socket", "ServerSocket::safeAccept");
     }
 
-    ClientSocket*      client = new ClientSocket();
-    struct sockaddr_in clientAddr;
-    socklen_t          clientAddrLen = sizeof(clientAddr);
+    struct sockaddr_in	clientAddr;
+    socklen_t			clientAddrLen = sizeof(clientAddr);
+    ClientSocket*		client        = new ClientSocket();
+    epoll_event			client_ev;
 
     int clientFd = accept(this->_socketFd, (struct sockaddr*) &clientAddr, &clientAddrLen);
     if (clientFd < 0)
     {
+        if (errno == EAGAIN || errno == EWOULDBLOCK)
+        {
+            // No more clients to accept, not a real error
+            delete client;
+			LOG_ERROR(INFO, SOCKET_ERROR, "No more Clients to Accept in the queue", "ServerSocket::safeAccept");
+            return (NULL);
+        }
         delete client;
         THROW_SYSTEM_ERROR(CRITICAL, SOCKET_ERROR, "Accept() Failed", "ServerSocket::safeAccept");
     }
@@ -113,7 +121,6 @@ ClientSocket* ServerSocket::safeAccept(int epoll_fd)
     // If epoll_fd is valid, register the client with epoll
     if (epoll_fd >= 0)
     {
-        epoll_event client_ev;
         client_ev.events  = EPOLLIN | EPOLLET;
         client_ev.data.fd = clientFd;
 
@@ -124,7 +131,6 @@ ClientSocket* ServerSocket::safeAccept(int epoll_fd)
                 CRITICAL, EPOLL_ERROR, "Failed to add client to epoll", "ServerSocket::safeAccept");
         }
     }
-
     return (client);
 }
 

@@ -29,8 +29,6 @@
 #include "../Callbacks/ReadCallback.hpp"
 #include "../Callbacks/TimeoutCallback.hpp"
 #include "../Sockets/ClientSocket.hpp"
-#include "../Http/HttpRequest.hpp"
-#include "../Http/HttpException.hpp"
 
 void SocketManager::init_connect(void)
 {
@@ -181,11 +179,11 @@ void SocketManager::cleanupClientSocket(int fd, int epoll_fd)
         _clientSockets.erase(it);
     }
 
-    // 3) Close the file descriptor
-    if (close(fd) == -1)
-    {
-        std::cerr << "close() failed for fd " << fd << ": " << strerror(errno) << std::endl;
-    }
+    // // 3) Close the file descriptor
+    // if (close(fd) == -1)
+    // {
+    //     std::cerr << "close() failed for fd " << fd << ": " << strerror(errno) << std::endl;
+    // }
 }
 
 

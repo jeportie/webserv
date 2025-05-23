@@ -36,14 +36,17 @@ AcceptCallback::~AcceptCallback()
 
 void AcceptCallback::execute()
 {
-    ClientSocket* client;
-    int clientFd;
+    ClientSocket*	client;
+    int				clientFd;
+    std::string		msg;
 
-	try
+    while (true)
     {
-        client = _manager->getServerSocket().safeAccept(_epollFd);
-        if (client)
+        try
         {
+            client = _manager->getServerSocket().safeAccept(_epollFd);
+			if (!client)
+				return ;
             clientFd = client->getFd();
             _manager->addClientSocket(clientFd, client);
 
@@ -52,10 +55,17 @@ void AcceptCallback::execute()
             std::cout << "New connection from " << client->getClientIP() << ":"
                       << client->getClientPort() << " (fd=" << clientFd << ")" << std::endl;
         }
-    }
-    catch (const std::exception& e)
-    {
-        LOG_ERROR(ERROR, SOCKET_ERROR, "Accept failed: " + std::string(e.what()),
-				"AcceptCallback::execute");
+        catch (const std::exception& e)
+        {
+            msg = e.what();
+            if (msg.find("Resource temporarily unavailable") != std::string::npos)
+            {
+                // No more clients to accept (EAGAIN/EWOULDBLOCK)
+                break;
+            }
+            LOG_ERROR(ERROR, SOCKET_ERROR, "Accept failed: " + msg,
+                    "AcceptCallback::execute");
+            break;
+        }
     }
 }
