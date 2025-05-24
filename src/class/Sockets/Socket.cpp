@@ -14,13 +14,13 @@
 #include "../../../include/webserv.h"
 
 #include <cmath>
+#include <cstdio>
+#include <cerrno>
 #include <cstring>
+#include <fcntl.h>
 #include <unistd.h>
 #include <sys/epoll.h>
-#include <fcntl.h>
-#include <cstdio>
 #include <sys/socket.h>
-#include <cerrno>
 
 Socket::Socket(void)
 : _socketFd(-1)

@@ -14,8 +14,7 @@
 #include <cstring>
 #include <unistd.h>
 #include <cstdlib>
-#include <cstring>
-#include <unistd.h>
+#include <sstream>
 
 #include "SocketManager.hpp"
 #include "../Callbacks/AcceptCallback.hpp"
@@ -30,16 +29,14 @@ SocketManager::SocketManager(void)
 : _serverSocketFd(-1)
 , _clientSocketFd(-1)
 {
-    LOG_ERROR(
-        DEBUG, SOCKET_ERROR, "SocketManager Constructor called.", __FUNCTION__);
+    LOG_ERROR(DEBUG, SOCKET_ERROR, LOG_SM_CONST, __FUNCTION__);
 }
 
 SocketManager::~SocketManager(void)
 {
     std::map<int, ClientSocket*>::iterator it;
 
-    LOG_ERROR(
-        DEBUG, SOCKET_ERROR, "SocketManager Destructor called.", __FUNCTION__);
+    LOG_ERROR(DEBUG, SOCKET_ERROR, LOG_SM_DEST, __FUNCTION__);
 
     for (it = _clientSockets.begin(); it != _clientSockets.end(); ++it)
     {
@@ -71,15 +68,18 @@ void SocketManager::safeRegisterToEpoll(int epoll_fd)
     ev.data.fd = _serverSocketFd;
 
     if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, _serverSocketFd, &ev) == -1)
-        THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "Failed to add server socket to epoll", __FUNCTION__);
+        THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, LOG_SM_EPOLL, __FUNCTION__);
 }
 
 int SocketManager::safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event* event)
 {
+    std::ostringstream	oss;
+
     if (epoll_ctl(epoll_fd, op, fd, event) < 0)
     {
-        std::cerr << "[Error] epoll_ctl failed (epoll_fd=" << epoll_fd << ", fd=" << fd
+        oss << "[Error] epoll_ctl failed (epoll_fd=" << epoll_fd << ", fd=" << fd
                   << ",op=" << op << "): " << strerror(errno) << std::endl;
+		LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR, oss.str(), __FUNCTION__);
         return (-1);
     }
     return (0);

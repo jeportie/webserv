@@ -14,13 +14,10 @@
 #include <cstring>
 #include <iostream>
 #include <ostream>
+#include <sstream>
 #include <unistd.h>
 #include <vector>
 #include <cstdlib>
-#include <cstring>
-#include <iostream>
-#include <unistd.h>
-#include <sstream>
 
 #include "SocketManager.hpp"
 #include "../Callbacks/AcceptCallback.hpp"
@@ -153,8 +150,7 @@ void SocketManager::cleanupClientSocket(int fd, int epoll_fd)
         {
             // Log error but continue cleanup
             oss << "epoll_ctl DEL failed for fd " << fd << ": " << strerror(errno) << std::endl;
-			std::cerr << oss.str();
-			LOG_ERROR(ERROR, SOCKET_ERROR, oss.str(), "SocketManager::cleanupClientSocket");
+			LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR, oss.str(), "SocketManager::cleanupClientSocket");
         }
     }
     // 2) Delete the ClientSocket object

@@ -10,10 +10,11 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ServerSocket.hpp"
-#include "Socket.hpp"
 #include <sys/epoll.h>
 #include <cerrno>
+
+#include "ServerSocket.hpp"
+#include "Socket.hpp"
 #include "../Errors/ErrorHandler.hpp"
 #include "../../../include/webserv.h"
 
