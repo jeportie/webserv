@@ -18,7 +18,6 @@ ErrorHandler::ErrorHandler()
 : _minLogLevel(INFO)
 , _shouldShutdown(false)
 {
-    LOG_ERROR(DEBUG, SOCKET_ERROR, LOG_ERR_CONST, __FUNCTION__);
     // Initialize error statistics
     _errorStats[SOCKET_ERROR]   = 0;
     _errorStats[EPOLL_ERROR]    = 0;
@@ -31,7 +30,6 @@ ErrorHandler::ErrorHandler()
 
 ErrorHandler::~ErrorHandler()
 {
-    LOG_ERROR(DEBUG, SOCKET_ERROR, LOG_ERR_DEST, __FUNCTION__);
     if (_logFile.is_open())
         _logFile.close();
 }
