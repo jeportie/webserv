@@ -79,12 +79,11 @@ void ErrorHandler::logError(ErrorLevel level, ErrorCategory category,
         throw std::runtime_error(logStream.str());
 }
 
-void ErrorHandler::logSystemError(ErrorLevel         level,
-                                  ErrorCategory      category,
-                                  const std::string& message,
-                                  const std::string& source,
-                                  bool               shouldThrow)
+void ErrorHandler::logSystemError(ErrorLevel level, ErrorCategory category,
+	const std::string& message, const std::string& source, bool shouldThrow)
 {
-    std::string errorMsg = message + ": " + std::string(strerror(errno));
+    std::string errorMsg;
+
+	errorMsg = message + ": " + std::string(strerror(errno));
     logError(level, category, errorMsg, source, shouldThrow);
 }
