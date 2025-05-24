@@ -13,6 +13,8 @@
 #ifndef REQUESTLINE_HPP
 #define REQUESTLINE_HPP
 
+#define REQUESTL_CONST "RequestLine constructor called"
+
 #include <string>
 #include "HttpRequest.hpp"
 

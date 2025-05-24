@@ -19,6 +19,5 @@ RequestLine::RequestLine()
   , http_major(0)
   , http_minor(0)
 {
-	LOG_ERROR(DEBUG, HTTP_REQ_ERROR, "RequestLine constructor called.",
-		"RequestLine::HttpRequest");
+	LOG_ERROR(DEBUG, HTTP_REQ_ERROR, REQUESTL_CONST, __FUNCTION__);
 }

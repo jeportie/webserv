@@ -20,12 +20,12 @@
 HttpException::HttpException(int status,
 	const std::string &reason) : _status(status), _reason(reason)
 {
-	LOG_ERROR(DEBUG, HTTP_REQ_ERROR, "HttpException constructor called.", "");
+	LOG_ERROR(DEBUG, HTTP_REQ_ERROR, HTTPEXC_CONST, __FUNCTION__);
 }
 
 HttpException::~HttpException() throw() 
 {
-	LOG_ERROR(DEBUG, HTTP_REQ_ERROR, "HttpException destructor called.", "");
+	LOG_ERROR(DEBUG, HTTP_REQ_ERROR, HTTPEXC_DEST, __FUNCTION__);
 }
 
 int HttpException::status() const

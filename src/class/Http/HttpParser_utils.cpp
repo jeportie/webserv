@@ -12,12 +12,11 @@
 
 #include <cctype>  // isspace, isdigit
 #include <cerrno>  // errno
-#include <cstdlib>
 #include <cstring>  // strerror
+#include <cstdlib>  // pour strtol
+
 #include "HttpException.hpp"
 #include "HttpParser.hpp"
-#include <cstdlib>  // pour strtol
-#include <cctype>   // pour isxdigit
 
 std::string urlDecode(const std::string& s)
 {
@@ -38,7 +37,6 @@ std::string urlDecode(const std::string& s)
             {
                 throw HttpException(400, "Bad Request");
             }
-
             // lire les deux hex, les convertir
             hex[0]  = s[i + 1];
             hex[1]  = s[i + 2];
@@ -56,10 +54,8 @@ std::string urlDecode(const std::string& s)
             out += s[i];
         }
     }
-
-    return out;
+    return (out);
 }
-
 
 // découpe "a=b" en clé et valeur (URL-decode)
 void splitKeyVal(const std::string& token, std::string& key, std::string& val)
@@ -103,45 +99,43 @@ bool containsCtl(const std::string& s)
         if (c < 0x20 || c == 0x7F)
             return true;
     }
-    return false;
+    return (false);
 }
 
 
 bool pathEscapesRoot(const std::string& path)
 {
-    // On attend un chemin absolu commençant par '/'
-    // Si ce n'est pas le cas, on considère ça comme invalide/évasion
-    if (path.empty() || path[0] != '/')
-        return true;
-
     std::vector<std::string> stack;
     std::string              segment;
-    size_t                   i = 1;  // on skippe le '/' initial
+    size_t                   i;
+	size_t					 j;	
+	    
+    if (path.empty() || path[0] != '/')
+	{
+        return true;
+	}
 
+	i = 1; // on skippe le '/' initial
     while (i <= path.size())
     {
         // extraire le segment jusqu'au prochain '/' ou fin
-        size_t j = path.find('/', i);
+        j = path.find('/', i);
         if (j == std::string::npos)
             j = path.size();
 
         segment.assign(path, i, j - i);
 
-        if (segment == "..")
+        if (segment == "..") // on remonte d'un niveau : si on ne peut plus, c'est une évasion
         {
-            // on remonte d'un niveau : si on ne peut plus, c'est une évasion
             if (stack.empty())
                 return true;
             stack.pop_back();
         }
         else if (!segment.empty() && segment != ".")
         {
-            // un nom de dossier/fichier valide → on descend une branche
-            stack.push_back(segment);
+            stack.push_back(segment); // un nom de dossier/fichier valide → on descend une branche
         }
-
         i = j + 1;
     }
-    // si on n'a jamais débordé la racine, tout va bien
-    return false;
+    return (false);
 }

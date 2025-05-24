@@ -11,7 +11,10 @@
 /* ************************************************************************** */
 
 #ifndef HTTPEXCEPTION_HPP
-# define HTTPEXCEPTION_HPP
+#define HTTPEXCEPTION_HPP
+
+#define HTTPEXC_CONST "HttpException constructor called"
+#define HTTPEXC_DEST "HttpException destructor called"
 
 #include <exception>
 #include <string>

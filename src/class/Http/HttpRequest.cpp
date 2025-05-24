@@ -24,6 +24,5 @@ HttpRequest::HttpRequest()
 , query_params()
 , form_data()
 {
-	LOG_ERROR(DEBUG, HTTP_REQ_ERROR, "HttpRequest constructor called.",
-		"HttpRequest::HttpRequest");
+	LOG_ERROR(DEBUG, HTTP_REQ_ERROR, HTTPREQ_CONST, __FUNCTION__);
 }

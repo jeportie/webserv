@@ -151,8 +151,7 @@ SVSMAP HttpParser::parseHeaders(const std::string& hdr_block)
 
 // 4) splitTarget
 void HttpParser::splitTarget(const std::string& target,
-                             std::string&       outPath,
-                             std::string&       outRawQuery)
+	std::string& outPath, std::string& outRawQuery)
 {
     size_t pos = target.find('?');
     if (pos == std::string::npos)
