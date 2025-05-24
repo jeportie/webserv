@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:23:58 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/24 12:55:14 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/24 12:56:45 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,21 +34,21 @@ public:
 
     void			init_connect(void);
     void			eventLoop(int epoll_fd);
+    void			addClientSocket(int fd, ClientSocket* client);
     void			cleanupClientSocket(int fd, int epoll_fd);
+    void			enqueueReadyCallbacks(int n, EVENT_LIST& events, int epoll_fd);
+    void			scanClientTimeouts(int epoll_fd);
 
-    int				setNonBlockingServer(int fd);
     int				safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event* event);
     void			safeRegisterToEpoll(int epoll_fd);
-    void			addClientSocket(int fd, ClientSocket* client);
 
     ServerSocket&	getServerSocket();
     CallbackQueue&	getCallbackQueue();
-
     int				getCheckIntervalMs(void);
-    void			enqueueReadyCallbacks(int n, EVENT_LIST& events, int epoll_fd);
-    void			scanClientTimeouts(int epoll_fd);
     int				getServerSocketFd(void) const;
     int				getClientSocketFd(void) const;
+
+    int				setNonBlockingServer(int fd);
 
     const ICMAP& getClientMap(void) const;  
 

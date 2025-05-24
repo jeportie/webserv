@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/24 12:54:41 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/24 13:50:47 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,10 +57,10 @@ void SocketManager::init_connect(void)
 
 void SocketManager::eventLoop(int epoll_fd)
 {
-    EVENT_LIST    events;
-    int                         checkIntervalMs;
-    bool                        running;
-    int                         n;
+    EVENT_LIST	events;
+    int         checkIntervalMs;
+    bool		running;
+    int         n;
 
     events = EVENT_LIST(MAXEVENTS);
     checkIntervalMs = getCheckIntervalMs();
@@ -85,21 +85,13 @@ void SocketManager::eventLoop(int epoll_fd)
     }
 }
 
-int SocketManager::getCheckIntervalMs(void)
-{
-    return 1000;
-}
-
-const ICMAP& SocketManager::getClientMap(void) const
-{
-    return (_clientSockets);
-}
+void SocketManager::addClientSocket(int fd, ClientSocket* client) { _clientSockets[fd] = client; }
 
 void SocketManager::enqueueReadyCallbacks(int n, EVENT_LIST& events, int epoll_fd)
 {
-    int i;
-    int fd;
-    uint32_t ev;
+    int			i;
+    int			fd;
+    uint32_t	ev;
 
     i = 0;
     while (i < n)
@@ -125,11 +117,11 @@ void SocketManager::enqueueReadyCallbacks(int n, EVENT_LIST& events, int epoll_f
 
 void SocketManager::scanClientTimeouts(int epoll_fd)
 {
-    time_t now;
-    ICMAP::iterator it;
-    int fd;
-    ClientSocket* c;
-    std::ostringstream oss;
+    time_t				now;
+    ICMAP::iterator		it;
+    int					fd;
+    ClientSocket*		c;
+    std::ostringstream	oss;
 
     now = time(NULL);
     it = _clientSockets.begin();
@@ -142,75 +134,34 @@ void SocketManager::scanClientTimeouts(int epoll_fd)
             oss.str("");
             oss.clear();
             oss << "Client timed out (fd=" << fd << ")";
-            LOG_ERROR(INFO, SOCKET_ERROR,
-                      oss.str(),
-                      "SocketManager::scanClientTimeouts");
+            LOG_ERROR(INFO, SOCKET_ERROR, oss.str(), "SocketManager::scanClientTimeouts");
             _callbackQueue.push(new TimeoutCallback(fd, this, epoll_fd));
         }
         ++it;
     }
 }
 
-void SocketManager::addClientSocket(int fd, ClientSocket* client) { _clientSockets[fd] = client; }
-
-ServerSocket& SocketManager::getServerSocket() { return _serverSocket; }
-
-CallbackQueue& SocketManager::getCallbackQueue() { return _callbackQueue; }
-
 void SocketManager::cleanupClientSocket(int fd, int epoll_fd)
 {
+    ICMAP::iterator it;
+    std::ostringstream	oss;
+
     // 1) Deregister from epoll if applicable
     if (epoll_fd >= 0)
     {
         if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1)
         {
             // Log error but continue cleanup
-            std::cerr << "epoll_ctl DEL failed for fd " << fd << ": " << strerror(errno)
-                      << std::endl;
+            oss << "epoll_ctl DEL failed for fd " << fd << ": " << strerror(errno) << std::endl;
+			std::cerr << oss.str();
+			LOG_ERROR(ERROR, SOCKET_ERROR, oss.str(), "SocketManager::cleanupClientSocket");
         }
     }
     // 2) Delete the ClientSocket object
-    ICMAP::iterator it = _clientSockets.find(fd);
+    it = _clientSockets.find(fd);
     if (it != _clientSockets.end())
     {
         delete it->second;
         _clientSockets.erase(it);
     }
-
-    // // 3) Close the file descriptor
-    // if (close(fd) == -1)
-    // {
-    //     std::cerr << "close() failed for fd " << fd << ": " << strerror(errno) << std::endl;
-    // }
 }
-
-
-void SocketManager::safeRegisterToEpoll(int epoll_fd)
-{
-    struct epoll_event ev;
-    ev.events  = EPOLLIN;
-    ev.data.fd = _serverSocketFd;
-
-    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, _serverSocketFd, &ev) == -1)
-        THROW_SYSTEM_ERROR(CRITICAL,
-                           EPOLL_ERROR,
-                           "Failed to add server socket to epoll",
-                           "SocketManager::safeRegisterToEpoll");
-}
-
-int SocketManager::setNonBlockingServer(int fd) { return (_serverSocket.setNonBlocking(fd)); }
-
-int SocketManager::safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event* event)
-{
-    if (epoll_ctl(epoll_fd, op, fd, event) < 0)
-    {
-        std::cerr << "[Error] epoll_ctl failed (epoll_fd=" << epoll_fd << ", fd=" << fd
-                  << ",op=" << op << "): " << strerror(errno) << std::endl;
-        return (-1);
-    }
-    return (0);
-}
-
-int SocketManager::getServerSocketFd(void) const { return (_serverSocketFd); }
-
-int SocketManager::getClientSocketFd(void) const { return (_clientSocketFd); }
