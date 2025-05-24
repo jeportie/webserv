@@ -71,6 +71,9 @@ public:
 private:
     ClientSocket(const ClientSocket& src);
     ClientSocket& operator=(const ClientSocket& rhs);
+
+    void checkChunkedBodyMode();
+    void checkContentLengthBodyMode();
     
 	time_t						_lastActivity;
     socklen_t                   _clientAddrLen;  ///< Length of client address structure

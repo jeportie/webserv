@@ -21,6 +21,7 @@
 #include <cstdio>
 #include <sys/socket.h>
 #include <cerrno>
+#include "SocketLogMessages.hpp"
 
 bool Socket::socketCreate(void)
 {
@@ -30,7 +31,7 @@ bool Socket::socketCreate(void)
     if (_socketFd < 0)
     {
 		msg = strerror(errno);
-		LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR,  "Error creating socket: " + msg,
+		LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR,  LOG_ERROR_CREATING_SOCKET + msg,
 			"Socket::socketCreate");
         return (false);
     }
@@ -44,7 +45,7 @@ bool Socket::setReuseAddr(bool reuse)
 
     if (!isValid())
     {
-		LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR, "Cannot set SO_REUSEADDR on invalid socket",
+		LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR, LOG_CANNOT_SET_SO_REUSEADDR,
 				   "Socket::setReuseAddr");
         return (false);
     }
@@ -54,7 +55,7 @@ bool Socket::setReuseAddr(bool reuse)
     if (setsockopt(_socketFd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0)
     {
 		msg = strerror(errno);
-		LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR,  "Error setting SO_REUSEADDR: " + msg,
+		LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR,  LOG_ERROR_SETTING_SO_REUSEADDR + msg,
 			"Socket::setReuseAddr");
         return (false);
     }

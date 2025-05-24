@@ -18,6 +18,7 @@
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
+#include "SocketLogMessages.hpp"
 
 // Constructor - Destructor
 
@@ -35,7 +36,7 @@ ClientSocket::ClientSocket()
 , _bodyAccumulator()
 {
     LOG_ERROR(
-        DEBUG, SOCKET_ERROR, "ClientSocket Constructor called.", "ClientSocket::ClientSocket()");
+        DEBUG, SOCKET_ERROR, LOG_CLIENTSOCKET_CONSTRUCTOR, "ClientSocket::ClientSocket()");
     // On initialise _clientAddr après l’appel à Socket()
     std::memset(&_clientAddr, 0, sizeof(_clientAddr));
 }
@@ -43,7 +44,7 @@ ClientSocket::ClientSocket()
 ClientSocket::~ClientSocket(void)
 {
     LOG_ERROR(
-        DEBUG, SOCKET_ERROR, "ClientSocket Destructor called.", "ClientSocket::~ClientSocket()");
+        DEBUG, SOCKET_ERROR, LOG_CLIENTSOCKET_DESTRUCTOR, "ClientSocket::~ClientSocket()");
     closeSocket();
 }
 

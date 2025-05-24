@@ -16,18 +16,19 @@
 #include <cerrno>
 #include "../Errors/ErrorHandler.hpp"
 #include "../../../include/webserv.h"
+#include "SocketLogMessages.hpp"
 
 ServerSocket::ServerSocket(void)
 : Socket()
 {
     LOG_ERROR(
-        DEBUG, SOCKET_ERROR, "ServerSocket Constructor called.", "ServerSocket::ServerSocket()");
+        DEBUG, SOCKET_ERROR, LOG_SERVERSOCKET_CONSTRUCTOR, "ServerSocket::ServerSocket()");
     std::memset(&this->_serverAddr, 0, sizeof(sockaddr_in));
 }
 
 ServerSocket::~ServerSocket(void)
 { 
     LOG_ERROR(
-        DEBUG, SOCKET_ERROR, "ServerSocket Destructor called.", "ServerSocket::~ServerSocket()");
+        DEBUG, SOCKET_ERROR, LOG_SERVERSOCKET_DESTRUCTOR, "ServerSocket::~ServerSocket()");
 	closeSocket();
 }

@@ -21,17 +21,18 @@
 #include <cstdio>
 #include <sys/socket.h>
 #include <cerrno>
+#include "SocketLogMessages.hpp"
 
 Socket::Socket(void)
 : _socketFd(-1)
 , _isNonBlocking(false)
 {
-	LOG_ERROR(DEBUG, SOCKET_ERROR, "Socket Constructor called", "Socket::Socket()");
+	LOG_ERROR(DEBUG, SOCKET_ERROR, LOG_SOCKET_CONSTRUCTOR, "Socket::Socket()");
 }
 
 Socket::~Socket(void)
 {
-	LOG_ERROR(DEBUG, SOCKET_ERROR, "Socket Desstructor called", "Socket::~Socket()");
+	LOG_ERROR(DEBUG, SOCKET_ERROR, LOG_SOCKET_DESTRUCTOR, "Socket::~Socket()");
 	closeSocket(); 
 }
 
@@ -39,7 +40,7 @@ Socket::Socket(const Socket& src)
 : _socketFd(-1)
 , _isNonBlocking(false)
 {
-	LOG_ERROR(DEBUG, SOCKET_ERROR, "Socket Copy constructor called",
+	LOG_ERROR(DEBUG, SOCKET_ERROR, LOG_SOCKET_COPY_CONSTRUCTOR,
 		"Socket::Socket(const Socket& src)");
     *this = src;
 }

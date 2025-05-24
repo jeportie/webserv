@@ -18,6 +18,7 @@
 #include <cerrno>
 #include "../Errors/ErrorHandler.hpp"
 #include "../../../include/webserv.h"
+#include "SocketLogMessages.hpp"
 
 int ServerSocket::safeFcntl(int fd, int cmd, int flag)
 {
@@ -26,7 +27,7 @@ int ServerSocket::safeFcntl(int fd, int cmd, int flag)
 	retFd = fcntl(fd, cmd, flag);
     if (retFd == -1)
 	{
-        THROW_SYSTEM_ERROR(CRITICAL, SOCKET_ERROR, "fcntl server socket failed",
+        THROW_SYSTEM_ERROR(CRITICAL, SOCKET_ERROR, LOG_FCNTL_SERVER_FAIL,
 			"ServerSocket::safeFcntl");
 	}
     return (retFd);
@@ -50,7 +51,7 @@ bool ServerSocket::safeBind(int port, const std::string& adress)
     // Create socket if it doesn't exist
     if (!isValid() && !socketCreate())
     {
-        LOG_ERROR(ERROR, SOCKET_ERROR, "Failed to create socket", "ServerSocket::safeBind");
+        LOG_ERROR(ERROR, SOCKET_ERROR, LOG_SOCKET_CREATE_FAIL, "ServerSocket::safeBind");
         return false;
     }
 
@@ -64,7 +65,7 @@ bool ServerSocket::safeBind(int port, const std::string& adress)
 
     if (bind(this->_socketFd, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr)) < 0)
     {
-        LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR, "Bind failed", "ServerSocket::safeBind");
+        LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR, LOG_BIND_FAIL, "ServerSocket::safeBind");
         return false;
     }
     return (true);
@@ -74,12 +75,12 @@ void ServerSocket::safeListen(int backlog)
 {
     if (!isValid())
     {
-        THROW_ERROR(CRITICAL, SOCKET_ERROR, "Cannot listen on invalid socket",
+        THROW_ERROR(CRITICAL, SOCKET_ERROR, LOG_INVALID_SOCKET_LISTEN,
 			"ServerSocket::safeListen");
     }
     if (listen(this->_socketFd, backlog) < 0)
     {
-        THROW_SYSTEM_ERROR(CRITICAL, SOCKET_ERROR, "Listen() Failed",
+        THROW_SYSTEM_ERROR(CRITICAL, SOCKET_ERROR, LOG_LISTEN_FAIL,
 			"ServerSocket::safeListen");
     }
 }
@@ -95,7 +96,7 @@ ClientSocket* ServerSocket::safeAccept(int epoll_fd)
 
     if (!isValid())
     {
-        THROW_ERROR(CRITICAL, SOCKET_ERROR, "Cannot accept on invalid socket",
+        THROW_ERROR(CRITICAL, SOCKET_ERROR, LOG_INVALID_SOCKET_ACCEPT,
 			"ServerSocket::safeAccept");
     }
 
@@ -107,18 +108,18 @@ ClientSocket* ServerSocket::safeAccept(int epoll_fd)
         {
             // No more clients to accept, not a real error
             delete client;
-			LOG_ERROR(INFO, SOCKET_ERROR, "No more Clients to Accept in the queue", "ServerSocket::safeAccept");
+			LOG_ERROR(INFO, SOCKET_ERROR, LOG_NO_MORE_CLIENTS, "ServerSocket::safeAccept");
             return (NULL);
         }
         delete client;
-        THROW_SYSTEM_ERROR(CRITICAL, SOCKET_ERROR, "Accept() Failed", "ServerSocket::safeAccept");
+        THROW_SYSTEM_ERROR(CRITICAL, SOCKET_ERROR, LOG_ACCEPT_FAIL, "ServerSocket::safeAccept");
     }
 
     client->setFd(clientFd);
     client->setClientAddr(clientAddr, clientAddrLen);
     client->setNonBlocking(clientFd);
 
-	oss << "Connection accepted from " << client->getClientIP() << ":"
+	oss << LOG_ACCEPTED_CONNECTION << client->getClientIP() << ":"
         << client->getClientPort() << std::endl;
 	std::cout << oss.str();
 	LOG_ERROR(INFO, SOCKET_ERROR, oss.str(), "ServerSocket::safeAccept");
@@ -133,7 +134,7 @@ ClientSocket* ServerSocket::safeAccept(int epoll_fd)
         {
             delete client;
             THROW_SYSTEM_ERROR(
-                CRITICAL, EPOLL_ERROR, "Failed to add client to epoll", "ServerSocket::safeAccept");
+                CRITICAL, EPOLL_ERROR, LOG_ADD_CLIENT_EPOLL_FAIL, "ServerSocket::safeAccept");
         }
     }
     return (client);
