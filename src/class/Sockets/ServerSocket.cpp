@@ -12,10 +12,7 @@
 
 #include "ServerSocket.hpp"
 #include "Socket.hpp"
-#include "ClientSocket.hpp"
 #include <sys/epoll.h>
-#include <iostream>
-#include <sstream>
 #include <cerrno>
 #include "../Errors/ErrorHandler.hpp"
 #include "../../../include/webserv.h"

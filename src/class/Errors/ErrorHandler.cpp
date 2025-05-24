@@ -35,13 +35,13 @@ ErrorHandler::~ErrorHandler()
 /* Private Methodes of ErrorHandler */
 std::string ErrorHandler::getTimestamp() const
 {
-    time_t     now      = time(NULL);
-    struct tm* timeinfo = localtime(&now);
+    char		buffer[80];
+    time_t		now      = time(NULL);
+    struct tm*	timeinfo = localtime(&now);
 
-    char buffer[80];
     strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timeinfo);
 
-    return std::string(buffer);
+    return (std::string(buffer));
 }
 
 std::string ErrorHandler::levelToString(ErrorLevel level) const

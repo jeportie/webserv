@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ReadCallback.cpp                                   :+:      :+:    :+:   */
+/*   ReadCallback.api.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/22 13:52:01 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/24 12:15:21 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ bool ReadCallback::readFromClient(int fd, ClientSocket* client)
 
 bool ReadCallback::parseClientHeaders(ClientSocket* client)
 {
-    if (client->headersParsed())
+    if (client->getIsHeadersParsed())
         return true;
 
     std::string& buf     = client->getBuffer();

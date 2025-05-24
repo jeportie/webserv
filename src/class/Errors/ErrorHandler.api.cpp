@@ -43,11 +43,10 @@ bool ErrorHandler::setLogFile(const std::string& path)
 
 void ErrorHandler::resetErrorStats()
 {
-    for (std::map<ErrorCategory, int>::iterator it = _errorStats.begin(); it != _errorStats.end();
-         ++it)
-    {
+	std::map<ErrorCategory, int>::iterator it;
+
+    for (it = _errorStats.begin(); it != _errorStats.end(); ++it)
         it->second = 0;
-    }
 }
 
 void ErrorHandler::logError(ErrorLevel         level,
