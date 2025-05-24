@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   SocketManager.cpp                                  :+:      :+:    :+:   */
+/*   SocketManager.api.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/22 13:21:45 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/24 12:54:41 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,12 +23,12 @@
 #include <sstream>
 
 #include "SocketManager.hpp"
-#include "../../../include/webserv.h"
 #include "../Callbacks/AcceptCallback.hpp"
 #include "../Callbacks/ErrorCallback.hpp"
 #include "../Callbacks/ReadCallback.hpp"
 #include "../Callbacks/TimeoutCallback.hpp"
 #include "../Sockets/ClientSocket.hpp"
+#include "../../../include/webserv.h"
 
 void SocketManager::init_connect(void)
 {
@@ -40,7 +40,6 @@ void SocketManager::init_connect(void)
         THROW_ERROR(CRITICAL, SOCKET_ERROR, "Failed to bind server socket",
 			"SocketManager::init_connect");
 	}
-
     _serverSocket.safeListen(10);
     _serverSocketFd = _serverSocket.getFd();
 
@@ -50,20 +49,20 @@ void SocketManager::init_connect(void)
         THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "Failed to create epoll instance",
 			"SocketManager::init_connect");
 	}
-
     safeRegisterToEpoll(epoll_fd);
+
     std::cout << "Server listening on port " << PORT << std::endl;
     eventLoop(epoll_fd);
 }
 
 void SocketManager::eventLoop(int epoll_fd)
 {
-    std::vector<epoll_event>    events;
+    EVENT_LIST    events;
     int                         checkIntervalMs;
     bool                        running;
     int                         n;
 
-    events = std::vector<epoll_event>(MAXEVENTS);
+    events = EVENT_LIST(MAXEVENTS);
     checkIntervalMs = getCheckIntervalMs();
     running = true;
 
@@ -77,13 +76,11 @@ void SocketManager::eventLoop(int epoll_fd)
             {
                 continue;
             }
-            THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "epoll_wait failed", "SocketManager::eventLoop");
+            THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "epoll_wait failed",
+				"SocketManager::eventLoop");
         }
-
         scanClientTimeouts(epoll_fd);
-
         _callbackQueue.processCallbacks();
-
         enqueueReadyCallbacks(n, events, epoll_fd);
     }
 }
@@ -93,12 +90,12 @@ int SocketManager::getCheckIntervalMs(void)
     return 1000;
 }
 
-const std::map<int, ClientSocket*>& SocketManager::getClientMap(void) const
+const ICMAP& SocketManager::getClientMap(void) const
 {
     return (_clientSockets);
 }
 
-void SocketManager::enqueueReadyCallbacks(int n, std::vector<epoll_event>& events, int epoll_fd)
+void SocketManager::enqueueReadyCallbacks(int n, EVENT_LIST& events, int epoll_fd)
 {
     int i;
     int fd;
@@ -129,7 +126,7 @@ void SocketManager::enqueueReadyCallbacks(int n, std::vector<epoll_event>& event
 void SocketManager::scanClientTimeouts(int epoll_fd)
 {
     time_t now;
-    std::map<int, ClientSocket*>::iterator it;
+    ICMAP::iterator it;
     int fd;
     ClientSocket* c;
     std::ostringstream oss;
@@ -154,13 +151,11 @@ void SocketManager::scanClientTimeouts(int epoll_fd)
     }
 }
 
-
 void SocketManager::addClientSocket(int fd, ClientSocket* client) { _clientSockets[fd] = client; }
 
 ServerSocket& SocketManager::getServerSocket() { return _serverSocket; }
 
 CallbackQueue& SocketManager::getCallbackQueue() { return _callbackQueue; }
-
 
 void SocketManager::cleanupClientSocket(int fd, int epoll_fd)
 {
@@ -174,9 +169,8 @@ void SocketManager::cleanupClientSocket(int fd, int epoll_fd)
                       << std::endl;
         }
     }
-
     // 2) Delete the ClientSocket object
-    std::map<int, ClientSocket*>::iterator it = _clientSockets.find(fd);
+    ICMAP::iterator it = _clientSockets.find(fd);
     if (it != _clientSockets.end())
     {
         delete it->second;
