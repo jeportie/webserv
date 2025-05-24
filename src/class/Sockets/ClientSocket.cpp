@@ -77,18 +77,18 @@ size_t ClientSocket::getChunkSize() const { return (_chunkSize); }
 
 std::string ClientSocket::getClientIP(void) const
 {
-    // Convert network byte order to host byte order
-    uint32_t ip = ntohl(_clientAddr.sin_addr.s_addr);
+    uint32_t			ip;
+    unsigned char		bytes[4];
+    std::ostringstream	oss;
 
+    // Convert network byte order to host byte order
+    ip = ntohl(_clientAddr.sin_addr.s_addr);
     // Extract each byte
-    unsigned char bytes[4];
     bytes[0] = (ip >> 24) & 0xFF;
     bytes[1] = (ip >> 16) & 0xFF;
     bytes[2] = (ip >> 8) & 0xFF;
     bytes[3] = ip & 0xFF;
 
-    // Convert to string using C++ streams
-    std::ostringstream oss;
     oss << static_cast<int>(bytes[0]) << "." << static_cast<int>(bytes[1]) << "."
         << static_cast<int>(bytes[2]) << "." << static_cast<int>(bytes[3]);
 
@@ -120,6 +120,7 @@ int ClientSocket::setNonBlocking(int fd)
     ret = safeFcntl(fd, F_SETFL, flags | O_NONBLOCK);
     // Update non-blocking flag
     _isNonBlocking = true;
+
     return (ret);
 }
 

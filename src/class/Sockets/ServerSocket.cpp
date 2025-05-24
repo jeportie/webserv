@@ -20,7 +20,14 @@
 ServerSocket::ServerSocket(void)
 : Socket()
 {
+    LOG_ERROR(
+        DEBUG, SOCKET_ERROR, "ServerSocket Constructor called.", "ServerSocket::ServerSocket()");
     std::memset(&this->_serverAddr, 0, sizeof(sockaddr_in));
 }
 
-ServerSocket::~ServerSocket(void) { closeSocket(); }
+ServerSocket::~ServerSocket(void)
+{ 
+    LOG_ERROR(
+        DEBUG, SOCKET_ERROR, "ServerSocket Destructor called.", "ServerSocket::~ServerSocket()");
+	closeSocket();
+}
