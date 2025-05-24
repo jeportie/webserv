@@ -17,16 +17,14 @@
 
 CallbackQueue::CallbackQueue()
 {
-	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "CallbackQueue Constructor called.",
-	 	"CallbackQueue::CallbackQueue(int fd)");
+	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "CallbackQueue Constructor called.", __FUNCTION__);
 }
 
 CallbackQueue::~CallbackQueue()
 {
     Callback* callback; 
 
-	LOG_ERROR(DEBUG, CALLBACK_ERROR, "CallbackQueue Destructor called.",
-	 	   "CallbackQueue::~CallbackQueue()");
+	LOG_ERROR(DEBUG, CALLBACK_ERROR, "CallbackQueue Destructor called.", __FUNCTION__);
 
     // Clean up any remaining callbacks
     while (!_queue.empty())

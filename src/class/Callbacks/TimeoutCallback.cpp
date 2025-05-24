@@ -22,14 +22,12 @@
 TimeoutCallback::TimeoutCallback(int fd, SocketManager* manager, int epollFd)
 : Callback(fd), _manager(manager), _epollFd(epollFd)
 {
-	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "TimeoutCallback Constructor called.",
-	 	"TimeoutCallback::TimeoutCallback(int fd)");
+	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "TimeoutCallback Constructor called.", __FUNCTION__);
 }
 
 TimeoutCallback::~TimeoutCallback()
 {
-	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "TimeoutCallback Destructor called.",
-	 	   "TimeoutCallback::~TimeoutCallback()");
+	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "TimeoutCallback Destructor called.", __FUNCTION__);
 }
 
 void TimeoutCallback::execute()

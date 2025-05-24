@@ -21,14 +21,12 @@
 ErrorCallback::ErrorCallback(int fd, SocketManager* manager, int epollFd)
 : Callback(fd), _manager(manager), _epollFd(epollFd)
 {
-	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "ErrorCallback Constructor called.",
-	 	"ErrorCallback::ErrorCallback(int fd)");
+	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "ErrorCallback Constructor called.", __FUNCTION__);
 }
 
 ErrorCallback::~ErrorCallback()
 {
-	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "ErrorCallback Destructor called.",
-	 	   "ErrorCallback::~ErrorCallback()");
+	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "ErrorCallback Destructor called.", __FUNCTION__);
 }
 
 void ErrorCallback::execute()

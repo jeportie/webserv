@@ -17,14 +17,12 @@
 Callback::Callback(int fd)
 : _fd(fd)
 {
-	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "Callback Constructor called.",
-	 	"Callback::Callback(int fd)");
+	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "Callback Constructor called.", __FUNCTION__);
 }
 
 Callback::~Callback()
 {
-	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "Callback Destructor called.",
-	 	   "Callback::~Callback()");
+	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "Callback Destructor called.", __FUNCTION__);
 }
 
 int Callback::getFd() const

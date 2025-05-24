@@ -24,14 +24,12 @@ AcceptCallback::AcceptCallback(int serverFd, SocketManager* manager, int epollFd
 , _manager(manager)
 , _epollFd(epollFd)
 {
-	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "AcceptCallback Constructor called.",
-	 	"AcceptCallback::AcceptCallback(int fd)");
+	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "AcceptCallback Constructor called.", __FUNCTION__);
 }
 
 AcceptCallback::~AcceptCallback()
 {
-	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "AcceptCallback Destructor called.",
-	 	   "AcceptCallback::~AcceptCallback()");
+	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "AcceptCallback Destructor called.", __FUNCTION__);
 }
 
 void AcceptCallback::execute()
@@ -63,8 +61,7 @@ void AcceptCallback::execute()
                 // No more clients to accept (EAGAIN/EWOULDBLOCK)
                 break;
             }
-            LOG_ERROR(ERROR, SOCKET_ERROR, "Accept failed: " + msg,
-                    "AcceptCallback::execute");
+            LOG_ERROR(ERROR, SOCKET_ERROR, "Accept failed: " + msg, __FUNCTION__);
             break;
         }
     }
