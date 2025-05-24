@@ -36,7 +36,7 @@ ClientSocket::ClientSocket()
 , _bodyAccumulator()
 {
     LOG_ERROR(
-        DEBUG, SOCKET_ERROR, LOG_CLIENTSOCKET_CONSTRUCTOR, "ClientSocket::ClientSocket()");
+        DEBUG, SOCKET_ERROR, LOG_CLIENTSOCKET_CONSTRUCTOR, __FUNCTION__);
     // On initialise _clientAddr après l’appel à Socket()
     std::memset(&_clientAddr, 0, sizeof(_clientAddr));
 }
@@ -44,7 +44,7 @@ ClientSocket::ClientSocket()
 ClientSocket::~ClientSocket(void)
 {
     LOG_ERROR(
-        DEBUG, SOCKET_ERROR, LOG_CLIENTSOCKET_DESTRUCTOR, "ClientSocket::~ClientSocket()");
+        DEBUG, SOCKET_ERROR, LOG_CLIENTSOCKET_DESTRUCTOR, __FUNCTION__);
     closeSocket();
 }
 

@@ -90,7 +90,6 @@ void ClientSocket::determineBodyMode()
 {
     std::vector<std::string>::const_iterator it;
     std::string lower;
-    std::string::size_type i;
 
     // Initialisation par défaut : pas de corps
     _bodyMode      = BODY_NONE;

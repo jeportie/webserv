@@ -22,13 +22,13 @@ ServerSocket::ServerSocket(void)
 : Socket()
 {
     LOG_ERROR(
-        DEBUG, SOCKET_ERROR, LOG_SERVERSOCKET_CONSTRUCTOR, "ServerSocket::ServerSocket()");
+        DEBUG, SOCKET_ERROR, LOG_SERVERSOCKET_CONSTRUCTOR, __FUNCTION__);
     std::memset(&this->_serverAddr, 0, sizeof(sockaddr_in));
 }
 
 ServerSocket::~ServerSocket(void)
 { 
     LOG_ERROR(
-        DEBUG, SOCKET_ERROR, LOG_SERVERSOCKET_DESTRUCTOR, "ServerSocket::~ServerSocket()");
+        DEBUG, SOCKET_ERROR, LOG_SERVERSOCKET_DESTRUCTOR, __FUNCTION__);
 	closeSocket();
 }

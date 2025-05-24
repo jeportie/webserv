@@ -32,7 +32,7 @@ bool Socket::socketCreate(void)
     {
 		msg = strerror(errno);
 		LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR,  LOG_ERROR_CREATING_SOCKET + msg,
-			"Socket::socketCreate");
+			__FUNCTION__);
         return (false);
     }
     return (true);
@@ -46,7 +46,7 @@ bool Socket::setReuseAddr(bool reuse)
     if (!isValid())
     {
 		LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR, LOG_CANNOT_SET_SO_REUSEADDR,
-				   "Socket::setReuseAddr");
+			__FUNCTION__);
         return (false);
     }
 
@@ -55,8 +55,8 @@ bool Socket::setReuseAddr(bool reuse)
     if (setsockopt(_socketFd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0)
     {
 		msg = strerror(errno);
-		LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR,  LOG_ERROR_SETTING_SO_REUSEADDR + msg,
-			"Socket::setReuseAddr");
+		LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR, LOG_ERROR_SETTING_SO_REUSEADDR + msg,
+			__FUNCTION__);
         return (false);
     }
     return (true);
