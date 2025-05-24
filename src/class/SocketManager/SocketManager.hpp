@@ -29,23 +29,24 @@ public:
     SocketManager(void);
     ~SocketManager(void);
 
-    void init_connect(void);
-    void eventLoop(int epoll_fd);
-    void cleanupClientSocket(int fd, int epoll_fd);
+    void			init_connect(void);
+    void			eventLoop(int epoll_fd);
+    void			cleanupClientSocket(int fd, int epoll_fd);
 
-    int  setNonBlockingServer(int fd);
-    int  safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event* event);
-    void safeRegisterToEpoll(int epoll_fd);
-    void addClientSocket(int fd, ClientSocket* client);
+    int				setNonBlockingServer(int fd);
+    int				safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event* event);
+    void			safeRegisterToEpoll(int epoll_fd);
+    void			addClientSocket(int fd, ClientSocket* client);
 
-    ServerSocket&  getServerSocket();
-    CallbackQueue& getCallbackQueue();
+    ServerSocket&	getServerSocket();
+    CallbackQueue&	getCallbackQueue();
 
-    int  getCheckIntervalMs(void);
-    void enqueueReadyCallbacks(int n, std::vector<epoll_event>& events, int epoll_fd);
-    void scanClientTimeouts(int epoll_fd);
-    int  getServerSocketFd(void) const;
-    int  getClientSocketFd(void) const;
+    int				getCheckIntervalMs(void);
+    void			enqueueReadyCallbacks(int n, std::vector<epoll_event>& events, int epoll_fd);
+    void			scanClientTimeouts(int epoll_fd);
+    int				getServerSocketFd(void) const;
+    int				getClientSocketFd(void) const;
+
     const std::map<int, ClientSocket*>& getClientMap(void) const;  
 
 private:

@@ -23,19 +23,24 @@
 #include "../Callbacks/ReadCallback.hpp"
 #include "../Callbacks/TimeoutCallback.hpp"
 #include "../Sockets/ClientSocket.hpp"
+#include "../../../include/webserv.h"
 
 SocketManager::SocketManager(void)
 : _serverSocketFd(-1)
 , _clientSocketFd(-1)
 {
+    LOG_ERROR(
+        DEBUG, SOCKET_ERROR, "SocketManager Constructor called.", "SocketManager::SocketManager()");
 }
 
 SocketManager::~SocketManager(void)
 {
-    // Clean up client sockets
-    for (std::map<int, ClientSocket*>::iterator it = _clientSockets.begin();
-         it != _clientSockets.end();
-         ++it)
+	std::map<int, ClientSocket*>::iterator it;
+
+    LOG_ERROR(
+        DEBUG, SOCKET_ERROR, "SocketManager Destructor called.", "SocketManager::~SocketManager()");
+
+    for (it = _clientSockets.begin(); it != _clientSockets.end(); ++it)
     {
         delete it->second;
     }

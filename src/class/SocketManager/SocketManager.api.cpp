@@ -32,20 +32,24 @@
 
 void SocketManager::init_connect(void)
 {
+	int epoll_fd;
+
     // Create, bind, and listen on the server socket
     if (!_serverSocket.safeBind(PORT, ""))
-        THROW_ERROR(
-            CRITICAL, SOCKET_ERROR, "Failed to bind server socket", "SocketManager::init_connect");
+	{
+        THROW_ERROR(CRITICAL, SOCKET_ERROR, "Failed to bind server socket",
+			"SocketManager::init_connect");
+	}
 
     _serverSocket.safeListen(10);
     _serverSocketFd = _serverSocket.getFd();
 
-    int epoll_fd = epoll_create(1);
+    epoll_fd = epoll_create(1);
     if (epoll_fd < 0)
-        THROW_SYSTEM_ERROR(CRITICAL,
-                           EPOLL_ERROR,
-                           "Failed to create epoll instance",
-                           "SocketManager::init_connect");
+	{
+        THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "Failed to create epoll instance",
+			"SocketManager::init_connect");
+	}
 
     safeRegisterToEpoll(epoll_fd);
     std::cout << "Server listening on port " << PORT << std::endl;
