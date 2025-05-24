@@ -13,6 +13,9 @@
 #ifndef SERVERSOCKET_HPP
 #define SERVERSOCKET_HPP
 
+#define LOG_SERVERSOCKET_CONSTRUCTOR "ServerSocket Constructor called."
+#define LOG_SERVERSOCKET_DESTRUCTOR "ServerSocket Destructor called."
+
 #include "Socket.hpp"
 #include "ClientSocket.hpp"
 #include <netinet/in.h>

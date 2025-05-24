@@ -18,7 +18,6 @@
 #include <cerrno>
 #include "../Errors/ErrorHandler.hpp"
 #include "../../../include/webserv.h"
-#include "SocketLogMessages.hpp"
 
 int ServerSocket::safeFcntl(int fd, int cmd, int flag)
 {

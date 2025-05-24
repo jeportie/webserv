@@ -18,7 +18,6 @@
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
-#include "SocketLogMessages.hpp"
 
 // Constructor - Destructor
 

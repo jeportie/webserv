@@ -21,7 +21,6 @@
 #include <cstdio>
 #include <sys/socket.h>
 #include <cerrno>
-#include "SocketLogMessages.hpp"
 
 bool Socket::socketCreate(void)
 {

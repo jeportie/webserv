@@ -16,7 +16,6 @@
 #include <cerrno>
 #include "../Errors/ErrorHandler.hpp"
 #include "../../../include/webserv.h"
-#include "SocketLogMessages.hpp"
 
 ServerSocket::ServerSocket(void)
 : Socket()

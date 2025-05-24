@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "Socket.hpp"
-#include "SocketLogMessages.hpp"
 #include "../../../include/webserv.h"
 
 #include <cmath>

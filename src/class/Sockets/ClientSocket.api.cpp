@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "ClientSocket.hpp"
-#include "SocketLogMessages.hpp"
 #include "../Http/HttpException.hpp"
 #include "../Http/HttpLimits.hpp"
 #include "../../../include/webserv.h"

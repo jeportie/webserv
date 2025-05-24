@@ -13,6 +13,9 @@
 #ifndef CLIENTSOCKET_HPP
 #define CLIENTSOCKET_HPP
 
+#define LOG_CLIENTSOCKET_CONSTRUCTOR "ClientSocket Constructor called."
+#define LOG_CLIENTSOCKET_DESTRUCTOR "ClientSocket Destructor called."
+
 #define SVSMAP std::map<std::string, std::vector<std::string> > 
 
 #include "Socket.hpp"

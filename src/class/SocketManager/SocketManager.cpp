@@ -31,7 +31,7 @@ SocketManager::SocketManager(void)
 , _clientSocketFd(-1)
 {
     LOG_ERROR(
-        DEBUG, SOCKET_ERROR, "SocketManager Constructor called.", "SocketManager::SocketManager()");
+        DEBUG, SOCKET_ERROR, "SocketManager Constructor called.", __FUNCTION__);
 }
 
 SocketManager::~SocketManager(void)
@@ -39,7 +39,7 @@ SocketManager::~SocketManager(void)
     std::map<int, ClientSocket*>::iterator it;
 
     LOG_ERROR(
-        DEBUG, SOCKET_ERROR, "SocketManager Destructor called.", "SocketManager::~SocketManager()");
+        DEBUG, SOCKET_ERROR, "SocketManager Destructor called.", __FUNCTION__);
 
     for (it = _clientSockets.begin(); it != _clientSockets.end(); ++it)
     {
@@ -71,10 +71,7 @@ void SocketManager::safeRegisterToEpoll(int epoll_fd)
     ev.data.fd = _serverSocketFd;
 
     if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, _serverSocketFd, &ev) == -1)
-        THROW_SYSTEM_ERROR(CRITICAL,
-                           EPOLL_ERROR,
-                           "Failed to add server socket to epoll",
-                           "SocketManager::safeRegisterToEpoll");
+        THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "Failed to add server socket to epoll", __FUNCTION__);
 }
 
 int SocketManager::safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event* event)
