@@ -13,6 +13,9 @@
 #ifndef TIMEOUTCALLBACK_HPP
 #define TIMEOUTCALLBACK_HPP
 
+#define LOG_TIMEOUTCB_CONST	"TimeoutCallback Constructor called"
+#define LOG_TIMEOUTCB_DEST	"TimeoutCallback Destructor called"
+
 #include "Callback.hpp"
 
 class SocketManager;

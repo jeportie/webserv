@@ -47,6 +47,7 @@ void AcceptCallback::execute()
             client = _manager->getServerSocket().safeAccept(_epollFd);
 			if (!client)
 				return ;
+
             clientFd = client->getFd();
             _manager->addClientSocket(clientFd, client);
 
@@ -60,7 +61,7 @@ void AcceptCallback::execute()
         catch (const std::exception& e)
         {
             msg = e.what();
-            if (msg.find("Resource temporarily unavailable") != std::string::npos)
+            if (msg.find(LOG_ACCEPT_NO_RESOURCE) != std::string::npos)
             {
                 // No more clients to accept (EAGAIN/EWOULDBLOCK)
                 break;

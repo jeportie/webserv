@@ -15,6 +15,7 @@
 
 #define LOG_ACCEPT_CALLB_CONST	"AcceptCallback Constructor called"
 #define LOG_ACCEPT_CALLB_DEST	"AcceptCallback Destructor called"
+#define LOG_ACCEPT_NO_RESOURCE	"Resource temporarily unavailable"
 
 #include "Callback.hpp"
 

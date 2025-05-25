@@ -29,13 +29,13 @@
 
 void SocketManager::init_connect(void)
 {
-	int epoll_fd;
+	std::ostringstream	oss;
+	int					epoll_fd;
 
     // Create, bind, and listen on the server socket
     if (!_serverSocket.safeBind(PORT, ""))
 	{
-        THROW_ERROR(CRITICAL, SOCKET_ERROR, "Failed to bind server socket",
-			"SocketManager::init_connect");
+        THROW_ERROR(CRITICAL, SOCKET_ERROR, "Failed to bind server socket", __FUNCTION__);
 	}
     _serverSocket.safeListen(10);
     _serverSocketFd = _serverSocket.getFd();
@@ -43,12 +43,14 @@ void SocketManager::init_connect(void)
     epoll_fd = epoll_create(1);
     if (epoll_fd < 0)
 	{
-        THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "Failed to create epoll instance",
-			"SocketManager::init_connect");
+        THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "Failed to create epoll instance", __FUNCTION__);
 	}
     safeRegisterToEpoll(epoll_fd);
 
-    std::cout << "Server listening on port " << PORT << std::endl;
+	oss << "Server listening on port " << PORT << std::endl;
+	std::cout << oss.str();
+	LOG_ERROR(INFO, CALLBACK_ERROR, oss.str(), __FUNCTION__);
+	
     eventLoop(epoll_fd);
 }
 
@@ -73,8 +75,7 @@ void SocketManager::eventLoop(int epoll_fd)
             {
                 continue;
             }
-            THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "epoll_wait failed",
-				"SocketManager::eventLoop");
+            THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "epoll_wait failed", __FUNCTION__);
         }
         scanClientTimeouts(epoll_fd);
         _callbackQueue.processCallbacks();
@@ -131,7 +132,7 @@ void SocketManager::scanClientTimeouts(int epoll_fd)
             oss.str("");
             oss.clear();
             oss << "Client timed out (fd=" << fd << ")";
-            LOG_ERROR(INFO, SOCKET_ERROR, oss.str(), "SocketManager::scanClientTimeouts");
+            LOG_ERROR(INFO, SOCKET_ERROR, oss.str(), __FUNCTION__);
             _callbackQueue.push(new TimeoutCallback(fd, this, epoll_fd));
         }
         ++it;
@@ -150,7 +151,7 @@ void SocketManager::cleanupClientSocket(int fd, int epoll_fd)
         {
             // Log error but continue cleanup
             oss << "epoll_ctl DEL failed for fd " << fd << ": " << strerror(errno) << std::endl;
-			LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR, oss.str(), "SocketManager::cleanupClientSocket");
+			LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR, oss.str(), __FUNCTION__);
         }
     }
     // 2) Delete the ClientSocket object

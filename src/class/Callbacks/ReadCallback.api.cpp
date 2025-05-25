@@ -12,25 +12,20 @@
 
 #include "../Http/HttpException.hpp"
 
+#include <sys/types.h>
 #include <unistd.h>
+#include <cstdlib>
 #include <sys/epoll.h>
-#include <sstream>
 #include <cerrno>
+#include <vector>
 #include <cstring>
 #include <iostream>
 #include <ostream>
-#include <unistd.h>
-#include <vector>
-#include <cstdlib>
-#include <cstring>
-#include <iostream>
-#include <unistd.h>
 #include <sstream>
 
 #include "../Callbacks/ReadCallback.hpp"
 #include "../Http/RequestLine.hpp"
 #include "../Sockets/ClientSocket.hpp"
-
 #include "../Http/HttpParser.hpp"
 #include "../Http/HttpRequest.hpp"
 #include "../Http/HttpException.hpp"
@@ -38,16 +33,17 @@
 
 bool ReadCallback::readFromClient(int fd, ClientSocket* client)
 {
-    std::string&  buf    = client->getBuffer();
-    char          tmp[4096];
+    ssize_t n;
+    char tmp[4096];
+    std::string& buf = client->getBuffer();
 
     while (true)
     {
-        ssize_t n = ::read(fd, tmp, sizeof(tmp));
+        n = ::read(fd, tmp, sizeof(tmp));
         if (n > 0)
         {
             buf.append(tmp, n);
-			client->touch();
+            client->touch();
             continue;
         }
         // n <= 0 : soit EOF (n==0), soit plus de données pour l'instant (n<0/EAGAIN)

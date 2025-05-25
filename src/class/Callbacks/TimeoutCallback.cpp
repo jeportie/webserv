@@ -17,26 +17,32 @@
 #include <unistd.h>
 #include <sys/epoll.h>
 #include <iostream>
+#include <sstream>
 
 // TimeoutCallback implementation
 TimeoutCallback::TimeoutCallback(int fd, SocketManager* manager, int epollFd)
 : Callback(fd), _manager(manager), _epollFd(epollFd)
 {
-	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "TimeoutCallback Constructor called.", __FUNCTION__);
+	 LOG_ERROR(DEBUG, CALLBACK_ERROR, LOG_TIMEOUTCB_CONST, __FUNCTION__);
 }
 
 TimeoutCallback::~TimeoutCallback()
 {
-	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "TimeoutCallback Destructor called.", __FUNCTION__);
+	 LOG_ERROR(DEBUG, CALLBACK_ERROR, LOG_TIMEOUTCB_DEST, __FUNCTION__);
 }
 
 void TimeoutCallback::execute()
 {
-    // Store the fd locally since we'll be using it after potentially deleting objects
-    int fd = _fd;
-    int epollFd = _epollFd;
+	std::ostringstream	oss;
+    int					fd;
+    int					epollFd;
+
+    fd = _fd;
+    epollFd = _epollFd;
     
-    std::cout << "Client connection timed out (fd=" << fd << ")" << std::endl;
+    oss << "Client connection timed out (fd=" << fd << ")" << std::endl;
+	std::cout << oss.str();
+	LOG_ERROR(INFO, CALLBACK_ERROR, oss.str(), __FUNCTION__);
     
     // Clean up the client socket
     _manager->cleanupClientSocket(fd, epollFd);

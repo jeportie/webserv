@@ -13,6 +13,9 @@
 #ifndef ERRORCALLBACK_HPP
 # define ERRORCALLBACK_HPP
 
+#define LOG_ERRCB_CONST	"ErrorCallback Constructor called."
+#define LOG_ERRCB_DEST	"ErrorCallback Destructor called"
+
 #include "Callback.hpp"
 
 // Forward declaration
