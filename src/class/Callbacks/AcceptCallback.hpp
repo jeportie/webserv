@@ -11,7 +11,10 @@
 /* ************************************************************************** */
 
 #ifndef ACCEPTCALLBACK_HPP
-# define ACCEPTCALLBACK_HPP
+#define ACCEPTCALLBACK_HPP
+
+#define LOG_ACCCALLB_CONST "AcceptCallback Constructor called"
+#define LOG_ACCCALLB_DEST "AcceptCallback Destructor called"
 
 #include "Callback.hpp"
 

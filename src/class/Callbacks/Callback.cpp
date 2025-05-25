@@ -17,7 +17,7 @@
 Callback::Callback(int fd)
 : _fd(fd)
 {
-	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "Callback Constructor called.", __FUNCTION__);
+	 LOG_ERROR(DEBUG, CALLBACK_ERROR, LOG_CALLB_CONST, __FUNCTION__);
 }
 
 Callback::~Callback()

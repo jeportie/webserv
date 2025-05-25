@@ -24,12 +24,12 @@ AcceptCallback::AcceptCallback(int serverFd, SocketManager* manager, int epollFd
 , _manager(manager)
 , _epollFd(epollFd)
 {
-	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "AcceptCallback Constructor called.", __FUNCTION__);
+	 LOG_ERROR(DEBUG, CALLBACK_ERROR, LOG_ACCCALLB_CONST, __FUNCTION__);
 }
 
 AcceptCallback::~AcceptCallback()
 {
-	 LOG_ERROR(DEBUG, CALLBACK_ERROR, "AcceptCallback Destructor called.", __FUNCTION__);
+	 LOG_ERROR(DEBUG, CALLBACK_ERROR, LOG_ACCCALLB_DEST, __FUNCTION__);
 }
 
 void AcceptCallback::execute()
