@@ -17,6 +17,7 @@
 
 #include <unistd.h>
 #include <sys/epoll.h>
+#include <sstream>
 
 // AcceptCallback implementation
 AcceptCallback::AcceptCallback(int serverFd, SocketManager* manager, int epollFd)
@@ -24,19 +25,20 @@ AcceptCallback::AcceptCallback(int serverFd, SocketManager* manager, int epollFd
 , _manager(manager)
 , _epollFd(epollFd)
 {
-	 LOG_ERROR(DEBUG, CALLBACK_ERROR, LOG_ACCCALLB_CONST, __FUNCTION__);
+	 LOG_ERROR(DEBUG, CALLBACK_ERROR, LOG_ACCEPT_CALLB_CONST, __FUNCTION__);
 }
 
 AcceptCallback::~AcceptCallback()
 {
-	 LOG_ERROR(DEBUG, CALLBACK_ERROR, LOG_ACCCALLB_DEST, __FUNCTION__);
+	 LOG_ERROR(DEBUG, CALLBACK_ERROR, LOG_ACCEPT_CALLB_DEST, __FUNCTION__);
 }
 
 void AcceptCallback::execute()
 {
-    ClientSocket*	client;
-    int				clientFd;
-    std::string		msg;
+	std::ostringstream	oss;
+    ClientSocket*		client;
+    int					clientFd;
+    std::string			msg;
 
     while (true)
     {
@@ -50,8 +52,10 @@ void AcceptCallback::execute()
 
             client->touch(); // Init timer for the new client;
 
-            std::cout << "New connection from " << client->getClientIP() << ":"
-                      << client->getClientPort() << " (fd=" << clientFd << ")" << std::endl;
+            oss << "New connection from " << client->getClientIP() << ":"
+                << client->getClientPort() << " (fd=" << clientFd << ")" << std::endl;
+			std::cout << oss.str();
+			LOG_ERROR(INFO, CALLBACK_ERROR, oss.str(), __FUNCTION__);
         }
         catch (const std::exception& e)
         {

@@ -13,6 +13,12 @@
 #ifndef CALLBACKQUEUE_HPP
 #define CALLBACKQUEUE_HPP
 
+#define LOG_CBQUEU_CONST	"CallbackQueue Constructor called"
+#define LOG_CBQUEU_DEST	    "CallbackQueue Destructor called"
+#define LOG_CBQUEU_FULL		"Error: Callback Queu is full!"
+#define LOG_CBQUEU_NULL		"Error: Null callback in queue!" 
+#define LOG_CBQUEU_UNKWN	"Unknown error executing callback"
+
 #include <cstddef>
 #include <queue>
 #include "Callback.hpp"

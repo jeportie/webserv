@@ -19,7 +19,7 @@ void CallbackQueue::push(Callback* callback)
     if (_queue.size() >= MAX_QUEUE_SIZE)
     {
         // Queue is full, reject the callback
-		LOG_SYSTEM_ERROR(ERROR, CALLBACK_ERROR, "Error: Callback Queu is full!", __FUNCTION__);
+		LOG_SYSTEM_ERROR(ERROR, CALLBACK_ERROR, LOG_CBQUEU_FULL, __FUNCTION__);
         delete callback;
         return;
     }
@@ -38,7 +38,7 @@ bool CallbackQueue::tryExecute(Callback* callback)
         }
         else
         {
-            LOG_ERROR(WARNING, CALLBACK_ERROR, "Null callback in queue", __FUNCTION__);
+            LOG_ERROR(WARNING, CALLBACK_ERROR, LOG_CBQUEU_NULL, __FUNCTION__);
             return (false);  // Skip to next callback
         }
     }
@@ -50,7 +50,7 @@ bool CallbackQueue::tryExecute(Callback* callback)
     }
     catch (...)
     {
-        LOG_ERROR(ERROR, CALLBACK_ERROR, "Unknown error executing callback", __FUNCTION__);
+        LOG_ERROR(ERROR, CALLBACK_ERROR, LOG_CBQUEU_UNKWN, __FUNCTION__);
     }
 	return (true);
 }
