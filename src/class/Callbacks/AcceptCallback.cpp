@@ -12,7 +12,7 @@
 
 #include "../SocketManager/SocketManager.hpp"
 #include "../Errors/ErrorHandler.hpp"
-#include "../../../include/webserv.h"
+#include "../Sockets/ServerSocket.hpp"
 #include "AcceptCallback.hpp"
 
 #include <unistd.h>
@@ -35,46 +35,45 @@ AcceptCallback::~AcceptCallback()
 
 void AcceptCallback::execute()
 {
-    std::ostringstream oss;
-    ClientSocket*      client;
-    int                clientFd;
-    std::string        msg;
-	size_t			   i;
+    std::ostringstream	oss;
+    int					clientFd;
+    std::string			msg;
+	ClientSocket*		client;
 
-    while (true)
+    // Loop over all server sockets
+    SSVECTOR& servers = _manager->getServerSocket();
+    for (size_t i = 0; i < servers.size(); ++i)
     {
-        try
+        while (true)
         {
-            // Find which server socket accepted the connection
-            for (i = 0; i < _manager->getServerSocket().size(); ++i)
+            try
             {
-                client = _manager->getServerSocket()[i].safeAccept(_epollFd);
-                if (client)
-                    break;
+                // Try to accept a new client on this server socket
+                client = servers[i].safeAccept(_epollFd);
+                if (!client)
+                    break; // No more clients to accept on this socket
+
+                clientFd = client->getFd();
+                _manager->addClientSocket(clientFd, client);
+
+                client->touch();  // Init timer for the new client
+
+                oss << "New connection from " << client->getClientIP() << ":" << client->getClientPort()
+                    << " (fd=" << clientFd << ")" << std::endl;
+                std::cout << oss.str();
+                LOG_ERROR(INFO, CALLBACK_ERROR, oss.str(), __FUNCTION__);
             }
-            if (!client)
-                return;
-
-            clientFd = client->getFd();
-            _manager->addClientSocket(clientFd, client);
-
-            client->touch();  // Init timer for the new client;
-
-            oss << "New connection from " << client->getClientIP() << ":" << client->getClientPort()
-                << " (fd=" << clientFd << ")" << std::endl;
-            std::cout << oss.str();
-            LOG_ERROR(INFO, CALLBACK_ERROR, oss.str(), __FUNCTION__);
-        }
-        catch (const std::exception& e)
-        {
-            msg = e.what();
-            if (msg.find(LOG_ACCEPT_NO_RESOURCE) != std::string::npos)
+            catch (const std::exception& e)
             {
-                // No more clients to accept (EAGAIN/EWOULDBLOCK)
+                msg = e.what();
+                if (msg.find(LOG_ACCEPT_NO_RESOURCE) != std::string::npos)
+                {
+                    // No more clients to accept (EAGAIN/EWOULDBLOCK)
+                    break;
+                }
+                LOG_ERROR(ERROR, SOCKET_ERROR, "Accept failed: " + msg, __FUNCTION__);
                 break;
             }
-            LOG_ERROR(ERROR, SOCKET_ERROR, "Accept failed: " + msg, __FUNCTION__);
-            break;
         }
     }
 }
