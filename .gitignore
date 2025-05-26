@@ -24,5 +24,18 @@ node_modules/
 # OS specific
 .DS_Store
 
+# Build files (C++/CMake/Make)
+build/
+bin/
+*.o
+*.out
+*.exe
+*.a
+*.so
+*.d
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+
 # Rules
 rules/
