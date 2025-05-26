@@ -26,8 +26,7 @@
 
 // Constrctor & Destructor
 SocketManager::SocketManager(void)
-: _serverSocketFd(-1)
-, _clientSocketFd(-1)
+: _clientSocketFd(-1)
 {
     LOG_ERROR(DEBUG, SOCKET_ERROR, LOG_SM_CONST, __FUNCTION__);
 }

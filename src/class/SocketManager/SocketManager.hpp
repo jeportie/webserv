@@ -38,7 +38,7 @@ public:
     SocketManager(void);
     ~SocketManager(void);
 
-    void	init_connect(void);
+    void	init_connect();
     void	eventLoop(int epoll_fd);
     void	addClientSocket(int fd, ClientSocket* client);
     void	cleanupClientSocket(int fd, int epoll_fd);
@@ -69,7 +69,7 @@ private:
 	std::vector<ServerSocket>  _serverSockets;  ///< The server socket
     int           _clientSocketFd;  ///< Client socket file descriptor (most recent)
     CallbackQueue _callbackQueue;   ///< Simple callback queue
-    IVSCMAP        _configuration;
+    IVSCMAP        _serversByPort;
 };
 
 #endif  // ************************************************ SOCKETMANAGER_HPP //

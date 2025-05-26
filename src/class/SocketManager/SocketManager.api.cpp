@@ -30,77 +30,42 @@
 #include "../ConfigFile/ConfigValidator.hpp"
 #include "../../../include/webserv.h"
 
-void SocketManager::init_connect(const IVSCMAP& serversByPort)
+void SocketManager::init_connect()
 {
-    std::ostringstream	oss;
-    int					epoll_fd;
+    std::ostringstream		oss;
+	IVSCMAP::const_iterator	it;
+    int						epoll_fd;
+    int						socket_fd;
+	int						port;
 
     epoll_fd = epoll_create(1);
     if (epoll_fd < 0)
         THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "Failed to create epoll instance", __FUNCTION__);
 
-    _epollFd = epoll_fd;
-
-    for (IVSCMAP::const_iterator it = serversByPort.begin(); it != serversByPort.end(); ++it)
+    for (it = _serversByPort.begin(); it != _serversByPort.end(); ++it)
     {
-        int port = it->first;
+        port = it->first;
 
-        // Créer et binder le socket
         ServerSocket socket;
-        if (!socket.safeBind(port, "0.0.0.0"))  // ou it->second[0].host si tu veux gérer par IP
+        if (!socket.safeBind(port, "0.0.0.0"))
         {
             oss << "Failed to bind on port " << port;
             THROW_ERROR(CRITICAL, SOCKET_ERROR, oss.str(), __FUNCTION__);
         }
 
         socket.safeListen(10);
-        int socket_fd = socket.getFd();
+        socket_fd = socket.getFd();
 
-        // Enregistrer dans ton epoll
         safeRegisterToEpoll(epoll_fd, socket_fd);
 
-        // Stocker les sockets + configs (pour plus tard)
-        _serverSockets.push_back(socket); // si tu as un vecteur
-        _configuration[port] = it->second; // map<int, vector<ServerConfig>>
+        _serverSockets.push_back(socket);
 
-        // Log
         oss << "Server listening on port " << port << std::endl;
         std::cout << oss.str();
         LOG_ERROR(INFO, CALLBACK_ERROR, oss.str(), __FUNCTION__);
-        oss.str(""); // reset pour la prochaine boucle
+        oss.str("");
         oss.clear();
     }
-
-    // Lance la boucle principale
-    eventLoop(epoll_fd);
-}
-
-void SocketManager::init_connect(void)
-{
-	std::ostringstream	oss;
-	int					epoll_fd;
-
-    // Create, bind, and listen on the server socket
-
-    //while nombre de server 
-    if (!_serverSocket.safeBind(PORT, ""))
-	{
-        THROW_ERROR(CRITICAL, SOCKET_ERROR, "Failed to bind server socket", __FUNCTION__);
-	}
-    _serverSocket.safeListen(10);
-    _serverSocketFd = _serverSocket.getFd();
-
-    epoll_fd = epoll_create(1);
-    if (epoll_fd < 0)
-	{
-        THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "Failed to create epoll instance", __FUNCTION__);
-	}
-    safeRegisterToEpoll(epoll_fd);
-
-	oss << "Server listening on port " << PORT << std::endl;
-	std::cout << oss.str();
-	LOG_ERROR(INFO, CALLBACK_ERROR, oss.str(), __FUNCTION__);
-	
     eventLoop(epoll_fd);
 }
 

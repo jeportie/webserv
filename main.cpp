@@ -14,7 +14,6 @@
 #include "src/class/SocketManager/SocketManager.hpp"
 #include "src/class/Errors/ErrorHandler.hpp"
 
-
 #include <cstdlib>
 #include <stdexcept>
 #include <iostream>
