@@ -15,15 +15,11 @@
 
 # include <vector>
 # include <map>
-# include <stdexcept>
 # include <cstdlib>
-# include <sstream>
 
 # include "Lexer.hpp"
-# include "ServerConfig.hpp"
-# include "RouteConfig.hpp"
 
-# define SSCMAP std::map<std::string, std::vector<ServerConfig> >;
+# define SSCMAP std::map<std::string, std::vector<ServerConfig> >
 # define ROUTEMAP std::map<std::string, RouteConfig> 
 
 struct ServerConfig;

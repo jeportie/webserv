@@ -26,6 +26,9 @@
 #include "../Callbacks/TimeoutCallback.hpp"
 #include "../Sockets/ClientSocket.hpp"
 #include "../../../include/webserv.h"
+#include "../ConfigFile/Parser.hpp"
+#include "../ConfigFile/Lexer.hpp"
+#include "../ConfigFile/ConfigValidator.hpp"
 
 void SocketManager::init_connect(void)
 {
@@ -35,8 +38,6 @@ void SocketManager::init_connect(void)
     // Create, bind, and listen on the server socket
 
     //while nombre de server 
-    
-    
     if (!_serverSocket.safeBind(PORT, ""))
 	{
         THROW_ERROR(CRITICAL, SOCKET_ERROR, "Failed to bind server socket", __FUNCTION__);
@@ -167,9 +168,17 @@ void SocketManager::cleanupClientSocket(int fd, int epoll_fd)
     }
 }
 
-    void SocketManager::instantiateConfig(const std::string& content)
-    {
-         _configuration = ReadandParseConfigFile(content);
-         
-         
-    }
+SSCMAP SocketManager::ReadandParseConfigFile(const std::string& content)
+{
+    Lexer  lexi(content);
+    Parser configData(lexi);
+    SSCMAP configs;
+
+    configs = configData.parseConfigFile();
+    return (configs);
+}
+
+void SocketManager::instantiateConfig(const std::string& content)
+{
+     _configuration = ReadandParseConfigFile(content);
+}

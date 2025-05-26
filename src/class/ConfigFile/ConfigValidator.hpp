@@ -10,19 +10,21 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CONFIG_VALIDATOR_HPP
-# define CONFIG_VALIDATOR_HPP
+#ifndef CONFIGVALIDATOR_HPP
+# define CONFIGVALIDATOR_HPP
 
 # include "ServerConfig.hpp"
-# include <set>
+
 class ConfigValidator
 {
-   public:
+public:
     ConfigValidator();
     ~ConfigValidator();
+
     void validate(const std::vector<ServerConfig>& servers);
     void validateServer(const ServerConfig& config);
     void validateRoute(const RouteConfig& route);
     
 };
-#endif
+
+#endif  // ********************************************** CONFIGVALIDATOR_HPP //

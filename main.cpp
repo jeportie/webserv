@@ -20,13 +20,11 @@
 #include <iostream>
 #include <sstream>
 
-#define  Start "Server starting on port "
-#define  RunT "Runtime Error: "
-#define  Excp "Exception Error: "
-#define  Ukwn "Unknown Error: "
-#define  Crit "Critical error occurred, shutting down server"
-
-
+std::string Start("Server starting on port ");
+std::string RunT ("Runtime Error: ");
+std::string Excp ("Exception Error: ");
+std::string Ukwn ("Unknown Error: ");
+std::string Crit ("Critical error occurred, shutting down server");
 
 std::string readFileToString(const std::string& filename)
 {
@@ -56,16 +54,6 @@ std::string readFileToString(const std::string& filename)
     return content;
 }
 
-SSCMAP ReadandParseConfigFile(std::string& content)
-{
-    Lexer  lexi(content);
-    Parser configData(lexi);
-    SSCMAP configs;
-
-    configs = configData.ParseConfigFile();
-    return (configs);
-}
-
 int main(int argc, char **argv)
 
 {
@@ -76,7 +64,7 @@ int main(int argc, char **argv)
     if (argc < 2)
     {
         std::cout << "Usage: " << argv[0] << " [config_file.conf]" << std::endl;
-        return 1;
+        return (1);
     }
     
     // Initialize error handler

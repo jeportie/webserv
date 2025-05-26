@@ -27,8 +27,8 @@
 #include "../Sockets/ServerSocket.hpp"
 #include "../Sockets/ClientSocket.hpp"
 #include "../Callbacks/CallbackQueue.hpp"
-#include "src/class/ConfigFile/Parser.hpp"
-#include "src/class/ConfigFile/ConfigValidator.hpp"
+#include "../ConfigFile/Parser.hpp"
+#include "../ConfigFile/ConfigValidator.hpp"
 
 class Callback;
 
@@ -38,15 +38,16 @@ public:
     SocketManager(void);
     ~SocketManager(void);
 
-    void init_connect(void);
-    void eventLoop(int epoll_fd);
-    void addClientSocket(int fd, ClientSocket* client);
-    void cleanupClientSocket(int fd, int epoll_fd);
-    void enqueueReadyCallbacks(int n, EVENT_LIST& events, int epoll_fd);
-    void scanClientTimeouts(int epoll_fd);
-    void instantiateConfig(const std::string& content);
-    int  safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event* event);
-    void safeRegisterToEpoll(int epoll_fd);
+    void	init_connect(void);
+    void	eventLoop(int epoll_fd);
+    void	addClientSocket(int fd, ClientSocket* client);
+    void	cleanupClientSocket(int fd, int epoll_fd);
+    void	enqueueReadyCallbacks(int n, EVENT_LIST& events, int epoll_fd);
+    void	scanClientTimeouts(int epoll_fd);
+    void	instantiateConfig(const std::string& content);
+    int 	safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event* event);
+    void	safeRegisterToEpoll(int epoll_fd);
+	SSCMAP	ReadandParseConfigFile(const std::string& content);
 
     ServerSocket&  getServerSocket();
     CallbackQueue& getCallbackQueue();
@@ -65,7 +66,7 @@ private:
     SocketManager& operator=(const SocketManager& rhs);
 
     ICMAP         _clientSockets;   ///< Map of client sockets by file descriptor
-    std::vector<ServerSocket>  _serverSocket;  ///< The server socket
+    ServerSocket  _serverSocket;  ///< The server socket
     int           _serverSocketFd;  ///< Server socket file descriptor
     int           _clientSocketFd;  ///< Client socket file descriptor (most recent)
     CallbackQueue _callbackQueue;   ///< Simple callback queue

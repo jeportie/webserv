@@ -14,7 +14,9 @@
 #ifndef ROUTECONFIG_HPP
 # define ROUTECONFIG_HPP
 
-# include "Parser.hpp"
+#include <string>
+#include <vector>
+#include <map>
 
 struct RouteConfig {
     std::string path; // le chemin de la route, ex: /images
@@ -28,6 +30,5 @@ struct RouteConfig {
     std::string uploadStore;
     RouteConfig();
 };
-
 
 #endif 

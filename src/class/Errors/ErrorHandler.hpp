@@ -43,7 +43,7 @@ enum ErrorCategory
     RESOURCE_ERROR,  // Resource exhaustion errors
     SYSTEM_ERROR,    // System call errors
     INTERNAL_ERROR,  // Internal logic errors
-	HTTP_REQ_ERROR	 // Http Request errors
+	HTTP_REQ_ERROR,	 // Http Request errors
     CONFIG_FILE_ERROR // Erreur dans le fichier config
 };
 
