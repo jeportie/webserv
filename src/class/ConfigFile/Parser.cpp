@@ -12,9 +12,10 @@
 
 #include "Parser.hpp"
 #include "ServerConfig.hpp"
-#include <stdexcept>
-#include <sstream>
+#include "../Errors/ErrorHandler.hpp"
+#include "../../../include/webserv.h"
 
+#include <stdexcept>
 
 Parser::Parser(Lexer& lexer)
 : _lexer(lexer)
@@ -24,37 +25,32 @@ Parser::Parser(Lexer& lexer)
 
 Parser::~Parser(void) {}
 
-
-std::map<std::string, std::vector<ServerConfig> > Parser::parseConfigFile()
+IVSCMAP Parser::parseConfigFile()
 {
-    std::map<std::string, std::vector<ServerConfig> > serversByHostPort;
+    IVSCMAP			serversByPort;
+	ServerConfig	config;
+	std::string		msg;
 
     while (current().type != TOKEN_EOF)
     {
         if (current().type == TOKEN_IDENTIFIER && current().value == "server")
         {
-            ServerConfig config = parseServerBlock();
-
+            config = parseServerBlock();
             // Valeur par défaut si aucun nom n’est spécifié
             if (config.serverNames.empty())
             {
                 config.serverNames.push_back("default");
             }
-
-            std::ostringstream keyStream;
-            keyStream << config.host << ":" << config.port;
-            std::string key = keyStream.str();
-
-            // Ajoute ce ServerConfig à la liste associée à ce host:port
-            serversByHostPort[key].push_back(config);
+            // Ajoute ce ServerConfig à la liste associée à ce :port
+            serversByPort[config.port].push_back(config);
         }
         else
         {
-            throw std::runtime_error("Only 'server' blocks are allowed at top level");
+			msg = "Only 'server' blocks are allowed at top level";
+			THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, msg, __FUNCTION__);
         }
     }
-
-    return serversByHostPort;
+    return (serversByPort);
 }
 
 const Token& Parser::current() const { return _current; }

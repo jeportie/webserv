@@ -11,16 +11,12 @@
 /* ************************************************************************** */
 
 #ifndef PARSER_HPP
-# define PARSER_HPP
+#define PARSER_HPP
 
-# include <vector>
-# include <map>
-# include <cstdlib>
+#include <cstdlib>
 
-# include "Lexer.hpp"
-
-# define SSCMAP std::map<std::string, std::vector<ServerConfig> >
-# define ROUTEMAP std::map<std::string, RouteConfig> 
+#include "Lexer.hpp"
+#include "../../../include/webserv.h"
 
 struct ServerConfig;
 struct RouteConfig;
@@ -28,37 +24,37 @@ struct RouteConfig;
 
 class Parser
 {
-  public:
+public:
     Parser(Lexer& lexer);
     ~Parser();
-    SSCMAP parseConfigFile();
+
+    IVSCMAP			parseConfigFile();
     
     // mis en public pour les test unitaire mais possibilite de le mettre en private
 
-      const Token& current() const;
-      void advance();
-      //server bloc directive  
-        ServerConfig parseServerBlock();
-        void parseListenDirective(std::string &host, int&port);
-        std::vector<std::string> parseServerNameDirective();
-        std::string parseRootDirective();
-        std::vector<std::string> parseAllowedMethodsDirective();
-        std::map<int, std::string> parseErrorPagesDirective();
-        size_t parseClientMaxBodySizeDirective();
-        ROUTEMAP parseLocationBlocks();
-        
-        //location bloc directive
-        bool parseAutoindexDirective();
-        std::string parseDefaultFileDirective();
-        std::map<int, std::string> parseReturnDirective();
-        std::pair<std::string, std::string> parseCgiExecutorsDirective();
-        bool parseUploadEnabledDirective();
-        std::string parseUploadStoreDirective();
+	const Token&	current() const;
+    void			advance();
+    //server bloc directive  
+    ServerConfig	parseServerBlock();
+    void			parseListenDirective(std::string &host, int&port);
+    SVECTOR			parseServerNameDirective();
+    std::string		parseRootDirective();
+    SVECTOR			parseAllowedMethodsDirective();
+    ISMAP			parseErrorPagesDirective();
+    size_t			parseClientMaxBodySizeDirective();
+    ROUTEMAP		parseLocationBlocks();
+    
+    //location bloc directive
+    bool			parseAutoindexDirective();
+    std::string		parseDefaultFileDirective();
+    ISMAP			parseReturnDirective();
+    SSPAIR			parseCgiExecutorsDirective();
+    bool			parseUploadEnabledDirective();
+    std::string		parseUploadStoreDirective();
 
-        
-    private :   
-    Lexer& _lexer;
-    Token _current;
+private :   
+	Lexer&			_lexer;
+	Token			_current;
 };
 
 #endif

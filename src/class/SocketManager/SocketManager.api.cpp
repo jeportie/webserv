@@ -25,10 +25,55 @@
 #include "../Callbacks/ReadCallback.hpp"
 #include "../Callbacks/TimeoutCallback.hpp"
 #include "../Sockets/ClientSocket.hpp"
-#include "../../../include/webserv.h"
 #include "../ConfigFile/Parser.hpp"
 #include "../ConfigFile/Lexer.hpp"
 #include "../ConfigFile/ConfigValidator.hpp"
+#include "../../../include/webserv.h"
+
+void SocketManager::init_connect(const IVSCMAP& serversByPort)
+{
+    std::ostringstream	oss;
+    int					epoll_fd;
+
+    epoll_fd = epoll_create(1);
+    if (epoll_fd < 0)
+        THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "Failed to create epoll instance", __FUNCTION__);
+
+    _epollFd = epoll_fd;
+
+    for (IVSCMAP::const_iterator it = serversByPort.begin(); it != serversByPort.end(); ++it)
+    {
+        int port = it->first;
+
+        // Créer et binder le socket
+        ServerSocket socket;
+        if (!socket.safeBind(port, "0.0.0.0"))  // ou it->second[0].host si tu veux gérer par IP
+        {
+            oss << "Failed to bind on port " << port;
+            THROW_ERROR(CRITICAL, SOCKET_ERROR, oss.str(), __FUNCTION__);
+        }
+
+        socket.safeListen(10);
+        int socket_fd = socket.getFd();
+
+        // Enregistrer dans ton epoll
+        safeRegisterToEpoll(epoll_fd, socket_fd);
+
+        // Stocker les sockets + configs (pour plus tard)
+        _serverSockets.push_back(socket); // si tu as un vecteur
+        _configuration[port] = it->second; // map<int, vector<ServerConfig>>
+
+        // Log
+        oss << "Server listening on port " << port << std::endl;
+        std::cout << oss.str();
+        LOG_ERROR(INFO, CALLBACK_ERROR, oss.str(), __FUNCTION__);
+        oss.str(""); // reset pour la prochaine boucle
+        oss.clear();
+    }
+
+    // Lance la boucle principale
+    eventLoop(epoll_fd);
+}
 
 void SocketManager::init_connect(void)
 {
@@ -90,11 +135,21 @@ void SocketManager::eventLoop(int epoll_fd)
 
 void SocketManager::addClientSocket(int fd, ClientSocket* client) { _clientSockets[fd] = client; }
 
+bool SocketManager::isListeningSocket(int fd) const
+{
+    for (size_t i = 0; i < _serverSockets.size(); ++i)
+    {
+        if (_serverSockets[i].getFd() == fd)
+            return true;
+    }
+    return false;
+}
+
 void SocketManager::enqueueReadyCallbacks(int n, EVENT_LIST& events, int epoll_fd)
 {
-    int			i;
-    int			fd;
-    uint32_t	ev;
+    int            i;
+    int            fd;
+    uint32_t    ev;
 
     i = 0;
     while (i < n)
@@ -102,11 +157,11 @@ void SocketManager::enqueueReadyCallbacks(int n, EVENT_LIST& events, int epoll_f
         fd = events[i].data.fd;
         ev = events[i].events;
 
-        if ((ev & EPOLLIN) && fd == _serverSocketFd)
+        if ((ev & EPOLLIN) && isListeningSocket(fd))
         {
             _callbackQueue.push(new AcceptCallback(fd, this, epoll_fd));
         }
-        else if ((ev & EPOLLIN) && fd != _serverSocketFd)
+        else if ((ev & EPOLLIN))
         {
             _callbackQueue.push(new ReadCallback(fd, this, epoll_fd));
         }
@@ -168,11 +223,11 @@ void SocketManager::cleanupClientSocket(int fd, int epoll_fd)
     }
 }
 
-SSCMAP SocketManager::ReadandParseConfigFile(const std::string& content)
+IVSCMAP SocketManager::ReadandParseConfigFile(const std::string& content)
 {
     Lexer  lexi(content);
     Parser configData(lexi);
-    SSCMAP configs;
+    IVSCMAP configs;
 
     configs = configData.parseConfigFile();
     return (configs);
@@ -181,7 +236,7 @@ SSCMAP SocketManager::ReadandParseConfigFile(const std::string& content)
 void SocketManager::instantiateConfig(const std::string& content)
 {
 	ConfigValidator	inspecteurGadget;
-	SSCMAP::iterator it;
+	IVSCMAP::iterator it;
 
      _configuration = ReadandParseConfigFile(content);
 	for (it = _configuration.begin(); it != _configuration.end(); ++it)

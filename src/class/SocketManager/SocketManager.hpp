@@ -13,6 +13,7 @@
 #ifndef SOCKETMANAGER_HPP
 #define SOCKETMANAGER_HPP
 
+#include <vector>
 #define LOG_SM_CONST "SocketManager Constructor called"
 #define LOG_SM_DEST "SocketManager Destructor called"
 #define LOG_SM_EPOLL "Failed to add server socket to epoll"
@@ -21,14 +22,13 @@
 #define ICMAP std::map<int, ClientSocket*>
 
 #include <arpa/inet.h>
-#include <map>
 #include <sys/epoll.h>
+#include <map>
 
 #include "../Sockets/ServerSocket.hpp"
 #include "../Sockets/ClientSocket.hpp"
 #include "../Callbacks/CallbackQueue.hpp"
 #include "../ConfigFile/Parser.hpp"
-#include "../ConfigFile/ConfigValidator.hpp"
 
 class Callback;
 
@@ -43,18 +43,18 @@ public:
     void	addClientSocket(int fd, ClientSocket* client);
     void	cleanupClientSocket(int fd, int epoll_fd);
     void	enqueueReadyCallbacks(int n, EVENT_LIST& events, int epoll_fd);
+	bool	isListeningSocket(int fd) const;
     void	scanClientTimeouts(int epoll_fd);
     void	instantiateConfig(const std::string& content);
     int 	safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event* event);
-    void	safeRegisterToEpoll(int epoll_fd);
-	SSCMAP	ReadandParseConfigFile(const std::string& content);
+    void	safeRegisterToEpoll(int epoll_fd, int serverFd);
+	IVSCMAP	ReadandParseConfigFile(const std::string& content);
 
-    ServerSocket&  getServerSocket();
+    std::vector<ServerSocket>&  getServerSocket();
     CallbackQueue& getCallbackQueue();
     int            getCheckIntervalMs(void);
-    int            getServerSocketFd(void) const;
     int            getClientSocketFd(void) const;
-    SSCMAP         getConfiguration(void) const;
+    IVSCMAP        getConfiguration(void) const;
 
     int setNonBlockingServer(int fd);
     
@@ -66,11 +66,10 @@ private:
     SocketManager& operator=(const SocketManager& rhs);
 
     ICMAP         _clientSockets;   ///< Map of client sockets by file descriptor
-    ServerSocket  _serverSocket;  ///< The server socket
-    int           _serverSocketFd;  ///< Server socket file descriptor
+	std::vector<ServerSocket>  _serverSockets;  ///< The server socket
     int           _clientSocketFd;  ///< Client socket file descriptor (most recent)
     CallbackQueue _callbackQueue;   ///< Simple callback queue
-    SSCMAP        _configuration;
+    IVSCMAP        _configuration;
 };
 
 #endif  // ************************************************ SOCKETMANAGER_HPP //

@@ -50,26 +50,24 @@ int SocketManager::getCheckIntervalMs(void) { return 1000; }
 
 const ICMAP& SocketManager::getClientMap(void) const { return (_clientSockets); }
 
-ServerSocket& SocketManager::getServerSocket() { return _serverSocket; }
+std::vector<ServerSocket>& SocketManager::getServerSocket() { return _serverSockets; }
 
 CallbackQueue& SocketManager::getCallbackQueue() { return _callbackQueue; }
 
-int SocketManager::getServerSocketFd(void) const { return (_serverSocketFd); }
-
 int SocketManager::getClientSocketFd(void) const { return (_clientSocketFd); }
 
-SSCMAP SocketManager::getConfiguration(void) const { return (_configuration); }
+IVSCMAP SocketManager::getConfiguration(void) const { return (_configuration); }
 
 int SocketManager::setNonBlockingServer(int fd) { return (_serverSocket.setNonBlocking(fd)); }
 
 // Safe Wrappers
-void SocketManager::safeRegisterToEpoll(int epoll_fd)
+void SocketManager::safeRegisterToEpoll(int epoll_fd, int serverFd)
 {
     struct epoll_event ev;
     ev.events  = EPOLLIN;
-    ev.data.fd = _serverSocketFd;
+    ev.data.fd = serverFd;
 
-    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, _serverSocketFd, &ev) == -1)
+    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, serverFd, &ev) == -1)
         THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, LOG_SM_EPOLL, __FUNCTION__);
 }
 
