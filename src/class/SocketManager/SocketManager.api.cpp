@@ -203,8 +203,8 @@ void SocketManager::instantiateConfig(const std::string& content)
 	ConfigValidator	inspecteurGadget;
 	IVSCMAP::iterator it;
 
-     _configuration = ReadandParseConfigFile(content);
-	for (it = _configuration.begin(); it != _configuration.end(); ++it)
+    _serversByPort = ReadandParseConfigFile(content);
+	for (it = _serversByPort.begin(); it != _serversByPort.end(); ++it)
 	{
 		inspecteurGadget.validate(it->second);
 	}

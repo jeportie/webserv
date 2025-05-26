@@ -15,12 +15,7 @@
 
 #define HTTPREQ_CONST "HttpRequest constructor called"
 
-#define SVSMAP std::map<std::string, std::vector<std::string> > 
-#define SSMAP  std::map<std::string, std::string>
-
-#include <string>
-#include <map>
-#include <vector>
+#include "../../../include/webserv.h"
 
 struct HttpRequest
 {

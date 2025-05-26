@@ -16,13 +16,12 @@
 #define LOG_CLIENTSOCKET_CONSTRUCTOR "ClientSocket Constructor called."
 #define LOG_CLIENTSOCKET_DESTRUCTOR "ClientSocket Destructor called."
 
-#define SVSMAP std::map<std::string, std::vector<std::string> > 
-
 #include "Socket.hpp"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <string>
 #include "../Http/RequestLine.hpp"
+#include "../../../include/webserv.h"
 
 enum BodyMode
 {

@@ -55,9 +55,18 @@ CallbackQueue& SocketManager::getCallbackQueue() { return _callbackQueue; }
 
 int SocketManager::getClientSocketFd(void) const { return (_clientSocketFd); }
 
-IVSCMAP SocketManager::getConfiguration(void) const { return (_configuration); }
+// IVSCMAP SocketManager::getConfiguration(void) const is now inline in the header
 
-int SocketManager::setNonBlockingServer(int fd) { return (_serverSocket.setNonBlocking(fd)); }
+int SocketManager::setNonBlockingServer(int fd) 
+{ 
+    // Find the server socket with this fd and set it to non-blocking
+    for (size_t i = 0; i < _serverSockets.size(); ++i)
+    {
+        if (_serverSockets[i].getFd() == fd)
+            return _serverSockets[i].setNonBlocking(fd);
+    }
+    return -1; // Socket not found
+}
 
 // Safe Wrappers
 void SocketManager::safeRegisterToEpoll(int epoll_fd, int serverFd)

@@ -25,38 +25,45 @@ AcceptCallback::AcceptCallback(int serverFd, SocketManager* manager, int epollFd
 , _manager(manager)
 , _epollFd(epollFd)
 {
-	 LOG_ERROR(DEBUG, CALLBACK_ERROR, LOG_ACCEPT_CALLB_CONST, __FUNCTION__);
+    LOG_ERROR(DEBUG, CALLBACK_ERROR, LOG_ACCEPT_CALLB_CONST, __FUNCTION__);
 }
 
 AcceptCallback::~AcceptCallback()
 {
-	 LOG_ERROR(DEBUG, CALLBACK_ERROR, LOG_ACCEPT_CALLB_DEST, __FUNCTION__);
+    LOG_ERROR(DEBUG, CALLBACK_ERROR, LOG_ACCEPT_CALLB_DEST, __FUNCTION__);
 }
 
 void AcceptCallback::execute()
 {
-	std::ostringstream	oss;
-    ClientSocket*		client;
-    int					clientFd;
-    std::string			msg;
+    std::ostringstream oss;
+    ClientSocket*      client;
+    int                clientFd;
+    std::string        msg;
+	size_t			   i;
 
     while (true)
     {
         try
         {
-            client = _manager->getServerSocket().safeAccept(_epollFd);
-			if (!client)
-				return ;
+            // Find which server socket accepted the connection
+            for (i = 0; i < _manager->getServerSocket().size(); ++i)
+            {
+                client = _manager->getServerSocket()[i].safeAccept(_epollFd);
+                if (client)
+                    break;
+            }
+            if (!client)
+                return;
 
             clientFd = client->getFd();
             _manager->addClientSocket(clientFd, client);
 
-            client->touch(); // Init timer for the new client;
+            client->touch();  // Init timer for the new client;
 
-            oss << "New connection from " << client->getClientIP() << ":"
-                << client->getClientPort() << " (fd=" << clientFd << ")" << std::endl;
-			std::cout << oss.str();
-			LOG_ERROR(INFO, CALLBACK_ERROR, oss.str(), __FUNCTION__);
+            oss << "New connection from " << client->getClientIP() << ":" << client->getClientPort()
+                << " (fd=" << clientFd << ")" << std::endl;
+            std::cout << oss.str();
+            LOG_ERROR(INFO, CALLBACK_ERROR, oss.str(), __FUNCTION__);
         }
         catch (const std::exception& e)
         {
