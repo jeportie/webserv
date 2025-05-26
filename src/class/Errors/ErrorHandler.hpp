@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ErrorHandler.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 15:30:00 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/14 15:30:00 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/26 12:10:21 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ enum ErrorCategory
     SYSTEM_ERROR,    // System call errors
     INTERNAL_ERROR,  // Internal logic errors
 	HTTP_REQ_ERROR	 // Http Request errors
+    CONFIG_FILE_ERROR // Erreur dans le fichier config
 };
 
 class ErrorHandler

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocketManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:23:58 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/24 12:56:45 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/26 12:36:38 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,8 @@
 #include "../Sockets/ServerSocket.hpp"
 #include "../Sockets/ClientSocket.hpp"
 #include "../Callbacks/CallbackQueue.hpp"
+#include "src/class/ConfigFile/Parser.hpp"
+#include "src/class/ConfigFile/ConfigValidator.hpp"
 
 class Callback;
 
@@ -42,7 +44,7 @@ public:
     void cleanupClientSocket(int fd, int epoll_fd);
     void enqueueReadyCallbacks(int n, EVENT_LIST& events, int epoll_fd);
     void scanClientTimeouts(int epoll_fd);
-
+    void instantiateConfig(const std::string& content);
     int  safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event* event);
     void safeRegisterToEpoll(int epoll_fd);
 
@@ -51,8 +53,10 @@ public:
     int            getCheckIntervalMs(void);
     int            getServerSocketFd(void) const;
     int            getClientSocketFd(void) const;
+    SSCMAP         getConfiguration(void) const;
 
     int setNonBlockingServer(int fd);
+    
 
     const ICMAP& getClientMap(void) const;
 
@@ -61,10 +65,11 @@ private:
     SocketManager& operator=(const SocketManager& rhs);
 
     ICMAP         _clientSockets;   ///< Map of client sockets by file descriptor
-    ServerSocket  _serverSocket;    ///< The server socket
+    std::vector<ServerSocket>  _serverSocket;  ///< The server socket
     int           _serverSocketFd;  ///< Server socket file descriptor
     int           _clientSocketFd;  ///< Client socket file descriptor (most recent)
     CallbackQueue _callbackQueue;   ///< Simple callback queue
+    SSCMAP        _configuration;
 };
 
 #endif  // ************************************************ SOCKETMANAGER_HPP //

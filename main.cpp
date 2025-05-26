@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 11:49:58 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/08 01:04:00 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/26 12:35:33 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,21 +14,71 @@
 #include "src/class/SocketManager/SocketManager.hpp"
 #include "src/class/Errors/ErrorHandler.hpp"
 
+
 #include <cstdlib>
 #include <stdexcept>
 #include <iostream>
 #include <sstream>
 
-int main()
+#define  Start "Server starting on port "
+#define  RunT "Runtime Error: "
+#define  Excp "Exception Error: "
+#define  Ukwn "Unknown Error: "
+#define  Crit "Critical error occurred, shutting down server"
+
+
+
+std::string readFileToString(const std::string& filename)
 {
+    std::ifstream file(filename.c_str(), std::ios::in | std::ios::binary);
     std::stringstream ss;
 
-	std::string Start("Server starting on port ");
-	std::string RunT("Runtime Error: ");
-	std::string Excp("Exception Error: ");
-	std::string Ukwn("Unknown Error: ");
-	std::string Crit("Critical error occurred, shutting down server");
+    if (!file.is_open())
+    {
+        ss << "readFileToString: cannot open file:" << filename;
+        THROW_ERROR(ERROR, CONFIG_FILE_ERROR, ss.str(), __FUNCTION__);
+    }
 
+    std::string content;
+    char        c;
+
+    while (file.get(c))
+    {
+        content += c;
+    }
+
+    if (file.bad())
+    {
+        ss << "readFileToString: error while reading file: " << filename;
+        THROW_ERROR(ERROR, CONFIG_FILE_ERROR, ss.str(), __FUNCTION__);
+    }
+
+    return content;
+}
+
+SSCMAP ReadandParseConfigFile(std::string& content)
+{
+    Lexer  lexi(content);
+    Parser configData(lexi);
+    SSCMAP configs;
+
+    configs = configData.ParseConfigFile();
+    return (configs);
+}
+
+int main(int argc, char **argv)
+
+{
+    std::stringstream ss;
+    std::string content;
+    SocketManager theSocketMaster;
+    
+    if (argc < 2)
+    {
+        std::cout << "Usage: " << argv[0] << " [config_file.conf]" << std::endl;
+        return 1;
+    }
+    
     // Initialize error handler
     ErrorHandler& errorHandler = ErrorHandler::getInstance();
     errorHandler.setLogLevel(DEBUG);
@@ -36,8 +86,13 @@ int main()
     
     try
     {
+        
+        content = readFileToString(argv[1]);
+        theSocketMaster.instantiateConfig(content);
+                
+        // nombre de server ?
+        
         std::cout << "Starting webserv on port " << PORT << std::endl;
-        SocketManager theSocketMaster;
 
         ss << PORT;
         LOG_ERROR(INFO, INTERNAL_ERROR, Start + ss.str(), "main");

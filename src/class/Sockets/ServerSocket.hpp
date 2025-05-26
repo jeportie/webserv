@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:13:39 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/23 16:40:09 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/26 12:37:43 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,8 @@ private:
     ServerSocket&		operator=(const ServerSocket& rhs);
 
     struct sockaddr_in	_serverAddr;  ///< Server address structure
+    
+    
 };
 
 #endif  // ************************************************* SERVERSOCKET_HPP //

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocketManager.api.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/24 13:50:47 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/26 12:35:09 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,10 @@ void SocketManager::init_connect(void)
 	int					epoll_fd;
 
     // Create, bind, and listen on the server socket
+
+    //while nombre de server 
+    
+    
     if (!_serverSocket.safeBind(PORT, ""))
 	{
         THROW_ERROR(CRITICAL, SOCKET_ERROR, "Failed to bind server socket", __FUNCTION__);
@@ -162,3 +166,10 @@ void SocketManager::cleanupClientSocket(int fd, int epoll_fd)
         _clientSockets.erase(it);
     }
 }
+
+    void SocketManager::instantiateConfig(const std::string& content)
+    {
+         _configuration = ReadandParseConfigFile(content);
+         
+         
+    }

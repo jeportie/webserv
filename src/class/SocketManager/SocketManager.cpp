@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocketManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/24 13:02:03 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/26 12:28:41 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,8 @@ CallbackQueue& SocketManager::getCallbackQueue() { return _callbackQueue; }
 int SocketManager::getServerSocketFd(void) const { return (_serverSocketFd); }
 
 int SocketManager::getClientSocketFd(void) const { return (_clientSocketFd); }
+
+SSCMAP SocketManager::getConfiguration(void) const { return (_configuration); }
 
 int SocketManager::setNonBlockingServer(int fd) { return (_serverSocket.setNonBlocking(fd)); }
 
