@@ -180,5 +180,12 @@ SSCMAP SocketManager::ReadandParseConfigFile(const std::string& content)
 
 void SocketManager::instantiateConfig(const std::string& content)
 {
+	ConfigValidator	inspecteurGadget;
+	SSCMAP::iterator it;
+
      _configuration = ReadandParseConfigFile(content);
+	for (it = _configuration.begin(); it != _configuration.end(); ++it)
+	{
+		inspecteurGadget.validate(it->second);
+	}
 }
