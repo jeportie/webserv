@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 16:40:52 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/27 16:41:18 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/27 17:16:32 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,3 +91,35 @@ void RequestData::resetParserState()
 }
 
 void RequestData::clearBodyAccumulator() { _bodyAccumulator.clear(); }
+
+std::string RequestData::findHostInHeaders()
+{
+    std::string rtn;
+    rtn = "";
+    
+    SVSMAP::iterator it;
+    
+    it = _parsedHeaders.begin();
+
+    for (it ; it != _parsedHeaders.end() ; ++it)
+    {
+        if (it->first == "host")
+            return (it->second[0]);
+    }
+    return (rtn);
+    
+}
+void RequestData::initServerConfig()
+{
+    std::string host;
+    host = findHostInHeaders();
+    //Je trouve le vector de serverconfig corrrespodant au port associe a mon listenming socket 
+    if (host.empty())
+        // Je prend le premier server conf du port
+    else
+        {
+            // Je set a celui dont le server name et le meme que host. 
+            // si je n'ai pas trouve de server name correspondant je send un 400 bad request. 
+        }
+}
+

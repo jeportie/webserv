@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 16:22:15 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/27 16:58:12 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/27 17:12:22 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,9 @@ public:
     void                        determineBodyMode();
     void                        clearBodyAccumulator();
     void                        resetParserState();
-	
+	void                        initServerConfig();
+    std::string                 findHostInHeaders()
+
 	// Getters
     std::string&				getBuffer();
     size_t                      getContentLength() const;
