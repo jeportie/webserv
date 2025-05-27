@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 09:31:48 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/27 09:34:16 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/27 12:22:34 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,42 @@ Token Lexer::parseIdentifier()
     return Token(TOKEN_IDENTIFIER, value, startLine, startColumn);
 }
 
+bool Lexer::isNextTokenUrl() const
+{
+    size_t tmpPos = _pos;
+    std::string protocol;
+
+    // Lire les lettres pour voir si c'est "http" ou "https"
+    while (tmpPos < _content.size() && std::isalpha(_content[tmpPos]))
+        protocol += _content[tmpPos++];
+
+    if (protocol != "http" && protocol != "https")
+        return false;
+
+    // Vérifie que c'est bien suivi de "://"
+    return tmpPos + 2 < _content.size()
+        && _content[tmpPos] == ':'
+        && _content[tmpPos + 1] == '/'
+        && _content[tmpPos + 2] == '/';
+}
+
+Token Lexer::parseUrl()
+{
+    int startLine = _line;
+    int startColumn = _column;
+    std::string value;
+
+    while (!isAtEnd())
+    {
+        char c = peek();
+        if (std::isalnum(c) || c == ':' || c == '/' || c == '.' || c == '-' || c == '_')
+            value += get();
+        else
+            break;
+    }
+
+    return Token(TOKEN_STRING, value, startLine, startColumn);
+}
 
 Token Lexer::parseString()
 {

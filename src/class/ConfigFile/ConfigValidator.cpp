@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 16:31:54 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/27 11:38:35 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/27 12:24:29 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -175,16 +175,6 @@ void ConfigValidator::validateRoute(const RouteConfig& route)
     if (route.path.empty())
     {
         error_msg = "Route path is required";
-        THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
-    }    
-    if (route.root.empty() && route.returnCodes.empty())
-    {
-        error_msg = "Each route must have either a root or a return directive";
-        THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
-    }    
-    if (!route.root.empty() && !route.returnCodes.empty())
-    {
-        error_msg = "A route cannot have both root and return directives at the same time";
         THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
     }    
     if (!route.defaultFile.empty() && route.defaultFile.find('/') == 0)

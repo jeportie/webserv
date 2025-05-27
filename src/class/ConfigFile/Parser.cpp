@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 16:21:43 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/27 09:02:36 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/27 12:02:11 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,6 +108,11 @@ ServerConfig Parser::parseServerBlock()
         {
             config.client_max_body_size = parseClientMaxBodySizeDirective();
         }
+        else if (current().value == "index")
+        {
+            config.indexFiles = parseIndexDirective();
+            config.indexIsSet = true;
+        }
         else if (current().value == "location")
         {
             config.routes = parseLocationBlocks();
@@ -197,6 +202,15 @@ std::map<std::string, RouteConfig> Parser::parseLocationBlocks()
             else if (directive == "upload_store")
             {
                 route.uploadStore = parseUploadStoreDirective();
+            }
+                        else if (directive == "index")
+            {
+                route.indexFiles = parseIndexDirective();
+                route.indexIsSet = true;
+            }
+            else if (directive == "client_max_body_size")
+            {
+                route.client_max_body_size = parseClientMaxBodySizeDirective();
             }
             else
             {

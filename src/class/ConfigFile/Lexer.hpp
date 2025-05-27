@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 17:07:17 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/16 11:34:45 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/27 12:23:01 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ class Lexer {
     char get(); // avance et retourne le prochin char 
     bool isAtEnd() const;
     bool isValidIdentifierSymbol(char c) const;
+    bool isNextTokenUrl() const;
     void skipWhitespace(); // Ignore les espaces et les sauts de ligne
     void skipComment(); // Ignore les lignes de commentaire
     Token parseIdentifier();
@@ -65,6 +66,8 @@ class Lexer {
     Token parseNumber();
     Token parseSymbol();
     Token parsePathLike();
+    Token parseUrl();
+
 };
 
 #endif 

@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/16 10:34:45 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/19 10:58:48 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/27 12:00:33 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@ ServerConfig::ServerConfig()
       error_pages(),
       client_max_body_size(1048576),
       routes(),
+      indexFiles(),
+      indexIsSet(false),
       listenIsSet(false),
       rootIsSet(false)
 {

@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 15:32:24 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/27 08:54:38 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/27 12:04:25 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,9 @@ public:
     SVECTOR			parseAllowedMethodsDirective();
     ISMAP			parseErrorPagesDirective();
     size_t			parseClientMaxBodySizeDirective();
+    SVECTOR         parseIndexDirective();
     ROUTEMAP		parseLocationBlocks();
+    
     
     //location bloc directive
     bool			parseAutoindexDirective();

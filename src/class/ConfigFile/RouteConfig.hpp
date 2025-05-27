@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/16 10:27:45 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/16 15:11:44 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/27 12:00:57 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,12 @@ struct RouteConfig {
     std::pair<std::string, std::string> cgiExecutor; // ex: ".php" => "/usr/bin/php-cgi"
     bool uploadEnabled;
     std::string uploadStore;
+    std::vector<std::string> indexFiles; 
+    bool indexIsSet;              // Flag to indicate if index directive is set
+    size_t                          client_max_body_size;    // en octets
     RouteConfig();
 };
+
 
 typedef std::map<std::string, RouteConfig> ROUTEMAP;
 

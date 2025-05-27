@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 08:50:28 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/27 09:25:01 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/27 12:20:13 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,26 +144,34 @@ std::vector<std::string> Parser::parseAllowedMethodsDirective()
 std::map<int, std::string> Parser::parseErrorPagesDirective()
 {
     std::map<int, std::string> pages;
+    std::vector<int>           codes;
     std::string error_msg;
     std::string path;
+    int         code;
     
     advance();  // skip 'error_page'
-
+    // First, collect all error codes
     while (current().type == TOKEN_NUMBER)
     {
-        int code = std::atoi(current().value.c_str());
+        code = std::atoi(current().value.c_str());
+        codes.push_back(code);
         advance();
+    }
 
-        if (current().type != TOKEN_STRING && current().type != TOKEN_IDENTIFIER)
-        {
-            error_msg = "Expected error page path after code";
-		    THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
-        }
+    // Then, expect a path
+    if (current().type != TOKEN_STRING && current().type != TOKEN_IDENTIFIER)
+    {
+        error_msg = "Expected error page path after code";
+		THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
+    }
 
-        path = current().value;
-        advance();
+    path = current().value;
+    advance();
 
-        pages.insert(std::make_pair(code, path));
+    // Associate the path with all collected error codes
+    for (size_t i = 0; i < codes.size(); ++i)
+    {
+        pages.insert(std::make_pair(codes[i], path));
     }
 
     if (current().type != TOKEN_SEMICOLON)
@@ -172,63 +180,51 @@ std::map<int, std::string> Parser::parseErrorPagesDirective()
 		THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
     }
     advance();
-    
+
     return pages;
 }
 
 size_t Parser::parseClientMaxBodySizeDirective()
 {
-    std::string raw;
-    std::string numberPart;
-    std::string error_msg;
     long base;
+    std::string error_msg;
     size_t multiplier;
-    char suffix;
-
-    
     advance();  // skip 'client_max_body_size'
-    if (current().type != TOKEN_NUMBER && current().type != TOKEN_IDENTIFIER)
+
+    if (current().type != TOKEN_NUMBER)
     {
         error_msg = "Expected number or size with suffix after client_max_body_size";
         THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
-    }        
-    raw = current().value;
-    advance();
-    // Extraire la partie numérique et le suffixe
-    suffix = '\0';
-    for (size_t i = 0; i < raw.length(); ++i)
-    {
-        if (std::isdigit(raw[i]))
-            numberPart += raw[i];
-        else
-        {
-            suffix = std::tolower(raw[i]);
-            break;
-        }
-    }
-    if (numberPart.empty())
-    {
-        error_msg = "Invalid client_max_body_size value";
-        THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
-    }        
-    base = std::atol(numberPart.c_str());
+    } 
+
+    // Get the base value
+    base = std::atol(current().value.c_str());
     if (base < 0)
     {
         error_msg = "client_max_body_size cannot be negative";
         THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
-    }        
+    }  
+    advance();
+
+    // Check for a suffix (K, M, G)
     multiplier = 1;
-    if (suffix == 'k')
-        multiplier = 1024;
-    else if (suffix == 'm')
-        multiplier = 1024 * 1024;
-    else if (suffix == 'g')
-        multiplier = 1024 * 1024 * 1024;
-    else if (suffix != '\0')
+    if (current().type == TOKEN_IDENTIFIER && current().value.length() == 1)
     {
-        error_msg = "Invalid suffix for client_max_body_size (use k, m, g)";
-        THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
-    }        
+        char suffix = current().value[0];
+        if (suffix == 'K' || suffix == 'k')
+            multiplier = 1024;
+        else if (suffix == 'M' || suffix == 'm')
+            multiplier = 1024 * 1024;
+        else if (suffix == 'G' || suffix == 'g')
+            multiplier = 1024 * 1024 * 1024;
+        else
+        {
+            error_msg = "Invalid suffix for client_max_body_size (use k/K, m/M, g/G)";
+            THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
+        }  
+        advance();
+    }
+
     if (current().type != TOKEN_SEMICOLON)
     {
         error_msg = "Expected ';' after client_max_body_size directive";
@@ -239,6 +235,27 @@ size_t Parser::parseClientMaxBodySizeDirective()
     return static_cast<size_t>(base) * multiplier;
 }
 
+std::vector<std::string> Parser::parseIndexDirective()
+{
+    advance();  // skip 'index'
+    std::vector<std::string> indexFiles;
+
+    // Check if there's at least one file specified
+    if (current().type != TOKEN_IDENTIFIER && current().type != TOKEN_STRING)
+        throw std::runtime_error("Expected at least one filename after 'index' directive");
+
+    while (current().type == TOKEN_IDENTIFIER || current().type == TOKEN_STRING)
+    {
+        indexFiles.push_back(current().value);
+        advance();
+    }
+
+    if (current().type != TOKEN_SEMICOLON)
+        throw std::runtime_error("Expected ';' after index directive");
+    advance();
+
+    return indexFiles;
+}
 
 // LOCATION BLOC DIRECTIVE
 // ******************************************************************************************
@@ -391,14 +408,14 @@ bool Parser::parseUploadEnabledDirective()
 
     if (current().type != TOKEN_IDENTIFIER)
     {
-        error_msg = "Expected 'on' or 'off' after 'upload_enable'";
+        error_msg = "Expected 'on/true' or 'off/false' after 'upload_enable'";
         THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
     }
 
     value = current().value;
     advance();
 
-    if (value != "on" && value != "off")
+    if (value != "on" && value != "off" && value != "true" && value != "false")
     {
         error_msg = "Invalid value for 'upload_enable': " + value;
         THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
@@ -410,7 +427,7 @@ bool Parser::parseUploadEnabledDirective()
     }
     advance();
 
-    return value == "on";
+    return value == "on" || value == "true";
 }
 
 std::string Parser::parseUploadStoreDirective()
