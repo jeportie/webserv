@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 16:31:54 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/27 09:44:12 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/27 11:38:35 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,7 @@ void ConfigValidator::validate(const std::vector<ServerConfig>& servers)
 
         if (!listenSet.insert(key).second)
         {
-			error_msg << "Duplicate host:port detected: " + key;
+			error_msg = "Duplicate host:port detected: " + key;
 			THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
         }
     }
