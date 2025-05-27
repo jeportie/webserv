@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/27 16:50:42 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/27 18:15:50 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,8 @@
 #include "../Http/HttpRequest.hpp"
 #include "../Http/HttpException.hpp"
 #include "../Http/HttpLimits.hpp"
+#include "../SocketManager/SocketManager.hpp"
+#include "../ConfigFile/ServerConfig.hpp"
 
 bool ReadCallback::readFromClient(int fd, ClientSocket* client)
 {
@@ -62,11 +64,11 @@ bool ReadCallback::parseClientHeaders(ClientSocket* client)
     if (hdr_end == std::string::npos)
         return false;
 
-    
     std::string hdr_block = buf.substr(0, hdr_end);
     size_t      line_end  = hdr_block.find("\r\n");
     std::string firstLine = hdr_block.substr(0, line_end);
-
+    
+    client->requestData.initServerConfig(_manager->getConfiguration());
     // Request-Line
     std::cout << firstLine << std::endl;
     RequestLine rl = HttpParser::parseRequestLine(firstLine);

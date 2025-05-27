@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 16:40:52 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/27 17:16:32 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/27 18:21:15 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,10 @@
 #include "../Http/HttpLimits.hpp"
 #include "../../../include/webserv.h"
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <cerrno>
 #include <cstring>
 #include <iostream>
@@ -101,7 +105,7 @@ std::string RequestData::findHostInHeaders()
     
     it = _parsedHeaders.begin();
 
-    for (it ; it != _parsedHeaders.end() ; ++it)
+    for (; it != _parsedHeaders.end() ; ++it)
     {
         if (it->first == "host")
             return (it->second[0]);
@@ -109,17 +113,63 @@ std::string RequestData::findHostInHeaders()
     return (rtn);
     
 }
-void RequestData::initServerConfig()
+
+int RequestData::getPortFromFd(int fd) {
+    struct sockaddr_in addr;
+    socklen_t addrLen = sizeof(addr);
+    std::memset(&addr, 0, sizeof(addr));
+
+    if (getsockname(fd, (struct sockaddr*)&addr, &addrLen) == -1) {
+        perror("getsockname");
+        return -1; // ou throw une exception selon ton design
+    }
+
+    return ntohs(addr.sin_port);  // convertit en port lisible (host byte order)
+}
+
+ServerConfig RequestData::findMyConfig(int port, std::string host, IVSCMAP ServerConfigMap)
+{
+    IVSCMAP::iterator itport;
+    std::vector<ServerConfig>::iterator itServerConfig;
+    std::vector<std::string>::iterator itServerNames;
+    ServerConfig    myconfig;
+
+    itport = ServerConfigMap.begin();
+    for(; itport != ServerConfigMap.end(); ++itport) // je boucle sur les port
+    {
+        if (itport->first == port)
+        {
+            itServerConfig = itport->second.begin();
+            if (host.empty())
+                return (*itServerConfig);
+            for (; itServerConfig!= itport->second.end(); ++itServerConfig) // le boucle sur le vecter ServerConfig
+            {
+                myconfig = *itServerConfig;
+                itServerNames = myconfig.serverNames.begin();
+                for (; itServerNames != myconfig.serverNames.end(); ++itServerNames) // je boucle sur le ServerNames du Serverconfig
+                {
+                    if (*itServerNames == host)
+                    {
+                        return (myconfig);
+                    }
+                }
+            }
+        }
+    }
+    throw HttpException(400, "Bad Request");
+    // si je n'ai pas trouve de server name correspondant je send un 400 bad request.
+}
+
+
+void RequestData::initServerConfig(IVSCMAP ServerConfigMap)
 {
     std::string host;
+    int port;
+    
+    port = getPortFromFd(_listeningSocketFd);
     host = findHostInHeaders();
-    //Je trouve le vector de serverconfig corrrespodant au port associe a mon listenming socket 
-    if (host.empty())
-        // Je prend le premier server conf du port
-    else
-        {
-            // Je set a celui dont le server name et le meme que host. 
-            // si je n'ai pas trouve de server name correspondant je send un 400 bad request. 
-        }
+    
+    _serverConfig = findMyConfig(port, host, ServerConfigMap);
+    
 }
 

@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 16:22:15 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/27 17:12:22 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/27 18:13:32 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,8 +47,11 @@ public:
     void                        determineBodyMode();
     void                        clearBodyAccumulator();
     void                        resetParserState();
-	void                        initServerConfig();
-    std::string                 findHostInHeaders()
+    std::string                 findHostInHeaders();
+    int                         getPortFromFd(int fd);
+    ServerConfig                findMyConfig(int port, std::string host, IVSCMAP ServerConfigMap);
+	void                        initServerConfig(IVSCMAP ServerConfigMap);
+
 
 	// Getters
     std::string&				getBuffer();
@@ -87,7 +90,7 @@ private:
     bool                        _isChunked;    // mode chunked activé
     size_t                      _chunkSize;  // taille restante du chunk courant
     std::string                 _bodyAccumulator;
-    int                         _listeningSocket;
+    int                         _listeningSocketFd;
     ServerConfig                _serverConfig;
 
     
