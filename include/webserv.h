@@ -26,6 +26,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "../src/class/ConfigFile/ServerConfig.hpp"
 
 // Error handling enums
 enum ErrorLevel

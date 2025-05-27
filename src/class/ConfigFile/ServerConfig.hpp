@@ -10,8 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-
-
 #ifndef SERVERCONFIG_HPP
 # define SERVERCONFIG_HPP
 
@@ -33,7 +31,6 @@ struct ServerConfig {
     bool listenIsSet;
     bool rootIsSet;
     // Autres directives comme error_pages, cgi, etc.
-    
     
     ServerConfig();
 };

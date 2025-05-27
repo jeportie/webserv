@@ -16,7 +16,6 @@
 #include <cstdlib>
 
 #include "Lexer.hpp"
-#include "../../../include/webserv.h"
 
 struct ServerConfig;
 struct RouteConfig;
