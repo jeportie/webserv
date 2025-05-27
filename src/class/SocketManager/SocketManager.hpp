@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocketManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:23:58 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/26 12:36:38 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/27 14:29:16 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,8 @@ public:
     void	safeRegisterToEpoll(int epoll_fd, int serverFd);
 	IVSCMAP	ReadandParseConfigFile(const std::string& content);
 
-    SSVECTOR&		getServerSocket();
+    ServerSocket*   getServerSocket(int fd);
+    SSVECTOR&		getVectorServerSocket();
     CallbackQueue&	getCallbackQueue();
     int				getCheckIntervalMs(void);
     int				getClientSocketFd(void) const;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocketManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/26 12:28:41 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/27 14:29:02 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,18 @@ int SocketManager::getCheckIntervalMs(void) { return 1000; }
 
 const ICMAP& SocketManager::getClientMap(void) const { return (_clientSockets); }
 
-std::vector<ServerSocket>& SocketManager::getServerSocket() { return _serverSockets; }
+std::vector<ServerSocket>& SocketManager::getVectorServerSocket() { return _serverSockets; }
+
+ServerSocket* SocketManager::getServerSocket(int fd)
+{
+    for (size_t i = 0; i < _serverSockets.size(); ++i)
+    {
+        if (_serverSockets[i].getFd() == fd)
+            return &_serverSockets[i];
+    }
+    return (NULL);
+}
+
 
 CallbackQueue& SocketManager::getCallbackQueue() { return _callbackQueue; }
 

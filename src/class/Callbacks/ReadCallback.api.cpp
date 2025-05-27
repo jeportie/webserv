@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ReadCallback.api.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/24 12:15:21 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/27 12:31:01 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,7 @@ bool ReadCallback::parseClientHeaders(ClientSocket* client)
     if (hdr_end == std::string::npos)
         return false;
 
+    
     std::string hdr_block = buf.substr(0, hdr_end);
     size_t      line_end  = hdr_block.find("\r\n");
     std::string firstLine = hdr_block.substr(0, line_end);

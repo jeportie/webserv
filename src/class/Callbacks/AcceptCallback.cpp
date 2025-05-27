@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   AcceptCallback.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 12:42:25 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/22 12:48:50 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/27 14:34:08 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,41 +39,34 @@ void AcceptCallback::execute()
     int					clientFd;
     std::string			msg;
 	ClientSocket*		client;
-
+    ServerSocket*       server;
+    
     // Loop over all server sockets
-    SSVECTOR& servers = _manager->getServerSocket();
-    for (size_t i = 0; i < servers.size(); ++i)
+    server = _manager->getServerSocket(_fd);
+
+    try
     {
-        while (true)
+        // Try to accept a new client on this server socket
+        client = server->safeAccept(_epollFd);
+        if (!client)
+            return; // No more clients to accept on this socket
+        clientFd = client->getFd();
+        _manager->addClientSocket(clientFd, client);
+        client->touch();  // Init timer for the new client
+        oss << "New connection from " << client->getClientIP() << ":" << client->getClientPort()
+        << " (fd=" << clientFd << ")" << std::endl;
+            std::cout << oss.str();
+        LOG_ERROR(INFO, CALLBACK_ERROR, oss.str(), __FUNCTION__);
+    }
+    catch (const std::exception& e)
+    {
+        msg = e.what();
+        if (msg.find(LOG_ACCEPT_NO_RESOURCE) != std::string::npos)
         {
-            try
-            {
-                // Try to accept a new client on this server socket
-                client = servers[i].safeAccept(_epollFd);
-                if (!client)
-                    break; // No more clients to accept on this socket
-
-                clientFd = client->getFd();
-                _manager->addClientSocket(clientFd, client);
-
-                client->touch();  // Init timer for the new client
-
-                oss << "New connection from " << client->getClientIP() << ":" << client->getClientPort()
-                    << " (fd=" << clientFd << ")" << std::endl;
-                std::cout << oss.str();
-                LOG_ERROR(INFO, CALLBACK_ERROR, oss.str(), __FUNCTION__);
-            }
-            catch (const std::exception& e)
-            {
-                msg = e.what();
-                if (msg.find(LOG_ACCEPT_NO_RESOURCE) != std::string::npos)
-                {
-                    // No more clients to accept (EAGAIN/EWOULDBLOCK)
-                    break;
-                }
-                LOG_ERROR(ERROR, SOCKET_ERROR, "Accept failed: " + msg, __FUNCTION__);
-                break;
-            }
+             // No more clients to accept (EAGAIN/EWOULDBLOCK)
+            return;
         }
+        LOG_ERROR(ERROR, SOCKET_ERROR, "Accept failed: " + msg, __FUNCTION__);
+        return;
     }
 }
