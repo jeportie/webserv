@@ -57,10 +57,16 @@ void ErrorHandler::logError(ErrorLevel level, ErrorCategory category,
     if (level < _minLogLevel)
         return;
 
-    logStream << getTimestamp() << " [" << levelToString(level) << "] "
-              << "[" << categoryToString(category) << "] ";
+    logStream << getTimestamp() << " [" << levelToString(level) << "]\t"
+              << "[" << categoryToString(category) << "]\t";
     if (!source.empty())
-        logStream << "[" << source << "] ";
+	{
+        logStream << "[" << source << "]\t";
+	}
+	if (source.length() < 5)
+	{
+		logStream << "\t";
+	}
     logStream << message;
 
     if (_logFile.is_open())
