@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 15:32:24 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/26 11:43:51 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/27 08:54:38 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@
 
 struct ServerConfig;
 struct RouteConfig;
-
 
 class Parser
 {
