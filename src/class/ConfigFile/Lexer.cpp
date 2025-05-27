@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 17:07:10 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/16 11:27:06 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/27 09:34:24 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,6 @@ Lexer& Lexer::operator=(const Lexer& rhs) {
 
 Lexer::~Lexer(void) {}
 
-
 Lexer::Lexer(const std::string &content)
 {
     _content = content;
@@ -38,7 +37,6 @@ Lexer::Lexer(const std::string &content)
     _line = 1;
     _column = 1;
 }
-
 
 char Lexer::peek() const
 {
@@ -49,9 +47,11 @@ char Lexer::peek() const
 
 char Lexer::get()
 {
+    char c;
+    
     if (_pos >= _content.size())
         return (0);
-    char c = _content[_pos++];
+    c = _content[_pos++];
     
         if (c == '\n')
         {
@@ -65,124 +65,11 @@ char Lexer::get()
     return (c);
  
 }
-bool Lexer::isAtEnd() const {
-    return _pos >= _content.size();
-}
-void Lexer::skipWhitespace()
-{
-    if (!isAtEnd() && isspace(peek()))
-        get();
-}
-
-void Lexer::skipComment()
-{
-    if (peek() == '#')
-    { 
-        while (!isAtEnd() && get() != '\n')
-        {
-            //consume until end of line
-        }
-    }
-        
-}
-
-bool Lexer::isValidIdentifierSymbol(char c) const
-{
-    if (c == '_' || c == '.' || c == '/' || c == '-')
-        return true;
-    return false;
-}
-
-Token Lexer::parseIdentifier()
-{
-    int startLine = _line;
-    int startColumn = _column;
-
-    std::string value;
-
-    while (!isAtEnd() && (std::isalnum(peek()) || isValidIdentifierSymbol(peek())))
-    {
-        value += get();
-    }
-    return Token(TOKEN_IDENTIFIER, value, startLine, startColumn);
-}
-
-
-Token Lexer::parseString()
-{
-    int startLine = _line;
-    int startColumn = _column;
-    
-    std::string value;
-    while (!isAtEnd() && peek() != '"')
-    {
-        value += get();
-    }
-    if (peek() == '"')
-    {
-       get();
-    }
-    else
-    {
-        return Token(TOKEN_UNKNOWN, value, startLine, startColumn);
-    }   
-    
-    return Token(TOKEN_STRING, value, startLine, startColumn);
-}
-
-Token Lexer::parseNumber()
-{
-        int startLine = _line;
-    int startColumn = _column;
-    
-    std::string value;
-    while (!isAtEnd() && isdigit(peek()))
-    {
-        value += get();
-    }
-    
-    return Token(TOKEN_NUMBER, value, startLine, startColumn);
-}
-
-Token Lexer::parseSymbol()
-{
-        int startLine = _line;
-    int startColumn = _column;
-    
-    char c = get();
-    switch (c)
-    {
-        case '{' : 
-            return Token(TOKEN_LBRACE, "{", startLine, startColumn);
-        case '}' : 
-            return Token(TOKEN_RBRACE, "}", startLine, startColumn);
-        case ';' : 
-            return Token(TOKEN_SEMICOLON, ";", startLine, startColumn);
-        case ':' : 
-            return Token(TOKEN_COLON, ":", startLine, startColumn);
-        default:  
-            return Token(TOKEN_UNKNOWN, std::string(1, c), startLine, startColumn);
-    }
-}
-
-Token Lexer::parsePathLike()
-{
-    std::string value;
-    while (!isAtEnd())
-    {
-        char c = peek();
-        if (std::isalnum(c) || c == '/' || c == '.' || c == '-' || c == '_')
-        {
-            value += get();
-        }
-        else
-            break;
-    }
-    return Token(TOKEN_STRING, value, _line, _column);
-}
 
 Token Lexer::nextToken()
 {
+    char c;
+    
     while (!isAtEnd())
     {
         while (true)
@@ -196,7 +83,7 @@ Token Lexer::nextToken()
         if (isAtEnd())
             break;
         
-        char c = peek();
+        c = peek();
         if (std::isalpha(c))
         {
             return parseIdentifier();
