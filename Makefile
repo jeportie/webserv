@@ -91,6 +91,7 @@ clean:
 
 fclean: clean
 	rm -rf $(OUTDIR)
+	rm webserv.log
 
 re: fclean all
 
