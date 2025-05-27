@@ -26,6 +26,12 @@ ServerSocket::ServerSocket(void)
     std::memset(&this->_serverAddr, 0, sizeof(sockaddr_in));
 }
 
+ServerSocket::ServerSocket(const ServerSocket& src)
+: Socket(src)
+{
+    std::memcpy(&this->_serverAddr, &src._serverAddr, sizeof(sockaddr_in));
+}
+
 ServerSocket::~ServerSocket(void)
 { 
     LOG_ERROR(

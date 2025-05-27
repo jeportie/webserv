@@ -76,7 +76,6 @@ ServerConfig Parser::parseServerBlock()
         error_msg = "Expected '{' after 'server'";
 		THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
     }
-        throw std::runtime_error();
     advance();
     while (current().type != TOKEN_RBRACE && current().type != TOKEN_EOF)
     {

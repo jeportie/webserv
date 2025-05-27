@@ -27,6 +27,7 @@ class ServerSocket : public Socket
 {
 public:
     ServerSocket(void);
+    ServerSocket(const ServerSocket& src);
     virtual ~ServerSocket(void);
 
 	virtual int			setNonBlocking(int fd);
@@ -40,7 +41,6 @@ public:
     std::string			getAddress(void) const;
 
 private:
-    ServerSocket(const ServerSocket& src);
     ServerSocket&		operator=(const ServerSocket& rhs);
 
     struct sockaddr_in	_serverAddr;  ///< Server address structure
