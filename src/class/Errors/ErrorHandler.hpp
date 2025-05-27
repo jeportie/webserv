@@ -13,15 +13,40 @@
 #ifndef ERRORHANDLER_HPP
 #define ERRORHANDLER_HPP
 
-#define LOG_ERR_CONST "ErrorHandler constructor Called"
-#define LOG_ERR_DEST "ErrorHandler destructor Called"
-
 #include <cstring>
 #include <cerrno>
 #include <ctime>
 #include <fstream>
 
-#include "../../../include/webserv.h"
+#include <map>
+
+#define LOG_ERR_CONST "ErrorHandler constructor Called"
+#define LOG_ERR_DEST "ErrorHandler destructor Called"
+
+// Error handling enums
+enum ErrorLevel
+{
+    DEBUG,    // Detailed information for debugging
+    INFO,     // General information about normal operation
+    WARNING,  // Potential issues that don't prevent operation
+    ERROR,    // Errors that affect operation but don't require shutdown
+    CRITICAL  // Critical errors that require immediate shutdown
+};
+
+enum ErrorCategory
+{
+    SOCKET_ERROR,    // Socket-related errors
+    EPOLL_ERROR,     // Epoll-related errors
+    CALLBACK_ERROR,  // Callback-related errors
+    TIMER_ERROR,     // Timer-related errors
+    RESOURCE_ERROR,  // Resource exhaustion errors
+    SYSTEM_ERROR,    // System call errors
+    INTERNAL_ERROR,  // Internal logic errors
+    HTTP_REQ_ERROR,  // Http Request errors
+    CONFIG_FILE_ERROR // Erreur dans le fichier config
+};
+
+typedef std::map<ErrorCategory, int> ERRMAP;
 
 class ErrorHandler
 {

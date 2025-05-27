@@ -31,4 +31,6 @@ struct RouteConfig {
     RouteConfig();
 };
 
+typedef std::map<std::string, RouteConfig> ROUTEMAP;
+
 #endif 

@@ -91,4 +91,6 @@ private:
     std::string                 _bodyAccumulator;
 };
 
+typedef std::map<int, ClientSocket*>						ICMAP;
+
 #endif  // ************************************************* CLIENTSOCKET_HPP //

@@ -21,6 +21,7 @@
 #include <sys/epoll.h>
 
 #include "../Sockets/ClientSocket.hpp"
+#include "../Sockets/ServerSocket.hpp"
 #include "../Callbacks/CallbackQueue.hpp"
 #include "../../../include/webserv.h"
 

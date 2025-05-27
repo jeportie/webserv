@@ -44,8 +44,8 @@ private:
     ServerSocket&		operator=(const ServerSocket& rhs);
 
     struct sockaddr_in	_serverAddr;  ///< Server address structure
-    
-    
 };
+
+typedef std::vector<ServerSocket> SSVECTOR;
 
 #endif  // ************************************************* SERVERSOCKET_HPP //

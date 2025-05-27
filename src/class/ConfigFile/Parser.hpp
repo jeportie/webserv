@@ -14,11 +14,19 @@
 #define PARSER_HPP
 
 #include <cstdlib>
+#include <vector>
+#include <map>
 
 #include "Lexer.hpp"
 
 struct ServerConfig;
 struct RouteConfig;
+
+typedef std::map<int, std::vector<ServerConfig> > IVSCMAP;
+typedef std::vector<std::string> SVECTOR;
+typedef std::map<int, std::string> ISMAP;
+typedef std::map<std::string, RouteConfig> ROUTEMAP;
+typedef std::pair<std::string, std::string> SSPAIR;
 
 class Parser
 {

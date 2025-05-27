@@ -35,5 +35,6 @@ struct ServerConfig {
     ServerConfig();
 };
 
- 
+typedef std::map<int, std::vector<ServerConfig> >			IVSCMAP;
+
 #endif 
