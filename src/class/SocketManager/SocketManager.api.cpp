@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/27 14:24:31 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/27 15:00:31 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ void SocketManager::init_connect()
     {
         port = it->first;
 
-        ServerSocket socket;
+        ListeningSocket socket;
         if (!socket.safeBind(port, "0.0.0.0"))
         {
             oss << "Failed to bind on port " << port;
@@ -58,9 +58,9 @@ void SocketManager::init_connect()
 
         safeRegisterToEpoll(epoll_fd, socket_fd);
 
-        _serverSockets.push_back(socket);
+        _listeningSockets.push_back(socket);
 
-        oss << "Server listening on port " << port << std::endl;
+        oss << "Socket listening on port " << port << std::endl;
         std::cout << oss.str();
         LOG_ERROR(INFO, CALLBACK_ERROR, oss.str(), __FUNCTION__);
         oss.str("");
@@ -102,9 +102,9 @@ void SocketManager::addClientSocket(int fd, ClientSocket* client) { _clientSocke
 
 bool SocketManager::isListeningSocket(int fd) const
 {
-    for (size_t i = 0; i < _serverSockets.size(); ++i)
+    for (size_t i = 0; i < _listeningSockets.size(); ++i)
     {
-        if (_serverSockets[i].getFd() == fd)
+        if (_listeningSockets[i].getFd() == fd)
             return true;
     }
     return false;

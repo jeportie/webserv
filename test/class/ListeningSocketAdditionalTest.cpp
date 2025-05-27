@@ -1,26 +1,30 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ServerSocketAdditionalTest.cpp                     :+:      :+:    :+:   */
+/*   ListeningSocketAdditionalTest.cpp                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/05/19 00:00:00 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/19 00:00:00 by jeportie         ###   ########.fr       */
+/*   Created: 2025/05/27 15:09:02 by anastruc          #+#    #+#             */
+/*   Updated: 2025/05/27 15:09:03 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+
+
+
 
 #include <gtest/gtest.h>
 #include <sys/socket.h>
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include "../../src/class/Sockets/ServerSocket.hpp"
+#include "../../src/class/Sockets/ListeningSocket.hpp"
 
-// Mock class for testing ServerSocket with controlled failures
-class MockServerSocket : public ServerSocket {
+// Mock class for testing ListeningSocket with controlled failures
+class MockListeningSocket : public ListeningSocket {
 public:
-    MockServerSocket() : ServerSocket(), _bindFailure(false), _socketCreateFailure(false) {}
+    MockListeningSocket() : ListeningSocket(), _bindFailure(false), _socketCreateFailure(false) {}
     
     void setBindFailure(bool fail) { _bindFailure = fail; }
     void setSocketCreateFailure(bool fail) { _socketCreateFailure = fail; }
@@ -68,28 +72,28 @@ private:
 };
 
 // Test rebinding protection
-TEST(ServerSocketAdditionalTest, RebindingProtection)
+TEST(ListeningSocketAdditionalTest, RebindingProtection)
 {
-    // Create a mock server socket that simulates binding failure on second attempt
-    class RebindMockServerSocket : public MockServerSocket {
+    // Create a mock Listening socket that simulates binding failure on second attempt
+    class RebindMockListeningSocket : public MockListeningSocket {
     private:
         bool _firstBind;
         
     public:
-        RebindMockServerSocket() : MockServerSocket(), _firstBind(true) {}
+        RebindMockListeningSocket() : MockListeningSocket(), _firstBind(true) {}
         
         virtual bool safeBind(int port, const std::string& address) {
             // First bind succeeds, second fails (simulating address already in use)
             if (_firstBind) {
                 _firstBind = false;
-                return MockServerSocket::safeBind(port, address);
+                return MockListeningSocket::safeBind(port, address);
             } else {
                 return false; // Second bind fails
             }
         }
     };
     
-    RebindMockServerSocket socket;
+    RebindMockListeningSocket socket;
     
     // First bind should succeed
     EXPECT_TRUE(socket.safeBind(8080, "127.0.0.1"));
@@ -100,7 +104,7 @@ TEST(ServerSocketAdditionalTest, RebindingProtection)
 
 // Test actual system integration with real sockets
 // This is an integration test that uses real system calls
-TEST(ServerSocketAdditionalTest, ActualSystemIntegration)
+TEST(ListeningSocketAdditionalTest, ActualSystemIntegration)
 {
     // Skip this test in CI environments or when real network testing is not possible
     GTEST_SKIP() << "Skipping real network test - requires actual network access";
@@ -108,8 +112,8 @@ TEST(ServerSocketAdditionalTest, ActualSystemIntegration)
     // The rest of the test is kept for reference but will be skipped
     // In a real environment with network access, you would remove the GTEST_SKIP line
     
-    // Use a real ServerSocket
-    ServerSocket socket;
+    // Use a real ListeningSocket
+    ListeningSocket socket;
     
     // Create the socket
     EXPECT_TRUE(socket.socketCreate());
@@ -142,9 +146,9 @@ TEST(ServerSocketAdditionalTest, ActualSystemIntegration)
 }
 
 // Test invalid address binding
-TEST(ServerSocketAdditionalTest, InvalidAddressBinding)
+TEST(ListeningSocketAdditionalTest, InvalidAddressBinding)
 {
-    MockServerSocket socket;
+    MockListeningSocket socket;
     
     // Simulate binding failure for invalid address
     socket.setBindFailure(true);
@@ -157,9 +161,9 @@ TEST(ServerSocketAdditionalTest, InvalidAddressBinding)
 }
 
 // Test socket creation failure
-TEST(ServerSocketAdditionalTest, SocketCreationFailure)
+TEST(ListeningSocketAdditionalTest, SocketCreationFailure)
 {
-    MockServerSocket socket;
+    MockListeningSocket socket;
     
     // Simulate socket creation failure
     socket.setSocketCreateFailure(true);

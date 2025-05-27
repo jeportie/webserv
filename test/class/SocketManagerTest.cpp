@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 01:28:02 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/19 17:26:23 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/27 15:09:29 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,11 +40,11 @@ private:
     int* counter_;
 };
 
-TEST(SocketManagerTest, ConstructionAndServerSocketAccess) {
+TEST(SocketManagerTest, ConstructionAndListeningSocketAccess) {
     SocketManager manager;
-    // Just check that getServerSocket returns a reference
-    ServerSocket& server = manager.getServerSocket();
-    (void)server;
+    // Just check that getListeningSocket returns a reference
+    ListeningSocket& Listening = manager.getListeningSocket();
+    (void)Listening;
     SUCCEED();
 }
 
@@ -100,9 +100,9 @@ TEST(SocketManagerTest, EpollFdCreation) {
 //     // Expose protected methods for testing
 //     using SocketManager::SocketManager;
     
-//     // Get the server socket file descriptor
-//     int getServerSocketFd() const {
-//         return getServerSocket();
+//     // Get the Listening socket file descriptor
+//     int getListeningSocketFd() const {
+//         return getListeningSocket();
 //     }
     
 //     // Get the client socket file descriptor
@@ -110,17 +110,17 @@ TEST(SocketManagerTest, EpollFdCreation) {
 //         return getClientSocket();
 //     }
     
-//     // Initialize the server socket
-//     void initializeServerSocket(int port, const std::string& address) {
-//         // Create a server socket and bind it
-//         ServerSocket serverSocket;
-//         serverSocket.safeBind(port, address);
+//     // Initialize the Listening socket
+//     void initializeListeningSocket(int port, const std::string& address) {
+//         // Create a Listening socket and bind it
+//         ListeningSocket ListeningSocket;
+//         ListeningSocket.safeBind(port, address);
 //     }
     
-//     // Create a new ServerSocket for testing since we can't access the private _serverSocket
-//     ServerSocket createTestServerSocket() {
-//         ServerSocket serverSocket;
-//         return serverSocket;
+//     // Create a new ListeningSocket for testing since we can't access the private _ListeningSocket
+//     ListeningSocket createTestListeningSocket() {
+//         ListeningSocket ListeningSocket;
+//         return ListeningSocket;
 //     }
 // };
 
@@ -156,7 +156,7 @@ TEST(SocketManagerTest, EpollFdCreation) {
 // // Test constructor and destructor
 // TEST_F(SocketManagerTest, Constructor) {
 //     SocketManager manager;
-//     EXPECT_EQ(manager.getServerSocket(), -1);
+//     EXPECT_EQ(manager.getListeningSocket(), -1);
 //     EXPECT_EQ(manager.getClientSocket(), -1);
 // }
 
@@ -178,45 +178,45 @@ TEST(SocketManagerTest, EpollFdCreation) {
 //     EXPECT_EQ(errno, EPROTONOSUPPORT) << "Expected EPROTONOSUPPORT error for invalid protocol";
 // }
 
-// // Test server socket binding
-// TEST_F(SocketManagerTest, ServerSocketBinding) {
+// // Test Listening socket binding
+// TEST_F(SocketManagerTest, ListeningSocketBinding) {
 //     int port = getUniquePort();
     
-//     // Create a server socket directly (not through SocketManager)
-//     ServerSocket serverSocket;
-//     bool bindResult = serverSocket.safeBind(port, "127.0.0.1");
+//     // Create a Listening socket directly (not through SocketManager)
+//     ListeningSocket ListeningSocket;
+//     bool bindResult = ListeningSocket.safeBind(port, "127.0.0.1");
     
-//     EXPECT_TRUE(bindResult) << "Failed to bind server socket to port " << port;
-//     EXPECT_NE(serverSocket.getFd(), -1) << "Server socket file descriptor is invalid";
+//     EXPECT_TRUE(bindResult) << "Failed to bind Listening socket to port " << port;
+//     EXPECT_NE(ListeningSocket.getFd(), -1) << "Listening socket file descriptor is invalid";
     
 //     // Verify the port and address
-//     EXPECT_EQ(serverSocket.getPort(), port);
-//     EXPECT_EQ(serverSocket.getAddress(), "127.0.0.1");
+//     EXPECT_EQ(ListeningSocket.getPort(), port);
+//     EXPECT_EQ(ListeningSocket.getAddress(), "127.0.0.1");
 // }
 
 // // Test binding to IPv6 address
 // TEST_F(SocketManagerTest, IPv6SocketBinding) {
 //     int port = getUniquePort();
     
-//     // Create a server socket directly (not through SocketManager)
-//     ServerSocket serverSocket;
-//     bool bindResult = serverSocket.safeBind(port, "::1"); // IPv6 loopback address
+//     // Create a Listening socket directly (not through SocketManager)
+//     ListeningSocket ListeningSocket;
+//     bool bindResult = ListeningSocket.safeBind(port, "::1"); // IPv6 loopback address
     
-//     EXPECT_TRUE(bindResult) << "Failed to bind server socket to IPv6 address";
-//     EXPECT_NE(serverSocket.getFd(), -1) << "Server socket file descriptor is invalid";
+//     EXPECT_TRUE(bindResult) << "Failed to bind Listening socket to IPv6 address";
+//     EXPECT_NE(ListeningSocket.getFd(), -1) << "Listening socket file descriptor is invalid";
     
 //     // Verify the port and address
-//     EXPECT_EQ(serverSocket.getPort(), port);
-//     EXPECT_EQ(serverSocket.getAddress(), "::1");
+//     EXPECT_EQ(ListeningSocket.getPort(), port);
+//     EXPECT_EQ(ListeningSocket.getAddress(), "::1");
 // }
 
 // // Test binding to invalid address
 // TEST_F(SocketManagerTest, InvalidAddressBinding) {
 //     int port = getUniquePort();
     
-//     // Create a server socket and try to bind it to an invalid address
-//     ServerSocket serverSocket = socketManager.createTestServerSocket();
-//     bool bindResult = serverSocket.safeBind(port, "invalid_address");
+//     // Create a Listening socket and try to bind it to an invalid address
+//     ListeningSocket ListeningSocket = socketManager.createTestListeningSocket();
+//     bool bindResult = ListeningSocket.safeBind(port, "invalid_address");
     
 //     EXPECT_FALSE(bindResult) << "Binding to invalid address should fail";
 // }
@@ -225,10 +225,10 @@ TEST(SocketManagerTest, EpollFdCreation) {
 // TEST_F(SocketManagerTest, PortAlreadyInUse) {
 //     int port = getUniquePort();
     
-//     // Create and bind the first server socket
-//     ServerSocket serverSocket1 = socketManager.createTestServerSocket();
-//     bool bindResult1 = serverSocket1.safeBind(port, "127.0.0.1");
-//     ASSERT_TRUE(bindResult1) << "Failed to bind first server socket";
+//     // Create and bind the first Listening socket
+//     ListeningSocket ListeningSocket1 = socketManager.createTestListeningSocket();
+//     bool bindResult1 = ListeningSocket1.safeBind(port, "127.0.0.1");
+//     ASSERT_TRUE(bindResult1) << "Failed to bind first Listening socket";
     
 //     // Create a second socket and try to bind to the same port
 //     int secondSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -247,55 +247,55 @@ TEST(SocketManagerTest, EpollFdCreation) {
 //     close(secondSocket);
 // }
 
-// // Test server socket listening
-// TEST_F(SocketManagerTest, ServerSocketListening) {
+// // Test Listening socket listening
+// TEST_F(SocketManagerTest, ListeningSocketListening) {
 //     int port = getUniquePort();
     
-//     // Create and bind a server socket
-//     ServerSocket serverSocket = socketManager.createTestServerSocket();
-//     bool bindResult = serverSocket.safeBind(port, "127.0.0.1");
-//     ASSERT_TRUE(bindResult) << "Failed to bind server socket";
+//     // Create and bind a Listening socket
+//     ListeningSocket ListeningSocket = socketManager.createTestListeningSocket();
+//     bool bindResult = ListeningSocket.safeBind(port, "127.0.0.1");
+//     ASSERT_TRUE(bindResult) << "Failed to bind Listening socket";
     
 //     // Start listening
-//     ASSERT_NO_THROW(serverSocket.safeListen(5)) << "Failed to start listening on server socket";
+//     ASSERT_NO_THROW(ListeningSocket.safeListen(5)) << "Failed to start listening on Listening socket";
 // }
 
 // // Test client connection acceptance
 // TEST_F(SocketManagerTest, ClientConnectionAcceptance) {
 //     int port = getUniquePort();
     
-//     // Create, bind, and listen on a server socket
-//     ServerSocket serverSocket = socketManager.createTestServerSocket();
-//     bool bindResult = serverSocket.safeBind(port, "127.0.0.1");
-//     ASSERT_TRUE(bindResult) << "Failed to bind server socket";
-//     ASSERT_NO_THROW(serverSocket.safeListen(5)) << "Failed to start listening";
+//     // Create, bind, and listen on a Listening socket
+//     ListeningSocket ListeningSocket = socketManager.createTestListeningSocket();
+//     bool bindResult = ListeningSocket.safeBind(port, "127.0.0.1");
+//     ASSERT_TRUE(bindResult) << "Failed to bind Listening socket";
+//     ASSERT_NO_THROW(ListeningSocket.safeListen(5)) << "Failed to start listening";
     
 //     // Create an epoll instance for testing
 //     int epoll_fd = epoll_create(1);
 //     ASSERT_GE(epoll_fd, 0) << "Failed to create epoll instance";
     
-//     // Create a client socket and connect to the server in a separate thread
+//     // Create a client socket and connect to the Listening in a separate thread
 //     std::thread clientThread([port]() {
-//         // Give the server time to start listening
+//         // Give the Listening time to start listening
 //         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         
 //         // Create client socket
 //         int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
 //         ASSERT_GE(clientSocket, 0) << "Failed to create client socket";
         
-//         // Connect to the server
-//         struct sockaddr_in serverAddr;
-//         serverAddr.sin_family = AF_INET;
-//         serverAddr.sin_port = htons(port);
-//         serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+//         // Connect to the Listening
+//         struct sockaddr_in ListeningAddr;
+//         ListeningAddr.sin_family = AF_INET;
+//         ListeningAddr.sin_port = htons(port);
+//         ListeningAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
         
 //         int connectResult = connect(clientSocket, 
-//                                    (struct sockaddr*)&serverAddr, 
-//                                    sizeof(serverAddr));
-//         EXPECT_EQ(connectResult, 0) << "Failed to connect to server: " << strerror(errno);
+//                                    (struct sockaddr*)&ListeningAddr, 
+//                                    sizeof(ListeningAddr));
+//         EXPECT_EQ(connectResult, 0) << "Failed to connect to Listening: " << strerror(errno);
         
 //         // Send a test message
-//         const char* testMessage = "Hello, Server!";
+//         const char* testMessage = "Hello, Listening!";
 //         send(clientSocket, testMessage, strlen(testMessage), 0);
         
 //         // Wait a bit before closing
@@ -307,7 +307,7 @@ TEST(SocketManagerTest, EpollFdCreation) {
     
 //     // Accept the client connection
 //     ClientSocket* clientSocket = nullptr;
-//     ASSERT_NO_THROW(clientSocket = serverSocket.safeAccept(epoll_fd)) 
+//     ASSERT_NO_THROW(clientSocket = ListeningSocket.safeAccept(epoll_fd)) 
 //         << "Failed to accept client connection";
     
 //     // Verify the client socket
@@ -325,15 +325,15 @@ TEST(SocketManagerTest, EpollFdCreation) {
 // TEST_F(SocketManagerTest, NonBlockingSocketBehavior) {
 //     int port = getUniquePort();
     
-//     // Create, bind, and listen on a server socket
-//     ServerSocket serverSocket = socketManager.createTestServerSocket();
-//     bool bindResult = serverSocket.safeBind(port, "127.0.0.1");
-//     ASSERT_TRUE(bindResult) << "Failed to bind server socket";
-//     ASSERT_NO_THROW(serverSocket.safeListen(5)) << "Failed to start listening";
+//     // Create, bind, and listen on a Listening socket
+//     ListeningSocket ListeningSocket = socketManager.createTestListeningSocket();
+//     bool bindResult = ListeningSocket.safeBind(port, "127.0.0.1");
+//     ASSERT_TRUE(bindResult) << "Failed to bind Listening socket";
+//     ASSERT_NO_THROW(ListeningSocket.safeListen(5)) << "Failed to start listening";
     
-//     // Verify that the server socket is in non-blocking mode
-//     int flags = fcntl(serverSocket.getFd(), F_GETFL, 0);
-//     EXPECT_TRUE(flags & O_NONBLOCK) << "Server socket is not in non-blocking mode";
+//     // Verify that the Listening socket is in non-blocking mode
+//     int flags = fcntl(ListeningSocket.getFd(), F_GETFL, 0);
+//     EXPECT_TRUE(flags & O_NONBLOCK) << "Listening socket is not in non-blocking mode";
     
 //     // Create an epoll instance for testing
 //     int epoll_fd = epoll_create(1);
@@ -341,7 +341,7 @@ TEST(SocketManagerTest, EpollFdCreation) {
     
 //     // Try to accept a connection without any client (should not block)
 //     ClientSocket* clientSocket = nullptr;
-//     ASSERT_THROW(clientSocket = serverSocket.safeAccept(epoll_fd), std::runtime_error)
+//     ASSERT_THROW(clientSocket = ListeningSocket.safeAccept(epoll_fd), std::runtime_error)
 //         << "Non-blocking accept should throw when no clients are connecting";
     
 //     // Clean up
@@ -353,11 +353,11 @@ TEST(SocketManagerTest, EpollFdCreation) {
 //     int port = getUniquePort();
 //     const int NUM_CLIENTS = 3;
     
-//     // Create, bind, and listen on a server socket
-//     ServerSocket serverSocket = socketManager.createTestServerSocket();
-//     bool bindResult = serverSocket.safeBind(port, "127.0.0.1");
-//     ASSERT_TRUE(bindResult) << "Failed to bind server socket";
-//     ASSERT_NO_THROW(serverSocket.safeListen(10)) << "Failed to start listening";
+//     // Create, bind, and listen on a Listening socket
+//     ListeningSocket ListeningSocket = socketManager.createTestListeningSocket();
+//     bool bindResult = ListeningSocket.safeBind(port, "127.0.0.1");
+//     ASSERT_TRUE(bindResult) << "Failed to bind Listening socket";
+//     ASSERT_NO_THROW(ListeningSocket.safeListen(10)) << "Failed to start listening";
     
 //     // Create an epoll instance for testing
 //     int epoll_fd = epoll_create(1);
@@ -374,15 +374,15 @@ TEST(SocketManagerTest, EpollFdCreation) {
 //             int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
 //             ASSERT_GE(clientSocket, 0) << "Failed to create client socket " << i;
             
-//             // Connect to the server
-//             struct sockaddr_in serverAddr;
-//             serverAddr.sin_family = AF_INET;
-//             serverAddr.sin_port = htons(port);
-//             serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+//             // Connect to the Listening
+//             struct sockaddr_in ListeningAddr;
+//             ListeningAddr.sin_family = AF_INET;
+//             ListeningAddr.sin_port = htons(port);
+//             ListeningAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
             
 //             int connectResult = connect(clientSocket, 
-//                                        (struct sockaddr*)&serverAddr, 
-//                                        sizeof(serverAddr));
+//                                        (struct sockaddr*)&ListeningAddr, 
+//                                        sizeof(ListeningAddr));
 //             EXPECT_EQ(connectResult, 0) << "Client " << i << " failed to connect: " << strerror(errno);
             
 //             // Send a test message
@@ -405,7 +405,7 @@ TEST(SocketManagerTest, EpollFdCreation) {
         
 //         ClientSocket* clientSocket = nullptr;
 //         try {
-//             clientSocket = serverSocket.safeAccept(epoll_fd);
+//             clientSocket = ListeningSocket.safeAccept(epoll_fd);
 //             EXPECT_NE(clientSocket, nullptr) << "Failed to accept client " << i;
 //             EXPECT_NE(clientSocket->getFd(), -1) << "Client " << i << " socket fd is invalid";
 //             clientSockets.push_back(clientSocket);
@@ -428,35 +428,35 @@ TEST(SocketManagerTest, EpollFdCreation) {
 // TEST_F(SocketManagerTest, SocketCleanup) {
 //     int port = getUniquePort();
     
-//     // Create, bind, and listen on a server socket
-//     ServerSocket serverSocket = socketManager.createTestServerSocket();
-//     bool bindResult = serverSocket.safeBind(port, "127.0.0.1");
-//     ASSERT_TRUE(bindResult) << "Failed to bind server socket";
-//     ASSERT_NO_THROW(serverSocket.safeListen(5)) << "Failed to start listening";
+//     // Create, bind, and listen on a Listening socket
+//     ListeningSocket ListeningSocket = socketManager.createTestListeningSocket();
+//     bool bindResult = ListeningSocket.safeBind(port, "127.0.0.1");
+//     ASSERT_TRUE(bindResult) << "Failed to bind Listening socket";
+//     ASSERT_NO_THROW(ListeningSocket.safeListen(5)) << "Failed to start listening";
     
 //     // Create an epoll instance for testing
 //     int epoll_fd = epoll_create(1);
 //     ASSERT_GE(epoll_fd, 0) << "Failed to create epoll instance";
     
-//     // Create a client socket and connect to the server
+//     // Create a client socket and connect to the Listening
 //     std::thread clientThread([port]() {
-//         // Give the server time to start listening
+//         // Give the Listening time to start listening
 //         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         
 //         // Create client socket
 //         int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
 //         ASSERT_GE(clientSocket, 0) << "Failed to create client socket";
         
-//         // Connect to the server
-//         struct sockaddr_in serverAddr;
-//         serverAddr.sin_family = AF_INET;
-//         serverAddr.sin_port = htons(port);
-//         serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+//         // Connect to the Listening
+//         struct sockaddr_in ListeningAddr;
+//         ListeningAddr.sin_family = AF_INET;
+//         ListeningAddr.sin_port = htons(port);
+//         ListeningAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
         
 //         int connectResult = connect(clientSocket, 
-//                                    (struct sockaddr*)&serverAddr, 
-//                                    sizeof(serverAddr));
-//         EXPECT_EQ(connectResult, 0) << "Failed to connect to server: " << strerror(errno);
+//                                    (struct sockaddr*)&ListeningAddr, 
+//                                    sizeof(ListeningAddr));
+//         EXPECT_EQ(connectResult, 0) << "Failed to connect to Listening: " << strerror(errno);
         
 //         // Wait a bit before closing
 //         std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -468,7 +468,7 @@ TEST(SocketManagerTest, EpollFdCreation) {
 //     // Accept the client connection
 //     ClientSocket* clientSocket = nullptr;
 //     try {
-//         clientSocket = serverSocket.safeAccept(epoll_fd);
+//         clientSocket = ListeningSocket.safeAccept(epoll_fd);
 //         ASSERT_NE(clientSocket, nullptr) << "Failed to accept client connection";
         
 //         // Store the file descriptor for later verification
@@ -510,11 +510,11 @@ TEST(SocketManagerTest, EpollFdCreation) {
 //     // Subtract 3 for stdin, stdout, stderr and 1 for the dir we just opened
 //     initialFdCount -= 4;
     
-//     // Create, bind, and listen on a server socket
-//     ServerSocket& serverSocket = socketManager.getServerSocketObj();
-//     bool bindResult = serverSocket.safeBind(port, "127.0.0.1");
-//     ASSERT_TRUE(bindResult) << "Failed to bind server socket";
-//     ASSERT_NO_THROW(serverSocket.safeListen(5)) << "Failed to start listening";
+//     // Create, bind, and listen on a Listening socket
+//     ListeningSocket& ListeningSocket = socketManager.getListeningSocketObj();
+//     bool bindResult = ListeningSocket.safeBind(port, "127.0.0.1");
+//     ASSERT_TRUE(bindResult) << "Failed to bind Listening socket";
+//     ASSERT_NO_THROW(ListeningSocket.safeListen(5)) << "Failed to start listening";
     
 //     // Create an epoll instance for testing
 //     int epoll_fd = epoll_create(1);
@@ -528,14 +528,14 @@ TEST(SocketManagerTest, EpollFdCreation) {
 //         int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
 //         ASSERT_GE(clientSocket, 0) << "Failed to create client socket " << i;
         
-//         struct sockaddr_in serverAddr;
-//         serverAddr.sin_family = AF_INET;
-//         serverAddr.sin_port = htons(port);
-//         serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+//         struct sockaddr_in ListeningAddr;
+//         ListeningAddr.sin_family = AF_INET;
+//         ListeningAddr.sin_port = htons(port);
+//         ListeningAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
         
 //         int connectResult = connect(clientSocket, 
-//                                    (struct sockaddr*)&serverAddr, 
-//                                    sizeof(serverAddr));
+//                                    (struct sockaddr*)&ListeningAddr, 
+//                                    sizeof(ListeningAddr));
 //         EXPECT_EQ(connectResult, 0) << "Client " << i << " failed to connect: " << strerror(errno);
         
 //         clientSockets.push_back(clientSocket);
@@ -553,7 +553,7 @@ TEST(SocketManagerTest, EpollFdCreation) {
 //     // Subtract 3 for stdin, stdout, stderr and 1 for the dir we just opened
 //     currentFdCount -= 4;
     
-//     // We should have at least NUM_CLIENTS + 2 (server socket + epoll) more file descriptors
+//     // We should have at least NUM_CLIENTS + 2 (Listening socket + epoll) more file descriptors
 //     EXPECT_GE(currentFdCount, initialFdCount + NUM_CLIENTS + 2) 
 //         << "File descriptor count should increase with open sockets";
     

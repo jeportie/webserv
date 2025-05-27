@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/27 14:29:02 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/27 15:02:56 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,14 +49,14 @@ int SocketManager::getCheckIntervalMs(void) { return 1000; }
 
 const ICMAP& SocketManager::getClientMap(void) const { return (_clientSockets); }
 
-std::vector<ServerSocket>& SocketManager::getVectorServerSocket() { return _serverSockets; }
+std::vector<ListeningSocket>& SocketManager::getVectorListeningSocket() { return _listeningSockets; }
 
-ServerSocket* SocketManager::getServerSocket(int fd)
+ListeningSocket* SocketManager::getListeningSocket(int fd)
 {
-    for (size_t i = 0; i < _serverSockets.size(); ++i)
+    for (size_t i = 0; i < _listeningSockets.size(); ++i)
     {
-        if (_serverSockets[i].getFd() == fd)
-            return &_serverSockets[i];
+        if (_listeningSockets[i].getFd() == fd)
+            return &_listeningSockets[i];
     }
     return (NULL);
 }
@@ -68,25 +68,25 @@ int SocketManager::getClientSocketFd(void) const { return (_clientSocketFd); }
 
 // IVSCMAP SocketManager::getConfiguration(void) const is now inline in the header
 
-int SocketManager::setNonBlockingServer(int fd) 
+int SocketManager::setNonBlockingListening(int fd) 
 { 
-    // Find the server socket with this fd and set it to non-blocking
-    for (size_t i = 0; i < _serverSockets.size(); ++i)
+    // Find the listening socket with this fd and set it to non-blocking
+    for (size_t i = 0; i < _listeningSockets.size(); ++i)
     {
-        if (_serverSockets[i].getFd() == fd)
-            return _serverSockets[i].setNonBlocking(fd);
+        if (_listeningSockets[i].getFd() == fd)
+            return _listeningSockets[i].setNonBlocking(fd);
     }
     return -1; // Socket not found
 }
 
 // Safe Wrappers
-void SocketManager::safeRegisterToEpoll(int epoll_fd, int serverFd)
+void SocketManager::safeRegisterToEpoll(int epoll_fd, int listeningFd)
 {
     struct epoll_event ev;
     ev.events  = EPOLLIN;
-    ev.data.fd = serverFd;
+    ev.data.fd = listeningFd;
 
-    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, serverFd, &ev) == -1)
+    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, listeningFd, &ev) == -1)
         THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, LOG_SM_EPOLL, __FUNCTION__);
 }
 

@@ -6,13 +6,13 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 12:42:25 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/27 14:34:08 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/27 14:55:21 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../SocketManager/SocketManager.hpp"
 #include "../Errors/ErrorHandler.hpp"
-#include "../Sockets/ServerSocket.hpp"
+#include "../Sockets/ListeningSocket.hpp"
 #include "AcceptCallback.hpp"
 
 #include <unistd.h>
@@ -20,8 +20,8 @@
 #include <sstream>
 
 // AcceptCallback implementation
-AcceptCallback::AcceptCallback(int serverFd, SocketManager* manager, int epollFd)
-: Callback(serverFd)
+AcceptCallback::AcceptCallback(int ListeningFd, SocketManager* manager, int epollFd)
+: Callback(ListeningFd)
 , _manager(manager)
 , _epollFd(epollFd)
 {
@@ -39,15 +39,15 @@ void AcceptCallback::execute()
     int					clientFd;
     std::string			msg;
 	ClientSocket*		client;
-    ServerSocket*       server;
+    ListeningSocket*       Listening;
     
-    // Loop over all server sockets
-    server = _manager->getServerSocket(_fd);
+    // Loop over all Listening sockets
+    Listening = _manager->getListeningSocket(_fd);
 
     try
     {
-        // Try to accept a new client on this server socket
-        client = server->safeAccept(_epollFd);
+        // Try to accept a new client on this Listening socket
+        client = Listening->safeAccept(_epollFd);
         if (!client)
             return; // No more clients to accept on this socket
         clientFd = client->getFd();

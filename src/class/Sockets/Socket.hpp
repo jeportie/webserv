@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Socket.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:12:59 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/07 23:15:08 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/27 15:06:39 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #define SOCKET_HPP
 
 #define LOG_SOCKET_CREATE_FAIL "Failed to create socket"
-#define LOG_FCNTL_SERVER_FAIL "fcntl server socket failed"
+#define LOG_FCNTL_LISTENING_FAIL "fcntl listening socket failed"
 #define LOG_BIND_FAIL "Bind failed"
 #define LOG_LISTEN_FAIL "Listen() Failed"
 #define LOG_INVALID_SOCKET_LISTEN "Cannot listen on invalid socket"

@@ -1,20 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ServerSocket.hpp                                   :+:      :+:    :+:   */
+/*   ListeningSocket.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/05/07 12:13:39 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/26 12:37:43 by fsalomon         ###   ########.fr       */
+/*   Created: 2025/05/27 14:50:15 by anastruc          #+#    #+#             */
+/*   Updated: 2025/05/27 15:12:08 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef SERVERSOCKET_HPP
-#define SERVERSOCKET_HPP
 
-#define LOG_SERVERSOCKET_CONSTRUCTOR "ServerSocket Constructor called."
-#define LOG_SERVERSOCKET_DESTRUCTOR "ServerSocket Destructor called."
+
+#ifndef LISTENINGSOCKET_HPP
+#define LISTENINGSOCKET_HPP
+
+#define LOG_LISTENINGSOCKET_CONSTRUCTOR "ListeningSocket Constructor called."
+#define LOG_LISTENINGSOCKET_DESTRUCTOR "ListeningSocket Destructor called."
 
 #include "Socket.hpp"
 #include "ClientSocket.hpp"
@@ -23,12 +25,12 @@
 #include <string>
 #include <cstring>
 
-class ServerSocket : public Socket
+class ListeningSocket : public Socket
 {
 public:
-    ServerSocket(void);
-    ServerSocket(const ServerSocket& src);
-    virtual ~ServerSocket(void);
+    ListeningSocket(void);
+    ListeningSocket(const ListeningSocket& src);
+    virtual ~ListeningSocket(void);
 
 	virtual int			setNonBlocking(int fd);
     virtual int			safeFcntl(int fd, int cmd, int flag);
@@ -41,11 +43,12 @@ public:
     std::string			getAddress(void) const;
 
 private:
-    ServerSocket&		operator=(const ServerSocket& rhs);
+    ListeningSocket&		operator=(const ListeningSocket& rhs);
 
-    struct sockaddr_in	_serverAddr;  ///< Server address structure
+    struct sockaddr_in	_ListeningAddr;  ///< Listening address structure
 };
 
-typedef std::vector<ServerSocket> SSVECTOR;
+typedef std::vector<ListeningSocket> LSVECTOR;
 
-#endif  // ************************************************* SERVERSOCKET_HPP //
+#endif
+

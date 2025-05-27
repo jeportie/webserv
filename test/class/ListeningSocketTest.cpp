@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ServerSocketTest.cpp                               :+:      :+:    :+:   */
+/*   ListeningSocketTest.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -13,12 +13,12 @@
 #include <gtest/gtest.h>
 #include <sys/socket.h>
 #include <fcntl.h>
-#include "../../src/class/Sockets/ServerSocket.hpp"
+#include "../../src/class/Sockets/ListeningSocket.hpp"
 
-// Mock class for testing ServerSocket without actual network operations
-class MockServerSocket : public ServerSocket {
+// Mock class for testing ListeningSocket without actual network operations
+class MockListeningSocket : public ListeningSocket {
 public:
-    MockServerSocket() : ServerSocket() {}
+    MockListeningSocket() : ListeningSocket() {}
     
     // Override methods that would interact with the actual system
     virtual bool socketCreate() {
@@ -58,61 +58,61 @@ public:
     }
 };
 
-TEST(ServerSocketTest, DefaultConstructor)
+TEST(ListeningSocketTest, DefaultConstructor)
 {
-    ServerSocket socket;
+    ListeningSocket socket;
     EXPECT_FALSE(socket.isValid());
     EXPECT_FALSE(socket.isNonBlocking());
     EXPECT_EQ(socket.getFd(), -1);
 }
 
-TEST(ServerSocketTest, SafeBind)
+TEST(ListeningSocketTest, SafeBind)
 {
-    MockServerSocket socket;
+    MockListeningSocket socket;
     EXPECT_TRUE(socket.safeBind(8080, "127.0.0.1"));
     EXPECT_TRUE(socket.isValid());
     EXPECT_TRUE(socket.isNonBlocking());
 }
 
-TEST(ServerSocketTest, GetPort)
+TEST(ListeningSocketTest, GetPort)
 {
     // For this test, we need to use a different approach
     // We'll create a mock class that overrides getPort
-    class PortMockServerSocket : public MockServerSocket {
+    class PortMockListeningSocket : public MockListeningSocket {
     public:
         virtual int getPort() const {
             return 8080; // Mock port
         }
     };
     
-    PortMockServerSocket socket;
+    PortMockListeningSocket socket;
     socket.safeBind(8080, "127.0.0.1");
     EXPECT_EQ(socket.getPort(), 8080);
 }
 
-TEST(ServerSocketTest, GetAddress)
+TEST(ListeningSocketTest, GetAddress)
 {
     // For this test, we need to use a different approach
     // We'll create a mock class that overrides getAddress
-    class AddressMockServerSocket : public MockServerSocket {
+    class AddressMockListeningSocket : public MockListeningSocket {
     public:
         virtual std::string getAddress() const {
             return "0.0.0.0"; // Mock address
         }
     };
     
-    AddressMockServerSocket socket;
+    AddressMockListeningSocket socket;
     socket.safeBind(8080, "127.0.0.1");
     EXPECT_EQ(socket.getAddress(), "0.0.0.0");
 }
 
 // Test for safeListen method
 // Note: This test doesn't actually call listen() on a real socket
-TEST(ServerSocketTest, SafeListen)
+TEST(ListeningSocketTest, SafeListen)
 {
     // For this test, we need to use a different approach
     // We'll create a mock class that overrides safeListen
-    class ListenMockServerSocket : public MockServerSocket {
+    class ListenMockListeningSocket : public MockListeningSocket {
     public:
         virtual void safeListen(int backlog) {
             (void)backlog;
@@ -120,7 +120,7 @@ TEST(ServerSocketTest, SafeListen)
         }
     };
     
-    ListenMockServerSocket socket;
+    ListenMockListeningSocket socket;
     socket.safeBind(8080, "127.0.0.1");
     
     // This should not throw an exception

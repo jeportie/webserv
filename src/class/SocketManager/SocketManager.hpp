@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:23:58 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/27 14:29:16 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/27 15:14:56 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,13 @@
 
 #define LOG_SM_CONST "SocketManager Constructor called"
 #define LOG_SM_DEST "SocketManager Destructor called"
-#define LOG_SM_EPOLL "Failed to add server socket to epoll"
+#define LOG_SM_EPOLL "Failed to add listening socket to epoll"
 
 #include <arpa/inet.h>
 #include <sys/epoll.h>
 
 #include "../Sockets/ClientSocket.hpp"
-#include "../Sockets/ServerSocket.hpp"
+#include "../Sockets/ListeningSocket.hpp"
 #include "../Callbacks/CallbackQueue.hpp"
 #include "../../../include/webserv.h"
 
@@ -42,17 +42,17 @@ public:
     void	scanClientTimeouts(int epoll_fd);
     void	instantiateConfig(const std::string& content);
     int 	safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event* event);
-    void	safeRegisterToEpoll(int epoll_fd, int serverFd);
+    void	safeRegisterToEpoll(int epoll_fd, int listeningFd);
 	IVSCMAP	ReadandParseConfigFile(const std::string& content);
 
-    ServerSocket*   getServerSocket(int fd);
-    SSVECTOR&		getVectorServerSocket();
+    ListeningSocket*   getListeningSocket(int fd);
+    LSVECTOR&		getVectorListeningSocket();
     CallbackQueue&	getCallbackQueue();
     int				getCheckIntervalMs(void);
     int				getClientSocketFd(void) const;
     IVSCMAP			getConfiguration(void) const { return _serversByPort; }
 
-    int setNonBlockingServer(int fd);
+    int setNonBlockingListening(int fd);
     
 
     const ICMAP& getClientMap(void) const;
@@ -62,7 +62,7 @@ private:
     SocketManager& operator=(const SocketManager& rhs);
 
     ICMAP         _clientSockets;   ///< Map of client sockets by file descriptor
-	SSVECTOR	  _serverSockets;  ///< The server socket
+	LSVECTOR	  _listeningSockets;  ///< The listening socket
     int           _clientSocketFd;  ///< Client socket file descriptor (most recent)
     CallbackQueue _callbackQueue;   ///< Simple callback queue
     IVSCMAP        _serversByPort;

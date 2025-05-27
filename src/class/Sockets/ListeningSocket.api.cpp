@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ServerSocket.api.cpp                               :+:      :+:    :+:   */
+/*   ListeningSocket.api.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -15,23 +15,23 @@
 #include <sstream>
 #include <cerrno>
 
-#include "ServerSocket.hpp"
+#include "ListeningSocket.hpp"
 #include "ClientSocket.hpp"
 #include "../Errors/ErrorHandler.hpp"
 #include "../../../include/webserv.h"
 
-int ServerSocket::safeFcntl(int fd, int cmd, int flag)
+int ListeningSocket::safeFcntl(int fd, int cmd, int flag)
 {
     int retFd;
 
 	retFd = fcntl(fd, cmd, flag);
     if (retFd == -1)
-        THROW_SYSTEM_ERROR(CRITICAL, SOCKET_ERROR, LOG_FCNTL_SERVER_FAIL, __FUNCTION__);
+        THROW_SYSTEM_ERROR(CRITICAL, SOCKET_ERROR, LOG_FCNTL_LISTENING_FAIL, __FUNCTION__);
 
     return (retFd);
 }
 
-int ServerSocket::setNonBlocking(int fd)
+int ListeningSocket::setNonBlocking(int fd)
 {
     int flags;
     int retFd;
@@ -44,7 +44,7 @@ int ServerSocket::setNonBlocking(int fd)
     return (retFd);
 }
 
-bool ServerSocket::safeBind(int port, const std::string& adress)
+bool ListeningSocket::safeBind(int port, const std::string& adress)
 {
     // Create socket if it doesn't exist
     if (!isValid() && !socketCreate())
@@ -57,11 +57,11 @@ bool ServerSocket::safeBind(int port, const std::string& adress)
 	
     setNonBlocking(this->_socketFd);
 
-    _serverAddr.sin_port   = htons(port);
-    _serverAddr.sin_family = AF_INET;
-    _serverAddr.sin_addr.s_addr = INADDR_ANY;
+    _ListeningAddr.sin_port   = htons(port);
+    _ListeningAddr.sin_family = AF_INET;
+    _ListeningAddr.sin_addr.s_addr = INADDR_ANY;
 
-    if (bind(this->_socketFd, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr)) < 0)
+    if (bind(this->_socketFd, (struct sockaddr*) &_ListeningAddr, sizeof(_ListeningAddr)) < 0)
     {
         LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR, LOG_BIND_FAIL, __FUNCTION__);
         return (false);
@@ -69,7 +69,7 @@ bool ServerSocket::safeBind(int port, const std::string& adress)
     return (true);
 }
 
-void ServerSocket::safeListen(int backlog)
+void ListeningSocket::safeListen(int backlog)
 {
     if (!isValid())
         THROW_ERROR(CRITICAL, SOCKET_ERROR, LOG_INVALID_SOCKET_LISTEN, __FUNCTION__);
@@ -78,7 +78,7 @@ void ServerSocket::safeListen(int backlog)
         THROW_SYSTEM_ERROR(CRITICAL, SOCKET_ERROR, LOG_LISTEN_FAIL, __FUNCTION__);
 }
 
-ClientSocket* ServerSocket::safeAccept(int epoll_fd)
+ClientSocket* ListeningSocket::safeAccept(int epoll_fd)
 {
     struct sockaddr_in	clientAddr;
     epoll_event			client_ev;
@@ -131,16 +131,16 @@ ClientSocket* ServerSocket::safeAccept(int epoll_fd)
     return (client);
 }
 
-int ServerSocket::getPort(void) const { return ntohs(_serverAddr.sin_port); }
+int ListeningSocket::getPort(void) const { return ntohs(_ListeningAddr.sin_port); }
 
-std::string ServerSocket::getAddress(void) const
+std::string ListeningSocket::getAddress(void) const
 {
 	uint32_t			ip;
     unsigned char		bytes[4];
     std::ostringstream	oss;
 
     // Convert network byte order to host byte order
-    ip = ntohl(_serverAddr.sin_addr.s_addr);
+    ip = ntohl(_ListeningAddr.sin_addr.s_addr);
 
     // Extract each byte
     bytes[0] = (ip >> 24) & 0xFF;

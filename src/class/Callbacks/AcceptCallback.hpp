@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   AcceptCallback.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 12:37:37 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/22 12:50:19 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/27 14:55:42 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ class SocketManager;
 class AcceptCallback : public Callback
 {
 public:
-    AcceptCallback(int serverFd, SocketManager* manager, int epollFd);
+    AcceptCallback(int ListeningFd, SocketManager* manager, int epollFd);
     virtual ~AcceptCallback();
 
     virtual void execute();
