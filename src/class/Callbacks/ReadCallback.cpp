@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ReadCallback.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/27 12:25:14 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/27 16:50:24 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ void ReadCallback::execute()
         if (!readFromClient(_fd, client))
             return ;
 
-		std::cout << client->getBuffer() << std::endl;
+		std::cout << client->requestData.getBuffer() << std::endl;
 
         if (!parseClientHeaders(client))
             return ;

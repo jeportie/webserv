@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientSocket.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:16:38 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/27 15:11:30 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/27 16:51:53 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,14 +23,8 @@
 #include "../Http/RequestLine.hpp"
 #include "../../../include/webserv.h"
 #include "../ConfigFile/ServerConfig.hpp"
+#include "RequestData.hpp"
 
-
-enum BodyMode
-{
-    BODY_NONE,
-    BODY_CONTENT_LENGTH,
-    BODY_CHUNKED
-};
 
 class ClientSocket : public Socket
 {
@@ -41,61 +35,31 @@ public:
 
 	void						touch(void);
     virtual int                 safeFcntl(int fd, int cmd, int flag);
-    void                        determineBodyMode();
-    void                        clearBodyAccumulator();
-    void                        resetParserState();
-	
+
 	// Getters
-    std::string&				getBuffer();
-    std::string                 getClientIP(void) const;
-    int							getClientPort(void) const;
     const struct sockaddr_in&	getClientAddr(void) const;
     socklen_t                   getClientAddrLen(void) const;
 	time_t						getLastActivity(void) const;
-    size_t                      getContentLength() const;
-    SVSMAP						getParsedHeaders() const;
-    bool                        getIsHeadersParsed() const;
-    RequestLine                 getRequestLine() const;
-    BodyMode                    getBodyMode() const;
-    std::string&                getBodyAccumulator();
-    bool                        getIsChunked() const;
-    size_t                      getChunkSize() const;
-	
+    std::string                 getClientIP(void) const;
+    int							getClientPort(void) const;
 	// Setters
     virtual int					setNonBlocking(int fd);
     void                        setClientAddr(const struct sockaddr_in& addr, socklen_t addrLen);
-    void                        setHeadersParsed(bool parsed);
-    void                        setContentLength(size_t length);
-    void						setRequestLine(RequestLine rl);
-    void                        setBodyMode(BodyMode mode);
-    void                        setParsedHeaders(SVSMAP hdrs);
-    void                        setChunked(bool);
-    void                        setChunkSize(size_t);
+    
+    RequestData                 requestData;
 
-private:
+private :
+
     ClientSocket(const ClientSocket& src);
     ClientSocket& operator=(const ClientSocket& rhs);
 
-    void checkChunkedBodyMode();
-    void checkContentLengthBodyMode();
     
     // requetedata
-	time_t						_lastActivity;
     socklen_t                   _clientAddrLen;  ///< Length of client address structure
     struct sockaddr_in          _clientAddr;     ///< Client address structure
-    std::string                 _buffer;
-    bool                        _isHeadersParsed;
-    BodyMode                    _bodyMode;
-    size_t                      _contentLength;
-    RequestLine                 _requestLine;
-    SVSMAP						_parsedHeaders;
-    bool                        _isChunked;    // mode chunked activé
-    size_t                      _chunkSize;  // taille restante du chunk courant
-    std::string                 _bodyAccumulator;
-    int                         _listeningSocket;
-    ServerConfig                _routeconfig;
+    time_t						_lastActivity;
 
-    
+
 };
 
 typedef std::map<int, ClientSocket*>						ICMAP;

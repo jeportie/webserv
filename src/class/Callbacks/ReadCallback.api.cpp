@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ReadCallback.api.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/27 12:31:01 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/27 16:50:42 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ bool ReadCallback::readFromClient(int fd, ClientSocket* client)
 {
     ssize_t n;
     char tmp[4096];
-    std::string& buf = client->getBuffer();
+    std::string& buf = client->requestData.getBuffer();
 
     while (true)
     {
@@ -54,10 +54,10 @@ bool ReadCallback::readFromClient(int fd, ClientSocket* client)
 
 bool ReadCallback::parseClientHeaders(ClientSocket* client)
 {
-    if (client->getIsHeadersParsed())
+    if (client->requestData.getIsHeadersParsed())
         return true;
 
-    std::string& buf     = client->getBuffer();
+    std::string& buf     = client->requestData.getBuffer();
     size_t       hdr_end = buf.find("\r\n\r\n");
     if (hdr_end == std::string::npos)
         return false;
@@ -70,19 +70,19 @@ bool ReadCallback::parseClientHeaders(ClientSocket* client)
     // Request-Line
     std::cout << firstLine << std::endl;
     RequestLine rl = HttpParser::parseRequestLine(firstLine);
-    client->setRequestLine(rl);
+    client->requestData.setRequestLine(rl);
 
     // Headers
     std::string                                     rest = hdr_block.substr(line_end + 2);
     std::map<std::string, std::vector<std::string> > hdrs = HttpParser::parseHeaders(rest);
     if (hdrs.size() > MAX_HEADER_COUNT)
         throw HttpException(431, "Request Header Fields Too Large");
-    client->setParsedHeaders(hdrs);
-    client->setHeadersParsed(true);
+    client->requestData.setParsedHeaders(hdrs);
+    client->requestData.setHeadersParsed(true);
     buf.erase(0, hdr_end + 4);
 
     // Délégation au client pour détermination du mode de body
-    client->determineBodyMode();
+    client->requestData.determineBodyMode();
     return true;
 }
 
@@ -100,12 +100,12 @@ static size_t hexToSize(const std::string& hex)
 
 bool ReadCallback::parseClientBody(ClientSocket* client)
 {
-    std::string& buf  = client->getBuffer();
-    BodyMode     mode = client->getBodyMode();
+    std::string& buf  = client->requestData.getBuffer();
+    BodyMode     mode = client->requestData.getBodyMode();
 
     if (mode == BODY_CONTENT_LENGTH)
     {
-        size_t needed = client->getContentLength();
+        size_t needed = client->requestData.getContentLength();
         if (needed > MAX_BODY_SIZE)
             throw HttpException(413, "Payload Too Large");
         if (buf.size() < needed)
@@ -118,7 +118,7 @@ bool ReadCallback::parseClientBody(ClientSocket* client)
         // chunked state machine, append to internal temporary storage
         while (true)
         {
-            if (client->getChunkSize() == 0)
+            if (client->requestData.getChunkSize() == 0)
             {
                 size_t pos = buf.find("\r\n");
                 if (pos == std::string::npos)
@@ -126,7 +126,7 @@ bool ReadCallback::parseClientBody(ClientSocket* client)
                 size_t chunkLen = hexToSize(buf.substr(0, pos));
                 if (buf.size() + chunkLen > MAX_BODY_SIZE)
                     throw HttpException(413, "Payload Too Large");
-                client->setChunkSize(chunkLen);
+                client->requestData.setChunkSize(chunkLen);
                 buf.erase(0, pos + 2);
                 if (chunkLen == 0)
                 {
@@ -137,12 +137,12 @@ bool ReadCallback::parseClientBody(ClientSocket* client)
                     break;
                 }
             }
-            size_t needed = client->getChunkSize();
+            size_t needed = client->requestData.getChunkSize();
             if (buf.size() < needed + 2)
                 return false;
-            client->getBodyAccumulator().append(buf.substr(0, needed));
+            client->requestData.getBodyAccumulator().append(buf.substr(0, needed));
             buf.erase(0, needed + 2);
-            client->setChunkSize(0);
+            client->requestData.setChunkSize(0);
         }
         return true;
     }
@@ -154,31 +154,31 @@ HttpRequest ReadCallback::buildHttpRequest(ClientSocket* client)
 {
     HttpRequest req;
     // fill body
-    if (client->getBodyMode() == BODY_CONTENT_LENGTH)
+    if (client->requestData.getBodyMode() == BODY_CONTENT_LENGTH)
     {
-        req.body = client->getBuffer().substr(0, client->getContentLength());
-        client->getBuffer().erase(0, client->getContentLength());
+        req.body = client->requestData.getBuffer().substr(0, client->requestData.getContentLength());
+        client->requestData.getBuffer().erase(0, client->requestData.getContentLength());
     }
-    else if (client->getBodyMode() == BODY_CHUNKED)
+    else if (client->requestData.getBodyMode() == BODY_CHUNKED)
     {
-        req.body = client->getBodyAccumulator();
-        client->clearBodyAccumulator();
+        req.body = client->requestData.getBodyAccumulator();
+        client->requestData.clearBodyAccumulator();
     }
 
     // fill request-line and headers
-    RequestLine rl = client->getRequestLine();
+    RequestLine rl = client->requestData.getRequestLine();
     req.method     = rl.method;
     req.http_major = rl.http_major;
     req.http_minor = rl.http_minor;
     HttpParser::splitTarget(rl.target, req.path, req.raw_query);
     HttpParser::parsePathAndQuerry(req.path, req.raw_query);
 
-    req.headers      = client->getParsedHeaders();
+    req.headers      = client->requestData.getParsedHeaders();
     req.query_params = HttpParser::parseQueryParams(req.raw_query);
     req.form_data    = HttpParser::parseFormUrlencoded(req.body);
     return req;
 }
 
-void ReadCallback::cleanupRequest(ClientSocket* client) { client->resetParserState(); }
+void ReadCallback::cleanupRequest(ClientSocket* client) { client->requestData.resetParserState(); }
 
 

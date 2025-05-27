@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+         #
+#    By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/04/06 08:55:40 by jeportie          #+#    #+#              #
-#    Updated: 2025/05/27 15:14:11 by anastruc         ###   ########.fr        #
+#    Updated: 2025/05/27 16:55:36 by fsalomon         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,6 +39,8 @@ SRC = \
   src/class/Http/HttpParser_utils.cpp \
   src/class/Sockets/ClientSocket.api.cpp \
   src/class/Sockets/ClientSocket.cpp \
+  src/class/Sockets/RequestData.cpp \
+  src/class/Sockets/RequestData.api.cpp \
   src/class/Sockets/ListeningSocket.cpp \
   src/class/Sockets/Socket.api.cpp \
   src/class/Sockets/Socket.cpp \

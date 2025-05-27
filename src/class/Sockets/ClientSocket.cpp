@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientSocket.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 16:11:45 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/24 12:13:40 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/05/27 16:37:45 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,15 +24,7 @@
 ClientSocket::ClientSocket()
 : Socket()
 , _clientAddrLen(sizeof(_clientAddr))
-, _buffer()
-, _isHeadersParsed(false)
-, _bodyMode(BODY_NONE)
-, _contentLength(0)
-, _requestLine()
-, _parsedHeaders()
-, _isChunked(false)
-, _chunkSize(0)
-, _bodyAccumulator()
+
 {
     LOG_ERROR(
         DEBUG, SOCKET_ERROR, LOG_CLIENTSOCKET_CONSTRUCTOR, __FUNCTION__);
@@ -49,7 +41,6 @@ ClientSocket::~ClientSocket(void)
 
 // GETTERS
 
-std::string& ClientSocket::getBuffer() { return (_buffer); }
 
 int ClientSocket::getClientPort(void) const { return (_clientAddr.sin_port); }
 
@@ -58,22 +49,6 @@ socklen_t ClientSocket::getClientAddrLen(void) const { return (_clientAddrLen); 
 const struct sockaddr_in& ClientSocket::getClientAddr(void) const { return (_clientAddr); }
 
 time_t ClientSocket::getLastActivity() const { return _lastActivity; }
-
-size_t ClientSocket::getContentLength() const { return (_contentLength); }
-
-SVSMAP ClientSocket::getParsedHeaders() const { return (_parsedHeaders); }
-
-bool ClientSocket::getIsHeadersParsed() const { return (_isHeadersParsed); }
-
-RequestLine ClientSocket::getRequestLine() const { return (_requestLine); }
-
-BodyMode ClientSocket::getBodyMode() const { return (_bodyMode); }
-
-std::string& ClientSocket::getBodyAccumulator() { return _bodyAccumulator; }
-
-bool ClientSocket::getIsChunked() const { return (_isChunked); }
-
-size_t ClientSocket::getChunkSize() const { return (_chunkSize); }
 
 std::string ClientSocket::getClientIP(void) const
 {
@@ -97,17 +72,6 @@ std::string ClientSocket::getClientIP(void) const
 
 // SETTERS
 
-void ClientSocket::setHeadersParsed(bool parsed) { _isHeadersParsed = parsed; }
-
-void ClientSocket::setContentLength(size_t length) { _contentLength = length; }
-
-void ClientSocket::setRequestLine(RequestLine rl) { _requestLine = rl; }
-
-void ClientSocket::setBodyMode(BodyMode mode) { _bodyMode = mode; }
-
-void ClientSocket::setChunked(bool c) { _isChunked = c; }
-
-void ClientSocket::setChunkSize(size_t s) { _chunkSize = s; }
 
 int ClientSocket::setNonBlocking(int fd)
 {
@@ -128,9 +92,4 @@ void ClientSocket::setClientAddr(const struct sockaddr_in& addr, socklen_t addrL
 {
     _clientAddr    = addr;
     _clientAddrLen = addrLen;
-}
-
-void ClientSocket::setParsedHeaders(SVSMAP hdrs)
-{
-    _parsedHeaders = hdrs;
 }
