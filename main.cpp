@@ -19,7 +19,7 @@
 #include <iostream>
 #include <sstream>
 
-std::string Start("Server starting on port ");
+std::string Start("Server starting...");
 std::string RunT ("Runtime Error: ");
 std::string Excp ("Exception Error: ");
 std::string Ukwn ("Unknown Error: ");
@@ -56,7 +56,6 @@ std::string readFileToString(const std::string& filename)
 int main(int argc, char **argv)
 
 {
-    std::stringstream ss;
     std::string content;
     SocketManager theSocketMaster;
     
@@ -65,26 +64,18 @@ int main(int argc, char **argv)
         std::cout << "Usage: " << argv[0] << " [config_file.conf]" << std::endl;
         return (1);
     }
-    
-    // Initialize error handler
     ErrorHandler& errorHandler = ErrorHandler::getInstance();
     errorHandler.setLogLevel(DEBUG);
     errorHandler.setLogFile("webserv.log");
     
     try
     {
-        
         content = readFileToString(argv[1]);
         theSocketMaster.instantiateConfig(content);
-                
-        // nombre de server ?
         
-        std::cout << "Starting webserv on port " << PORT << std::endl;
+        std::cout << "Starting webserv!" << std::endl;
+        LOG_ERROR(INFO, INTERNAL_ERROR, Start, "main");
 
-        ss << PORT;
-        LOG_ERROR(INFO, INTERNAL_ERROR, Start + ss.str(), "main");
-
-		// Start the server
         theSocketMaster.init_connect();
     }
     catch (const std::runtime_error& e)
@@ -102,8 +93,6 @@ int main(int argc, char **argv)
         LOG_ERROR(CRITICAL, INTERNAL_ERROR, Ukwn, "main");
         std::cerr << "Unknown Error" << std::endl;
     }
-    
-    // Check if we should shut down due to critical errors
     if (errorHandler.shouldShutdown())
     {
 		errorHandler.logSystemError(CRITICAL, INTERNAL_ERROR, Crit);
