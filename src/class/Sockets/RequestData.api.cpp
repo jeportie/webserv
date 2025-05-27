@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 16:40:52 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/27 18:21:15 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/27 18:22:42 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,7 +159,6 @@ ServerConfig RequestData::findMyConfig(int port, std::string host, IVSCMAP Serve
     throw HttpException(400, "Bad Request");
     // si je n'ai pas trouve de server name correspondant je send un 400 bad request.
 }
-
 
 void RequestData::initServerConfig(IVSCMAP ServerConfigMap)
 {
