@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 16:31:54 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/19 13:15:24 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/27 09:44:12 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,10 +62,10 @@ bool isValidIPv4(const std::string& ip)
 
 void ConfigValidator::validate(const std::vector<ServerConfig>& servers)
 {
+    std::string error_msg;
     std::set<std::string> listenSet;
 	std::vector<ServerConfig>::const_iterator it;
     std::ostringstream oss;
-    std::ostringstream msg;
 	std::string key;
 
     if (servers.empty())
@@ -84,45 +84,68 @@ void ConfigValidator::validate(const std::vector<ServerConfig>& servers)
 
         if (!listenSet.insert(key).second)
         {
-			msg << "Duplicate host:port detected: " << key;
-			THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, msg.str(), __FUNCTION__);
+			error_msg << "Duplicate host:port detected: " + key;
+			THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
         }
     }
 }
 
 void ConfigValidator::validateServer(const ServerConfig& config)
 {
+    std::string error_msg;
+    std::set<std::string> validMethods;
+
     if (!config.listenIsSet)
-        throw std::runtime_error("Missing required directive: listen");
-
+    {
+        error_msg = "Missing required directive: listen";
+        THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
+    }
     if (!config.rootIsSet)
-        throw std::runtime_error("Missing required directive: root");
+    {
+        error_msg = "Missing required directive: root";
+        THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
+    }    
     if (config.port <= 0 || config.port > 65535)
-        throw std::runtime_error("Invalid port number in server config");
+    {
+        error_msg = "Invalid port number in server config";
+        THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
+    }    
     if (config.host.empty())
-        throw std::runtime_error("Host must be defined in server config");
-
+    {
+        error_msg = "Host must be defined in server config";
+        THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
+    }    
     if (!isValidIPv4(config.host))
-        throw std::runtime_error("Host must be a valid IPv4");
-
+    {
+        error_msg = "Host must be a valid IPv4";
+        THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
+    }    
     if (config.root.empty())
-        throw std::runtime_error(
-            "Root directory must be defined in server config or at least in every route");
-
+    {
+        error_msg = "Root directory must be defined in server config or at least in every route";
+        THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
+    }    
     if (config.client_max_body_size <= 0)
-        throw std::runtime_error("client_max_body_size must be greater than 0");
-
+    {
+        error_msg = "client_max_body_size must be greater than 0";
+        THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
+    }    
     for (std::map<int, std::string>::const_iterator it = config.error_pages.begin();
          it != config.error_pages.end();
          ++it)
     {
         if (it->first < 400 || it->first > 599)
-            throw std::runtime_error("Invalid HTTP status code in error_page");
+        {
+            error_msg = "Invalid HTTP status code in error_page";
+            THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
+        }    
         if (it->second.empty())
-            throw std::runtime_error("error_page URL must not be empty");
+        {
+            error_msg = "error_page URL must not be empty";
+            THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
+        }    
     }
 
-    std::set<std::string> validMethods;
     validMethods.insert("GET");
     validMethods.insert("POST");
     validMethods.insert("DELETE");
@@ -130,8 +153,9 @@ void ConfigValidator::validateServer(const ServerConfig& config)
     for (size_t i = 0; i < config.allowedMethods.size(); ++i)
     {
         if (validMethods.find(config.allowedMethods[i]) == validMethods.end())
-        {
-            throw std::runtime_error("Invalid allowed method: " + config.allowedMethods[i]);
+        { 
+            error_msg = "Invalid allowed method: " + config.allowedMethods[i];
+            THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
         }
     }
 
@@ -146,35 +170,56 @@ void ConfigValidator::validateServer(const ServerConfig& config)
 
 void ConfigValidator::validateRoute(const RouteConfig& route)
 {
+    std::string error_msg;
+    
     if (route.path.empty())
-        throw std::runtime_error("Route path is required");
-
+    {
+        error_msg = "Route path is required";
+        THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
+    }    
     if (route.root.empty() && route.returnCodes.empty())
-        throw std::runtime_error("Each route must have either a root or a return directive");
-
+    {
+        error_msg = "Each route must have either a root or a return directive";
+        THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
+    }    
     if (!route.root.empty() && !route.returnCodes.empty())
-        throw std::runtime_error(
-            "A route cannot have both root and return directives at the same time");
-
+    {
+        error_msg = "A route cannot have both root and return directives at the same time";
+        THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
+    }    
     if (!route.defaultFile.empty() && route.defaultFile.find('/') == 0)
-        throw std::runtime_error("default_file must be a relative filename (not starting with /)");
-
-
+    {
+        error_msg = "default_file must be a relative filename (not starting with /)";
+        THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
+    }    
     if (route.defaultFile.find('/') != std::string::npos)
-        throw std::runtime_error("default_file must not contain '/'");
-
+    {
+        error_msg = "default_file must not contain '/'";
+        THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
+    }    
     for (std::map<int, std::string>::const_iterator it = route.returnCodes.begin();
          it != route.returnCodes.end();
          ++it)
     {
         if (it->first < 100 || it->first > 599)
-            throw std::runtime_error("Invalid HTTP status code");
+        {
+        error_msg = "Invalid HTTP status code";
+        THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
+        }    
         if (it->second.empty())
-            throw std::runtime_error("return_url must not be empty for return_code");
+        {
+            error_msg = "return_url must not be empty for return_code";
+            THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
+        }    
     }
     if (!route.cgiExecutor.first.empty() && route.cgiExecutor.second.find('/') != 0)
-        throw std::runtime_error("cgi_executor must be an absolute path");
-
+    {
+        error_msg = "cgi_executor must be an absolute path";
+        THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
+    }    
     if (route.uploadEnabled && route.uploadStore.empty())
-        throw std::runtime_error("upload_store must be set if upload is enabled");
+    {
+        error_msg = "upload_store must be set if upload is enabled";
+        THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
+    }    
 }
