@@ -11,6 +11,8 @@
 /* ************************************************************************** */
 
 #include "Parser.hpp"
+#include "../Errors/ErrorHandler.hpp"
+#include "../../../include/webserv.h"
 
 void Parser::parseListenDirective(std::string& host, int& port)
 {
@@ -143,7 +145,7 @@ std::map<int, std::string> Parser::parseErrorPagesDirective()
 {
     std::map<int, std::string> pages;
     std::string error_msg;
-    std::String path;
+    std::string path;
     
     advance();  // skip 'error_page'
 
@@ -269,6 +271,7 @@ bool Parser::parseAutoindexDirective()
         return false;
     error_msg = "Invalid value for autoindex: " + value;
     THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
+	return (false);
 }
 
 

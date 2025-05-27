@@ -23,8 +23,8 @@ ARGS=$(filter-out $@,$(MAKECMDGOALS))
 #### BEGIN AUTO GENERATED FILES ###
 # List of source files:
 SRC = \
-  src/class/Callbacks/AcceptCallback.cpp \
   src/class/Callbacks/CallbackQueue.cpp \
+  src/class/Callbacks/AcceptCallback.cpp \
   src/class/Callbacks/Callback.cpp \
   src/class/Callbacks/ErrorCallback.cpp \
   src/class/Callbacks/TimeoutCallback.cpp \
@@ -47,11 +47,13 @@ SRC = \
   src/class/Errors/ErrorHandler.cpp \
   src/class/SocketManager/SocketManager.cpp \
   src/class/SocketManager/SocketManager.api.cpp \
-  src/class/ConfigFile/Lexer.cpp \
+  src/class/ConfigFile/ConfigValidator.cpp \
+  src/class/ConfigFile/Parser.api.cpp \
   src/class/ConfigFile/Parser.cpp \
   src/class/ConfigFile/RouteConfig.cpp \
   src/class/ConfigFile/ServerConfig.cpp \
-  src/class/ConfigFile/ConfigValidator.cpp 
+  src/class/ConfigFile/Lexer.api.cpp \
+  src/class/ConfigFile/Lexer.cpp 
 ### END AUTO GENERATED FILES ###
 
 # Create object for main.cpp

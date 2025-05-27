@@ -15,8 +15,6 @@
 #include "../Errors/ErrorHandler.hpp"
 #include "../../../include/webserv.h"
 
-#include <stdexcept>
-
 Parser::Parser(Lexer& lexer)
 : _lexer(lexer)
 {
