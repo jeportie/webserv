@@ -58,7 +58,8 @@
         "typeinfo": "cpp",
         "semaphore": "cpp",
         "fstream": "cpp",
-        "iomanip": "cpp"
+        "iomanip": "cpp",
+        "set": "cpp"
     }
 }
   

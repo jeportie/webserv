@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpParser.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:17:24 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/19 16:45:18 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/28 17:07:27 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,6 @@ HttpRequest::Method HttpParser::parseMethod(const std::string& token)
         return HttpRequest::METHOD_GET;
     if (token == "POST")
         return HttpRequest::METHOD_POST;
-    if (token == "PUT")
-        return HttpRequest::METHOD_PUT;
     if (token == "DELETE")
         return HttpRequest::METHOD_DELETE;
     return HttpRequest::METHOD_INVALID;

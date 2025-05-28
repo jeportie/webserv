@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 16:22:15 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/28 11:49:39 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/28 12:04:55 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,15 +48,15 @@ public:
     void                        determineBodyMode();
     void                        clearBodyAccumulator();
     void                        resetParserState();
-    virtual std::string                 findHostInHeaders();
-    virtual int                         getPortFromFd(int fd);
+    virtual std::string         findHostInHeaders();
+    virtual int                 getPortFromFd(int fd);
+    void                        initServerConfig(IVSCMAP ServerConfigMap, int port, const std::string& host)
+    {
+        _serverConfig = findMyConfig(port, host, ServerConfigMap);
+    }
     ServerConfig                findMyConfig(int port, std::string host, IVSCMAP ServerConfigMap);
 	void                        initServerConfig(IVSCMAP ServerConfigMap);
-// Ajoute cette surcharge dans RequestData
-void    initServerConfig(IVSCMAP ServerConfigMap, int port, const std::string& host)
-{
-    _serverConfig = findMyConfig(port, host, ServerConfigMap);
-}
+
 
 
 	// Getters

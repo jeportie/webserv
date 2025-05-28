@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/27 16:50:24 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/28 16:16:51 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,10 @@ void ReadCallback::execute()
         if (parseClientBody(client))
             return ;
 
+        client->requestData.initServerConfig(_manager->getConfiguration());
         HttpRequest req = buildHttpRequest(client);
+        
+        
 
         // handleHttpRequest(fd, req);
 

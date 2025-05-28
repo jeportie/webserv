@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/27 18:15:50 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/28 16:17:43 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,8 +68,8 @@ bool ReadCallback::parseClientHeaders(ClientSocket* client)
     size_t      line_end  = hdr_block.find("\r\n");
     std::string firstLine = hdr_block.substr(0, line_end);
     
-    client->requestData.initServerConfig(_manager->getConfiguration());
-    // Request-Line
+    //RECUPERER CONFIG AU PLUS VITE;
+    
     std::cout << firstLine << std::endl;
     RequestLine rl = HttpParser::parseRequestLine(firstLine);
     client->requestData.setRequestLine(rl);
