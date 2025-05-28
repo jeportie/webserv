@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 16:40:52 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/27 18:22:42 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/28 12:01:57 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,37 +127,35 @@ int RequestData::getPortFromFd(int fd) {
     return ntohs(addr.sin_port);  // convertit en port lisible (host byte order)
 }
 
-ServerConfig RequestData::findMyConfig(int port, std::string host, IVSCMAP ServerConfigMap)
+ServerConfig RequestData::findMyConfig(int port, std::string host, IVSCMAP serverConfigMap)
 {
-    IVSCMAP::iterator itport;
-    std::vector<ServerConfig>::iterator itServerConfig;
-    std::vector<std::string>::iterator itServerNames;
-    ServerConfig    myconfig;
+    IVSCMAP::iterator itport = serverConfigMap.find(port);
+    if (itport == serverConfigMap.end())
+        throw HttpException(400, "Bad Request: port not found");
 
-    itport = ServerConfigMap.begin();
-    for(; itport != ServerConfigMap.end(); ++itport) // je boucle sur les port
+    std::vector<ServerConfig> configs = itport->second;
+
+    if (configs.empty())
+        throw HttpException(400, "Bad Request: no server config for port");
+
+    if (host.empty())
+        return configs[0];  // retourner la première config par défaut
+
+    // Recherche manuelle car pas de lambda en C++98
+    for (std::vector<ServerConfig>::iterator itConfig = configs.begin(); itConfig != configs.end(); ++itConfig)
     {
-        if (itport->first == port)
+        ServerConfig& config = *itConfig;
+
+        for (std::vector<std::string>::iterator itServerName = config.serverNames.begin();
+             itServerName != config.serverNames.end();
+             ++itServerName)
         {
-            itServerConfig = itport->second.begin();
-            if (host.empty())
-                return (*itServerConfig);
-            for (; itServerConfig!= itport->second.end(); ++itServerConfig) // le boucle sur le vecter ServerConfig
-            {
-                myconfig = *itServerConfig;
-                itServerNames = myconfig.serverNames.begin();
-                for (; itServerNames != myconfig.serverNames.end(); ++itServerNames) // je boucle sur le ServerNames du Serverconfig
-                {
-                    if (*itServerNames == host)
-                    {
-                        return (myconfig);
-                    }
-                }
-            }
+            if (*itServerName == host)
+                return config;  // config trouvée
         }
     }
-    throw HttpException(400, "Bad Request");
-    // si je n'ai pas trouve de server name correspondant je send un 400 bad request.
+
+    throw HttpException(400, "Bad Request: no matching server name");
 }
 
 void RequestData::initServerConfig(IVSCMAP ServerConfigMap)

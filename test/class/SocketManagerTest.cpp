@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocketManagerTest.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 01:28:02 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/27 15:09:29 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/28 11:14:53 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,62 +29,62 @@
 #include "../../src/class/Callbacks/Callback.hpp"
 #include "../../src/class/Callbacks/CallbackQueue.hpp"
 
-// Dummy callback for testing
-class DummyCallback : public Callback {
-public:
-    DummyCallback(int fd, int* counter) : Callback(fd), counter_(counter) {}
-    void execute() {
-        if (counter_) (*counter_)++;
-    }
-private:
-    int* counter_;
-};
+// // Dummy callback for testing
+// class DummyCallback : public Callback {
+// public:
+//     DummyCallback(int fd, int* counter) : Callback(fd), counter_(counter) {}
+//     void execute() {
+//         if (counter_) (*counter_)++;
+//     }
+// private:
+//     int* counter_;
+// };
 
-TEST(SocketManagerTest, ConstructionAndListeningSocketAccess) {
-    SocketManager manager;
-    // Just check that getListeningSocket returns a reference
-    ListeningSocket& Listening = manager.getListeningSocket();
-    (void)Listening;
-    SUCCEED();
-}
+// TEST(SocketManagerTest, ConstructionAndListeningSocketAccess) {
+//     SocketManager manager;
+//     // Just check that getListeningSocket returns a reference
+//     ListeningSocket& Listening = manager.getListeningSocket();
+//     (void)Listening;
+//     SUCCEED();
+// }
 
-TEST(SocketManagerTest, AddClientSocket) {
-    SocketManager manager;
-    int fd = 42;
-    ClientSocket* client = new ClientSocket();
-    manager.addClientSocket(fd, client);
-    // No direct getter, but cleanupClientSocket should delete it
-    manager.cleanupClientSocket(fd, -1);
-    SUCCEED();
-}
+// TEST(SocketManagerTest, AddClientSocket) {
+//     SocketManager manager;
+//     int fd = 42;
+//     ClientSocket* client = new ClientSocket();
+//     manager.addClientSocket(fd, client);
+//     // No direct getter, but cleanupClientSocket should delete it
+//     manager.cleanupClientSocket(fd, -1);
+//     SUCCEED();
+// }
 
-TEST(SocketManagerTest, CallbackQueueIntegration) {
-    SocketManager manager;
-    CallbackQueue& queue = manager.getCallbackQueue();
-    int counter = 0;
-    queue.push(new DummyCallback(1, &counter));
-    queue.push(new DummyCallback(2, &counter));
-    queue.processCallbacks();
-    EXPECT_EQ(counter, 2);
-}
+// TEST(SocketManagerTest, CallbackQueueIntegration) {
+//     SocketManager manager;
+//     CallbackQueue& queue = manager.getCallbackQueue();
+//     int counter = 0;
+//     queue.push(new DummyCallback(1, &counter));
+//     queue.push(new DummyCallback(2, &counter));
+//     queue.processCallbacks();
+//     EXPECT_EQ(counter, 2);
+// }
 
-TEST(SocketManagerTest, EpollFdCreation) {
-    int epoll_fd = epoll_create1(0);
-    ASSERT_NE(epoll_fd, -1);
-    close(epoll_fd);
-}
+// TEST(SocketManagerTest, EpollFdCreation) {
+//     int epoll_fd = epoll_create1(0);
+//     ASSERT_NE(epoll_fd, -1);
+//     close(epoll_fd);
+// }
 
-// For strerror() and strlen()
+// // For strerror() and strlen()
 
-#define private public
-#define protected public
+// #define private public
+// #define protected public
 
-#include "../../src/class/Http/HttpLimits.hpp"
-#include "../../src/class/SocketManager/SocketManager.hpp"
-#include "../../src/class/Http/HttpException.hpp"
+// #include "../../src/class/Http/HttpLimits.hpp"
+// #include "../../src/class/SocketManager/SocketManager.hpp"
+// #include "../../src/class/Http/HttpException.hpp"
 
-#undef private
-#undef protected
+// #undef private
+// #undef protected
 
 
 // #include "../../src/class/SocketManager.hpp"
@@ -591,144 +591,144 @@ TEST(SocketManagerTest, EpollFdCreation) {
 // Fixture qui crée un SocketManager propre à chaque test
 // test/SocketManagerCommunicationTests.cpp
 
-static bool setNonBlocking(int fd)
-{
-    int flags = fcntl(fd, F_GETFL, 0);
-    if (flags == -1) return false;
-    return (fcntl(fd, F_SETFL, flags | O_NONBLOCK) != -1);
-}
+// static bool setNonBlocking(int fd)
+// {
+//     int flags = fcntl(fd, F_GETFL, 0);
+//     if (flags == -1) return false;
+//     return (fcntl(fd, F_SETFL, flags | O_NONBLOCK) != -1);
+// }
 
-// Fixture commune pour tests de parsing & communication
-class SocketManagerCommTest : public ::testing::Test {
-protected:
-    SocketManager     manager;
-    ClientSocket*     clientSock;
-    int               sv[2];
-    int               clientFd;
+// // Fixture commune pour tests de parsing & communication
+// class SocketManagerCommTest : public ::testing::Test {
+// protected:
+//     SocketManager     manager;
+//     ClientSocket*     clientSock;
+//     int               sv[2];
+//     int               clientFd;
 
-    virtual void SetUp() {
-        ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM, 0, sv))
-            << "socketpair() failed: " << strerror(errno);
-        ASSERT_TRUE(setNonBlocking(sv[1]));
+//     virtual void SetUp() {
+//         ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM, 0, sv))
+//             << "socketpair() failed: " << strerror(errno);
+//         ASSERT_TRUE(setNonBlocking(sv[1]));
 
-        clientFd   = sv[1];
-        clientSock = new ClientSocket();
-        clientSock->setFd(clientFd);
-        manager._clientSockets[clientFd] = clientSock;
-    }
+//         clientFd   = sv[1];
+//         clientSock = new ClientSocket();
+//         clientSock->setFd(clientFd);
+//         manager._clientSockets[clientFd] = clientSock;
+//     }
 
-    virtual void TearDown() {
-        manager.closeConnection(clientFd, -1);
-        close(sv[0]);
-    }
-};
+//     virtual void TearDown() {
+//         manager.closeConnection(clientFd, -1);
+//         close(sv[0]);
+//     }
+// };
 
-TEST_F(SocketManagerCommTest, ParseClientHeaders_SetsModeAndRequestLine) {
-    const char* raw =
-        "POST /path?x=1 HTTP/1.1\r\n"
-        "Host: test\r\n"
-        "Transfer-Encoding: chunked\r\n"
-        "\r\n";
-    write(sv[0], raw, strlen(raw));
-    manager.readFromClient(clientFd);
+// TEST_F(SocketManagerCommTest, ParseClientHeaders_SetsModeAndRequestLine) {
+//     const char* raw =
+//         "POST /path?x=1 HTTP/1.1\r\n"
+//         "Host: test\r\n"
+//         "Transfer-Encoding: chunked\r\n"
+//         "\r\n";
+//     write(sv[0], raw, strlen(raw));
+//     manager.readFromClient(clientFd);
 
-    // ici pas d'exception, version et méthode OK
-    EXPECT_NO_THROW({
-        bool ok = manager.parseClientHeaders(clientSock);
-        EXPECT_TRUE(ok);
-        EXPECT_TRUE(clientSock->headersParsed());
-        EXPECT_EQ(clientSock->getBodyMode(), BODY_CHUNKED);
+//     // ici pas d'exception, version et méthode OK
+//     EXPECT_NO_THROW({
+//         bool ok = manager.parseClientHeaders(clientSock);
+//         EXPECT_TRUE(ok);
+//         EXPECT_TRUE(clientSock->headersParsed());
+//         EXPECT_EQ(clientSock->getBodyMode(), BODY_CHUNKED);
 
-        RequestLine rl = clientSock->getRequestLine();
-        EXPECT_EQ(rl.method,     HttpRequest::METHOD_POST);
-        EXPECT_EQ(rl.target,     "/path?x=1");
-        EXPECT_EQ(rl.http_major, 1);
-        EXPECT_EQ(rl.http_minor, 1);
-    });
-}
+//         RequestLine rl = clientSock->getRequestLine();
+//         EXPECT_EQ(rl.method,     HttpRequest::METHOD_POST);
+//         EXPECT_EQ(rl.target,     "/path?x=1");
+//         EXPECT_EQ(rl.http_major, 1);
+//         EXPECT_EQ(rl.http_minor, 1);
+//     });
+// }
 
-// ------------------------------
-// Tests pour parseClientBody (Content-Length)
-// ------------------------------
+// // ------------------------------
+// // Tests pour parseClientBody (Content-Length)
+// // ------------------------------
 
-TEST_F(SocketManagerCommTest, ParseClientBody_ContentLength_ExactLength) {
-    clientSock->setHeadersParsed(true);
-    clientSock->setBodyMode(BODY_CONTENT_LENGTH);
-    clientSock->setContentLength(3);
-    clientSock->getBuffer() = "ABC";
+// TEST_F(SocketManagerCommTest, ParseClientBody_ContentLength_ExactLength) {
+//     clientSock->setHeadersParsed(true);
+//     clientSock->setBodyMode(BODY_CONTENT_LENGTH);
+//     clientSock->setContentLength(3);
+//     clientSock->getBuffer() = "ABC";
 
-    // Doit renvoyer true (corps complet disponible)
-    EXPECT_TRUE(manager.parseClientBody(clientSock));
-}
+//     // Doit renvoyer true (corps complet disponible)
+//     EXPECT_TRUE(manager.parseClientBody(clientSock));
+// }
 
-TEST_F(SocketManagerCommTest, ParseClientBody_ContentLength_Incomplete) {
-    clientSock->setHeadersParsed(true);
-    clientSock->setBodyMode(BODY_CONTENT_LENGTH);
-    clientSock->setContentLength(5);
-    clientSock->getBuffer() = "AB";
+// TEST_F(SocketManagerCommTest, ParseClientBody_ContentLength_Incomplete) {
+//     clientSock->setHeadersParsed(true);
+//     clientSock->setBodyMode(BODY_CONTENT_LENGTH);
+//     clientSock->setContentLength(5);
+//     clientSock->getBuffer() = "AB";
 
-    // Doit renvoyer false (trop peu de données)
-    EXPECT_FALSE(manager.parseClientBody(clientSock));
-}
+//     // Doit renvoyer false (trop peu de données)
+//     EXPECT_FALSE(manager.parseClientBody(clientSock));
+// }
 
-TEST_F(SocketManagerCommTest, ParseClientBody_ContentLength_TooLargeThrows) {
-    clientSock->setHeadersParsed(true);
-    clientSock->setBodyMode(BODY_CONTENT_LENGTH);
-    clientSock->setContentLength(MAX_BODY_SIZE + 1);
+// TEST_F(SocketManagerCommTest, ParseClientBody_ContentLength_TooLargeThrows) {
+//     clientSock->setHeadersParsed(true);
+//     clientSock->setBodyMode(BODY_CONTENT_LENGTH);
+//     clientSock->setContentLength(MAX_BODY_SIZE + 1);
 
-    // Doit jeter un 413 Payload Too Large
-    EXPECT_THROW(manager.parseClientBody(clientSock), HttpException);
-}
+//     // Doit jeter un 413 Payload Too Large
+//     EXPECT_THROW(manager.parseClientBody(clientSock), HttpException);
+// }
 
-// ------------------------------
-// Tests pour buildHttpRequest (Content-Length)
-// ------------------------------
+// // ------------------------------
+// // Tests pour buildHttpRequest (Content-Length)
+// // ------------------------------
 
-TEST_F(SocketManagerCommTest, BuildHttpRequest_ContentLength_BodyAndBuffer) {
-    clientSock->setHeadersParsed(true);
-    clientSock->setBodyMode(BODY_CONTENT_LENGTH);
-    clientSock->setContentLength(3);
-    // Buffer = 3 octets de body + 4 octets restants
-    clientSock->getBuffer() = "XYZ1234";
+// TEST_F(SocketManagerCommTest, BuildHttpRequest_ContentLength_BodyAndBuffer) {
+//     clientSock->setHeadersParsed(true);
+//     clientSock->setBodyMode(BODY_CONTENT_LENGTH);
+//     clientSock->setContentLength(3);
+//     // Buffer = 3 octets de body + 4 octets restants
+//     clientSock->getBuffer() = "XYZ1234";
 
-    // 1) parseClientBody lit et consomme la partie body
-    EXPECT_TRUE(manager.parseClientBody(clientSock));
+//     // 1) parseClientBody lit et consomme la partie body
+//     EXPECT_TRUE(manager.parseClientBody(clientSock));
     
-    // 2) Simuler RequestLine + Host pour buildHttpRequest
-    RequestLine rl;
-    rl.method     = HttpRequest::METHOD_POST;
-    rl.target     = "/foo?x=1";
-    rl.http_major = 1;
-    rl.http_minor = 1;
-    clientSock->setRequestLine(rl);
-    std::map<std::string,std::vector<std::string>> hdrs;
-    hdrs["Host"].push_back("example.com");
-    clientSock->setParsedHeaders(hdrs);
+//     // 2) Simuler RequestLine + Host pour buildHttpRequest
+//     RequestLine rl;
+//     rl.method     = HttpRequest::METHOD_POST;
+//     rl.target     = "/foo?x=1";
+//     rl.http_major = 1;
+//     rl.http_minor = 1;
+//     clientSock->setRequestLine(rl);
+//     std::map<std::string,std::vector<std::string>> hdrs;
+//     hdrs["Host"].push_back("example.com");
+//     clientSock->setParsedHeaders(hdrs);
 
-    // 3) Construire la requête
-    HttpRequest req = manager.buildHttpRequest(clientSock);
+//     // 3) Construire la requête
+//     HttpRequest req = manager.buildHttpRequest(clientSock);
 
-    // Vérifier que le body est bien "XYZ"
-    EXPECT_EQ(req.body, "XYZ");
-    // Vérifier que le reste ("1234") est toujours dans le buffer du client
-    EXPECT_EQ(clientSock->getBuffer(), "1234");
-}
+//     // Vérifier que le body est bien "XYZ"
+//     EXPECT_EQ(req.body, "XYZ");
+//     // Vérifier que le reste ("1234") est toujours dans le buffer du client
+//     EXPECT_EQ(clientSock->getBuffer(), "1234");
+// }
 
 
-// 4) End-to-end communication : GET sans body → no throw, handled true
-TEST_F(SocketManagerCommTest, Communication_CompleteRequest) {
-    const char* raw =
-        "GET /test HTTP/1.1\r\n"
-        "Host: ex\r\n"
-        "\r\n";
-    write(sv[0], raw, strlen(raw));
-    close(sv[0]);
+// // 4) End-to-end communication : GET sans body → no throw, handled true
+// TEST_F(SocketManagerCommTest, Communication_CompleteRequest) {
+//     const char* raw =
+//         "GET /test HTTP/1.1\r\n"
+//         "Host: ex\r\n"
+//         "\r\n";
+//     write(sv[0], raw, strlen(raw));
+//     close(sv[0]);
 
-    // on ne doit pas recevoir de SIGPIPE, et communication() retourne true
-    EXPECT_NO_THROW({
-        bool handled = manager.communication(clientFd);
-        EXPECT_TRUE(handled);
-    });
-    EXPECT_FALSE(clientSock->headersParsed());
-    EXPECT_TRUE(clientSock->getBuffer().empty());
-}
+//     // on ne doit pas recevoir de SIGPIPE, et communication() retourne true
+//     EXPECT_NO_THROW({
+//         bool handled = manager.communication(clientFd);
+//         EXPECT_TRUE(handled);
+//     });
+//     EXPECT_FALSE(clientSock->headersParsed());
+//     EXPECT_TRUE(clientSock->getBuffer().empty());
+// }

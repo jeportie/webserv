@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 16:22:15 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/27 18:13:32 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/28 11:49:39 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ enum BodyMode
     BODY_CHUNKED
 };
 
+// ATTENTION VIRTUAL ET DEUXIEME FONCTION INITSERVERCONFIG A ENLEVER UNIQUEMENT LA POUR LES TESTS UNITAIRE
 
 class RequestData
 {
@@ -47,10 +48,15 @@ public:
     void                        determineBodyMode();
     void                        clearBodyAccumulator();
     void                        resetParserState();
-    std::string                 findHostInHeaders();
-    int                         getPortFromFd(int fd);
+    virtual std::string                 findHostInHeaders();
+    virtual int                         getPortFromFd(int fd);
     ServerConfig                findMyConfig(int port, std::string host, IVSCMAP ServerConfigMap);
 	void                        initServerConfig(IVSCMAP ServerConfigMap);
+// Ajoute cette surcharge dans RequestData
+void    initServerConfig(IVSCMAP ServerConfigMap, int port, const std::string& host)
+{
+    _serverConfig = findMyConfig(port, host, ServerConfigMap);
+}
 
 
 	// Getters
@@ -73,6 +79,11 @@ public:
     void                        setChunked(bool);
     void                        setChunkSize(size_t);
 
+    void setListeningSocketFd(int fd) { _listeningSocketFd = fd; }
+    int getListeningSocketFd() const { return _listeningSocketFd; }
+
+    ServerConfig getServerConfig() const { return _serverConfig; }
+
 private:
     RequestData(const RequestData& src);
     RequestData& operator=(const RequestData& rhs);
@@ -92,6 +103,8 @@ private:
     std::string                 _bodyAccumulator;
     int                         _listeningSocketFd;
     ServerConfig                _serverConfig;
+
+    protected:
 
     
 };
