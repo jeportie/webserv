@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/28 16:17:43 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/28 17:40:33 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ bool ReadCallback::parseClientHeaders(ClientSocket* client)
     std::string firstLine = hdr_block.substr(0, line_end);
     
     //RECUPERER CONFIG AU PLUS VITE;
-    
+    // implementer le get error page 
     std::cout << firstLine << std::endl;
     RequestLine rl = HttpParser::parseRequestLine(firstLine);
     client->requestData.setRequestLine(rl);
