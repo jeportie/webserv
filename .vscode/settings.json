@@ -59,7 +59,10 @@
         "semaphore": "cpp",
         "fstream": "cpp",
         "iomanip": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "charconv": "cpp",
+        "format": "cpp",
+        "variant": "cpp"
     }
 }
   

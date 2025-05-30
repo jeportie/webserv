@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/28 15:11:43 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/30 12:25:34 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/30 16:37:13 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 
 #include "HttpException.hpp"
 #include "HttpParser.hpp"
+#include "HttpLimits.hpp"
 
 class RequestValidator {
 public:

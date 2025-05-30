@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/28 15:13:38 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/30 12:26:12 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/30 18:54:37 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,15 @@ RequestValidator::RequestValidator(const HttpRequest& req, const ServerConfig& s
 _serverConfig(serverConfig) {}
 
 RequestValidator::~RequestValidator() {}
+
+
+static bool isNumeric(const std::string& s) {
+    if (s.empty()) return false;
+    for (size_t i = 0; i < s.length(); ++i)
+        if (!isdigit(s[i]))
+            return false;
+    return true;
+}
 
 std::string RequestValidator::matchedPrefix() const 
 {
@@ -70,28 +79,42 @@ void RequestValidator::validateMethod()
         case HttpRequest::METHOD_GET: method = "GET"; break;
         case HttpRequest::METHOD_POST: method = "POST"; break;
         case HttpRequest::METHOD_DELETE: method = "DELETE"; break;
-        default: throw HttpException(400, "Unknown HTTP method");
+        default: throw HttpException(400, "Bad Request: Unknown HTTP method");
     }
     if (std::find(allowed.begin(), allowed.end(), method) == allowed.end())
-    throw HttpException(405, "Method Not Allowed");
+        throw HttpException(405, "Method Not Allowed");
 }
 
 void RequestValidator::validateBody() 
 {
     size_t max_size = _serverConfig.client_max_body_size;
-    if (_matchedRoute && _matchedRoute->client_max_body_size > 0)
-    max_size = _matchedRoute->client_max_body_size;
-    
+    if (_matchedRoute)
+    {
+        if (_matchedRoute->client_max_body_size > 0)
+             max_size = _matchedRoute->client_max_body_size;
+    }
     if ((_req.method == HttpRequest::METHOD_POST)
     && _req.body.size() > max_size)
     throw HttpException(413, "Payload Too Large");
     
     if ((_req.method == HttpRequest::METHOD_GET || _req.method == HttpRequest::METHOD_DELETE)
     && !_req.body.empty())
-    throw HttpException(400, "Bad Request");
+    throw HttpException(400, "Bad Request: Unexpected body in GET or DELETE request");
+
+    SVSMAP::const_iterator it = _req.headers.find("Content-Length");
+    if (it != _req.headers.end() && !it->second.empty())
+    {
+        const std::string& val = it->second[0];
+        if (isNumeric(val))
+        {
+            size_t declaredLength = static_cast<size_t>(strtol(val.c_str(), NULL, 10));
+            if (_req.body.size() != declaredLength)
+                throw HttpException(400, "Bad Request: Body size does not match Content-Length");
+        }
+    }
 }
 
-// 5. Retrieve error page path for a given status code
+
 std::string RequestValidator::getErrorPage(int statusCode) const {
     // First, check route config (if matched)
     if (_matchedRoute) {
@@ -108,15 +131,6 @@ std::string RequestValidator::getErrorPage(int statusCode) const {
 }
 
 
-// Helper : vérifie si une chaîne est un entier non signé (numérique)
-static bool isNumeric(const std::string& s) {
-    if (s.empty()) return false;
-    for (size_t i = 0; i < s.length(); ++i)
-        if (!isdigit(s[i]))
-            return false;
-    return true;
-}
-
 
 void RequestValidator::validateHeaders()
  {
@@ -126,36 +140,36 @@ void RequestValidator::validateHeaders()
     
     // 1. Host obligatoire et unique
     it = _req.headers.find("Host");
-    if (it == _req.headers.end())
-        throw HttpException(400, "Missing Host header");
-    if (it->second.size() != 1)
-        throw HttpException(400, "Multiple Host header");
+    if (it != _req.headers.end())
+    {
+        if (it->second.size() != 1)
+            throw HttpException(400, "Bad Request: Multiple Host header");
+    }
 
-    // 2. Content-Length : au max 1 fois, valeur numérique >=0, pas avec Transfer-Encoding
     cl_count = _req.headers.count("Content-Length");
     if (cl_count > 1)
-        throw HttpException(400, "Multiple Content-Length headers");
+        throw HttpException(400, "Bad Request: Multiple Content-Length headers");
     if (cl_count == 1) {
         const std::string& val = _req.headers.find("Content-Length")->second[0];
         if (!isNumeric(val))
-            throw HttpException(400, "Invalid Content-Length");
+            throw HttpException(400, "Bad Request: Invalid Content-Length");
         if (strtol(val.c_str(), NULL, 10) < 0)
-            throw HttpException(400, "Negative Content-Length");
+            throw HttpException(400, "Bad Request: Negative Content-Length");
     }
 
     // 3. Transfer-Encoding : au max 1 fois, pas avec Content-Length
     te_count = _req.headers.count("Transfer-Encoding");
     if (te_count > 1)
-        throw HttpException(400, "Multiple Transfer-Encoding headers");
+        throw HttpException(400, "Bad Request: Multiple Transfer-Encoding headers");
     if (cl_count == 1 && te_count == 1)
-        throw HttpException(400, "Content-Length and Transfer-Encoding are mutually exclusive");
+        throw HttpException(400, "Bad Request: Content-Length and Transfer-Encoding are mutually exclusive");
 
     // 4. Interdit tous headers dupliqués sauf whitelist
     for (SVSMAP::const_iterator it_h = _req.headers.begin(); it_h != _req.headers.end(); ++it_h) {
         if (it_h->second.size() > 1) {
             if (it_h->first != "Cookie")
             {
-                throw HttpException(400, "Duplicate header: " + it_h->first);
+                throw HttpException(400, "Bad Request: Duplicate header: " + it_h->first);
             }
         }
     }

@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:17:24 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/28 17:07:27 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/30 16:02:43 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,11 +58,11 @@ RequestLine HttpParser::parseRequestLine(const std::string& line)
     parts.push_back(line.substr(pos));
 
     if (parts.size() != 3)
-        throw HttpException(400, "Bad Request");
+        throw HttpException(400, "Bad Request: Invalid request line format");
 
     rl.method = parseMethod(parts[0]);
     if (rl.method == HttpRequest::METHOD_INVALID)
-        throw HttpException(405, "Method Not Allowed");
+        throw HttpException(501, "Not Implemented");
     rl.target = parts[1];
 
     // Version HTTP/x.y
@@ -117,14 +117,14 @@ SVSMAP HttpParser::parseHeaders(const std::string& hdr_block)
             if (name.length() > MAX_FIELD_NAME || value.length() > MAX_FIELD_VALUE)
                 throw HttpException(431, "Request Header Fields Too Large");
             if (containsCtl(name) || containsCtl(value))
-                throw HttpException(400, "Bad Request");
+                throw HttpException(400, "Bad Request: Control characters in header name or value");
             if (!name.empty() && !value.empty())
                 headers[name].push_back(value);
             else
-                throw HttpException(400, "Bad Request");
+                throw HttpException(400, "Bad Request: Empty header name or value");
         }
         else
-            throw HttpException(400, "Bad Request");
+            throw HttpException(400, "Bad Request: Missing colon in header line");
 
         start = end + 2;
     }
@@ -167,14 +167,18 @@ void HttpParser::splitTarget(const std::string& target,
 void HttpParser::parsePathAndQuerry(std::string path, std::string raw_query)
 {
     if (path.empty() || path[0] != '/')
-        throw HttpException(400, "Bad Request");
+        throw HttpException(400, "Bad Request: Invalid or empty path");
+
     if (path.size() > MAX_URI_LEN)
-        throw HttpException(414, "URI Too Long");
+        throw HttpException(414, "URI Too Long: Path exceeds maximum allowed length");
+
     if (pathEscapesRoot(path))
-        throw HttpException(403, "Forbidden");
+        throw HttpException(403, "Forbidden: Path escapes server root directory");
+
     if (raw_query.size() > MAX_QUERY_LEN)
-        throw HttpException(414, "URI Too Long");
+        throw HttpException(414, "URI Too Long: Query string exceeds maximum allowed length");
 }
+
 
 // 5) parseQueryParams
 SSMAP HttpParser::parseQueryParams(const std::string& raw_query)

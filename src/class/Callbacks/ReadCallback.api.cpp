@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/28 17:40:33 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/30 15:57:30 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,7 @@ static size_t hexToSize(const std::string& hex)
     std::istringstream iss(hex);
     iss >> std::hex >> result;
     if (result == SIZE_MAX)
-        throw HttpException(400, "Bad Request");  // taille invalide
+        throw HttpException(400, "Bad Request: Invalid chunk size format");
     if (result > MAX_CHUNK_SIZE)
         throw HttpException(413, "Payload Too Large");  // chunk trop gros
     return result;

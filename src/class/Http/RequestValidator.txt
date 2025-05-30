@@ -1,0 +1,105 @@
+
+/*
+( on vérifie plus que ça dans le parser HTTP mais flemme de tout reporter )
+
+ 1. Requête HTTP vide ou malformée
+    🔎 Vérifier : que la requête n’est pas vide et respecte la structure générale (ligne de requête + headers)
+    ❌ Erreur : 400 Bad Request
+    -> Vérification dans : 
+       - request line : readcallback.cpp lignes 62-63
+       - headers : HttpParser.cpp ligne 119
+
+ 2. Méthode HTTP supportée
+    🔎 Vérifier : que la méthode est GET, POST, ou DELETE (selon sujet Webserv)
+    ❌ Erreur : 501 Not Implemented
+    -> Vérification dans : 
+       - HttpParser.cpp lignes 64-65
+
+ 3. Syntaxe de la ligne de requête
+    🔎 Vérifier : format "METHOD URI HTTP/VERSION" (avec HTTP/1.1 attendu)
+    ❌ Erreur :
+        - 400 Bad Request si syntaxe incorrecte
+        - 505 HTTP Version Not Supported si version ≠ HTTP/1.1
+    -> Vérification dans :
+       - HttpParser.cpp lignes 60-61, 81-82
+
+ 4. URI correcte
+    🔎 Vérifier :
+        - URI ne dépasse pas une longueur raisonnable (ex : 8Ko max)
+        - URI correctement encodée (pas de caractères invalides)
+    ❌ Erreur :
+        - 414 URI Too Long
+        - 400 Bad Request si URI mal formée
+    -> Vérification dans :
+       - HttpParser.cpp lignes 169-172
+
+ 5. En-tête Host présent (obligatoire en HTTP/1.1)
+    🔎 Vérifier : que l’en-tête `Host:` est présent **et unique**
+    ❌ Erreur :
+        - 400 Bad Request si multiple
+        - (Absence acceptée selon consigne Webserv)
+    -> Vérification dans :
+       - RequestValidator.cpp ligne 122
+
+ 6. En-têtes valides
+    🔎 Vérifier :
+        - Pas trop de headers
+        - Pas de duplication interdite (ex : Content-Length, Transfer-Encoding)
+        - Syntaxe correcte
+        - Header "Content-Length" doit être un entier ≥ 0
+        - Pas à la fois Content-Length et Transfer-Encoding
+        - Seul "Cookie" est autorisé à être dupliqué
+    ❌ Erreur :
+        - 431 Request Header Fields Too Large
+        - 400 Bad Request
+    -> Vérification dans :
+       - RequestValidator::validateHeaders()
+
+ 7. Taille du body vs Content-Length
+    🔎 Vérifier :
+        - Si `Content-Length` est présent : body doit avoir **exactement** cette taille
+        - Rejet si `Content-Length` est invalide (non numérique ou négatif)
+    ❌ Erreur :
+        - 400 Bad Request (incohérence)
+        - 413 Payload Too Large (dépassé par rapport à la conf)
+    -> Vérification dans :
+       - RequestValidator::validateBody() ligne 102-103, 88-89
+
+ 8. Méthode autorisée sur la location
+    🔎 Vérifier :
+        - Que la méthode est bien dans la directive `allowed_methods`
+        - Sinon : 405
+    ❌ Erreur :
+        - 405 Method Not Allowed
+        - 400 Bad Request (si méthode inconnue)
+    -> Vérification dans :
+       - RequestValidator::validateMethod()
+
+ 9. Présence de body inattendu pour GET / DELETE
+    🔎 Vérifier :
+        - GET ou DELETE → body doit être vide
+    ❌ Erreur :
+        - 400 Bad Request
+    -> Vérification dans :
+       - RequestValidator::validateBody()
+
+10. Détection de méthode inconnue (hors GET, POST, DELETE)
+    🔎 Vérifier :
+        - Si méthode non mappée → rejet immédiat
+    ❌ Erreur :
+        - 400 Bad Request
+    -> Vérification dans :
+       - RequestValidator::validateMethod() → default du switch
+
+11. Accès au fichier/chemin
+    🔎 Vérifier :
+        - Que le chemin cible n’est pas une faille de sécurité
+        - Droits de lecture, existence, etc.
+    ❌ Erreur :
+        - 403 Forbidden
+        - 404 Not Found
+    -> Vérification dans :
+       - À faire dans ResponseBuilder / FileResolver
+
+*/
+

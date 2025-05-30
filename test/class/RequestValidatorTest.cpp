@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 10:24:00 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/30 12:50:00 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/30 18:21:39 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,30 +125,12 @@ TEST(RequestValidatorTest, GetWithBodyThrows400) {
         FAIL() << "Expected HttpException";
     } catch (const HttpException& ex) {
         EXPECT_EQ(ex.status(), 400);
-        EXPECT_EQ(std::string(ex.what()), "Bad Request");
+        EXPECT_EQ(std::string(ex.what()), "Bad Request: Unexpected body in GET or DELETE request");
     } catch (...) {
         FAIL() << "Expected HttpException";
     }
 }
 
-
-TEST(RequestValidatorTest, MissingHostHeaderThrows400) {
-    HttpRequest req = makeRequest(HttpRequest::METHOD_GET, "/");
-    req.headers.clear();
-    
-    ServerConfig config = makeServerConfig();
-    RequestValidator validator(req, config);
-    
-    try {
-        validator.validate();
-        FAIL() << "Expected HttpException";
-    } catch (const HttpException& ex) {
-        EXPECT_EQ(ex.status(), 400);
-        EXPECT_EQ(std::string(ex.what()), "Missing Host header");
-    } catch (...) {
-        FAIL() << "Expected HttpException";
-    }
-}
 
 TEST(RequestValidatorTest, MultipleHostHeadersThrows400) {
     HttpRequest req = makeRequest(HttpRequest::METHOD_GET, "/");
@@ -162,7 +144,7 @@ TEST(RequestValidatorTest, MultipleHostHeadersThrows400) {
         FAIL() << "Expected HttpException";
     } catch (const HttpException& ex) {
         EXPECT_EQ(ex.status(), 400);
-        EXPECT_EQ(std::string(ex.what()), "Multiple Host header");
+        EXPECT_EQ(std::string(ex.what()), "Bad Request: Multiple Host header");
     } catch (...) {
         FAIL() << "Expected HttpException";
     }
@@ -181,7 +163,7 @@ TEST(RequestValidatorTest, InvalidContentLengthThrows400) {
         FAIL() << "Expected HttpException";
     } catch (const HttpException& ex) {
         EXPECT_EQ(ex.status(), 400);
-        EXPECT_EQ(std::string(ex.what()), "Invalid Content-Length");
+        EXPECT_EQ(std::string(ex.what()), "Bad Request: Invalid Content-Length");
     } catch (...) {
         FAIL() << "Expected HttpException";
     }
@@ -200,7 +182,7 @@ TEST(RequestValidatorTest, ContentLengthAndTransferEncodingThrows400) {
         FAIL() << "Expected HttpException";
     } catch (const HttpException& ex) {
         EXPECT_EQ(ex.status(), 400);
-        EXPECT_EQ(std::string(ex.what()), "Content-Length and Transfer-Encoding are mutually exclusive");
+        EXPECT_EQ(std::string(ex.what()), "Bad Request: Content-Length and Transfer-Encoding are mutually exclusive");
     } catch (...) {
         FAIL() << "Expected HttpException";
     }
@@ -219,7 +201,7 @@ TEST(RequestValidatorTest, DuplicateNonWhitelistedHeaderThrows400) {
         FAIL() << "Expected HttpException";
     } catch (const HttpException& ex) {
         EXPECT_EQ(ex.status(), 400);
-        EXPECT_EQ(std::string(ex.what()), "Duplicate header: X-Foo");
+        EXPECT_EQ(std::string(ex.what()), "Bad Request: Duplicate header: X-Foo");
     } catch (...) {
         FAIL() << "Expected HttpException";
     }

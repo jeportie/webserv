@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/16 10:34:09 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/27 12:00:49 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/30 18:29:29 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ RouteConfig::RouteConfig()
       uploadStore(""),
       indexFiles(),
       indexIsSet(false),
-      client_max_body_size(-1)
+      client_max_body_size(0)
 
 {
 }
