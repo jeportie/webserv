@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/30 18:08:50 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/30 20:02:52 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include "ReadCallback.hpp"
 #include "ErrorCallback.hpp"
 #include "../Http/HttpRequest.hpp"
+#include "../Http/RequestValidator.hpp"
 
 #include <unistd.h>
 #include <sys/epoll.h>
@@ -62,19 +63,20 @@ void ReadCallback::execute()
         std::cout << client->requestData.getBuffer() << std::endl;
         //pourquoi ce print ?
         if (client->requestData.getBuffer().empty())
-            throw HttpException(400, "Bad Request: Empty request buffer");
+            throw HttpException(400, "Bad Request: Empty request buffer", "");
             
         if (!parseClientHeaders(client))
             return ;
         
         if (parseClientBody(client))
             return ;
-
-        client->requestData.initServerConfig(_manager->getConfiguration());
+            
+        //init config server des maintenant pour recuperer error page en cas de throw que une fois que la requete est complete et prete a etre build 
         HttpRequest req = buildHttpRequest(client);
+        client->requestData.initServerConfig(_manager->getConfiguration());
+        RequestValidator validator(req, client->requestData.getServerConfig());
+        validator.validate();  // peut lancer HttpException si erreur de validation
         
-        
-
         // handleHttpRequest(fd, req);
 
         cleanupRequest(client);
@@ -90,9 +92,14 @@ void ReadCallback::execute()
     }
     catch (const HttpException& he)
     {
-        // Erreur de la requête (4xx / 5xx) :
-        sendErrorResponse(_fd, he.status(), he.what());
-
+        if (he.customPage().empty())
+        {
+            sendErrorResponse(_fd, he.status(), he.what());
+        }
+        else
+        {
+            //sendCustomErrorResponse(_fd, he.status(), customPage);
+        }
 		// retire de epoll, delete ClientSocket, close(fd)
         _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1));
 

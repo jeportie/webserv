@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/19 11:14:39 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/30 16:50:43 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/30 20:00:49 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,18 +22,23 @@
 class HttpException : public std::exception
 {
 public:
-    HttpException(int status, const std::string& reason);
+    HttpException(int status, const std::string &reason, const std::string &customPage);
     ~HttpException() throw();
 
     int status() const;
+    std::string customPage() const;
+
     // raison (sera exposée en Content-Type: text/plain)
-    const char* what() const throw();
+    const char *what() const throw();
 
 private:
-    int         _status;
+    int _status;
     std::string _reason;
+    std::string _customPage; // chemin de la page d'erreur custom, vide si aucune
 };
 
-void sendErrorResponse(int fd, int status, const std::string& reason);
+void sendErrorResponse(int fd, int status, const std::string &reason);
 
-#endif  // ************************************************ HTTPEXCEPTION_HPP //
+// void sendCustomErrorResponse(int fd, int status, const std::string& customPage);
+
+#endif // ************************************************ HTTPEXCEPTION_HPP //

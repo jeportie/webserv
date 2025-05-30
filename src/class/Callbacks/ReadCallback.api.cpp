@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/30 15:57:30 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/30 20:06:34 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@
 #include "../Http/HttpLimits.hpp"
 #include "../SocketManager/SocketManager.hpp"
 #include "../ConfigFile/ServerConfig.hpp"
+#include "../Http/RequestValidator.hpp"
 
 bool ReadCallback::readFromClient(int fd, ClientSocket* client)
 {
@@ -68,8 +69,6 @@ bool ReadCallback::parseClientHeaders(ClientSocket* client)
     size_t      line_end  = hdr_block.find("\r\n");
     std::string firstLine = hdr_block.substr(0, line_end);
     
-    //RECUPERER CONFIG AU PLUS VITE;
-    // implementer le get error page 
     std::cout << firstLine << std::endl;
     RequestLine rl = HttpParser::parseRequestLine(firstLine);
     client->requestData.setRequestLine(rl);
@@ -78,7 +77,7 @@ bool ReadCallback::parseClientHeaders(ClientSocket* client)
     std::string                                     rest = hdr_block.substr(line_end + 2);
     std::map<std::string, std::vector<std::string> > hdrs = HttpParser::parseHeaders(rest);
     if (hdrs.size() > MAX_HEADER_COUNT)
-        throw HttpException(431, "Request Header Fields Too Large");
+        throw HttpException(431, "Request Header Fields Too Large", "");
     client->requestData.setParsedHeaders(hdrs);
     client->requestData.setHeadersParsed(true);
     buf.erase(0, hdr_end + 4);
@@ -94,9 +93,9 @@ static size_t hexToSize(const std::string& hex)
     std::istringstream iss(hex);
     iss >> std::hex >> result;
     if (result == SIZE_MAX)
-        throw HttpException(400, "Bad Request: Invalid chunk size format");
+        throw HttpException(400, "Bad Request: Invalid chunk size format", "");
     if (result > MAX_CHUNK_SIZE)
-        throw HttpException(413, "Payload Too Large");  // chunk trop gros
+        throw HttpException(413, "Payload Too Large", "");  // chunk trop gros
     return result;
 }
 
@@ -109,7 +108,7 @@ bool ReadCallback::parseClientBody(ClientSocket* client)
     {
         size_t needed = client->requestData.getContentLength();
         if (needed > MAX_BODY_SIZE)
-            throw HttpException(413, "Payload Too Large");
+            throw HttpException(413, "Payload Too Large", "");
         if (buf.size() < needed)
             return false;
         // leave body in buffer until buildHttpRequest
@@ -127,7 +126,7 @@ bool ReadCallback::parseClientBody(ClientSocket* client)
                     return false;
                 size_t chunkLen = hexToSize(buf.substr(0, pos));
                 if (buf.size() + chunkLen > MAX_BODY_SIZE)
-                    throw HttpException(413, "Payload Too Large");
+                    throw HttpException(413, "Payload Too Large", "");
                 client->requestData.setChunkSize(chunkLen);
                 buf.erase(0, pos + 2);
                 if (chunkLen == 0)

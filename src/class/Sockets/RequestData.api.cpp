@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 16:40:52 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/30 15:42:09 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/30 20:08:19 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ void RequestData::checkChunkedBodyMode()
                 _isChunked  = true;
                 return;
                 if (lower != "chunked" && lower != "identity")
-                    throw HttpException(501, LOG_NOT_IMPLEMENTED);
+                    throw HttpException(501, LOG_NOT_IMPLEMENTED, "");
             }
         }
     }
@@ -61,7 +61,7 @@ void RequestData::checkContentLengthBodyMode()
         _bodyMode      = BODY_CONTENT_LENGTH;
         _contentLength = std::atoi(_parsedHeaders["Content-Length"][0].c_str());
         if (_contentLength > MAX_BODY_SIZE)
-            throw HttpException(413, LOG_PAYLOAD_TOO_LARGE);
+            throw HttpException(413, LOG_PAYLOAD_TOO_LARGE, "");
     }
 }
 
@@ -131,12 +131,12 @@ ServerConfig RequestData::findMyConfig(int port, std::string host, IVSCMAP serve
 {
     IVSCMAP::iterator itport = serverConfigMap.find(port);
     if (itport == serverConfigMap.end())
-        throw HttpException(400, "Bad Request: port not found");
+        throw HttpException(400, "Bad Request: port not found", "");
 
     std::vector<ServerConfig> configs = itport->second;
 
     if (configs.empty())
-        throw HttpException(400, "Bad Request: no server config for port");
+        throw HttpException(400, "Bad Request: no server config for port", "");
 
     if (host.empty())
         return configs[0];  // retourner la première config par défaut
@@ -155,7 +155,7 @@ ServerConfig RequestData::findMyConfig(int port, std::string host, IVSCMAP serve
         }
     }
 
-    throw HttpException(400, "Bad Request: no matching server name");
+    throw HttpException(400, "Bad Request: no matching server name", "");
 }
 
 void RequestData::initServerConfig(IVSCMAP ServerConfigMap)

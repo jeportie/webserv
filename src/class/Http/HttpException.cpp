@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/19 11:17:02 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/30 17:04:41 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/30 20:00:52 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 #include <unistd.h>
 
 HttpException::HttpException(int status,
-	const std::string &reason) : _status(status), _reason(reason)
+	const std::string &reason, const std::string& customPage) : _status(status), _reason(reason), _customPage(customPage)
 {
 	LOG_ERROR(DEBUG, HTTP_REQ_ERROR, HTTPEXC_CONST, __FUNCTION__);
 }
@@ -32,25 +32,16 @@ int HttpException::status() const
 {
 	return (_status);
 }
+
+std::string HttpException::customPage() const
+{
+	return (_customPage);
+}
+
 const char *HttpException::what() const throw()
 {
 	return (_reason.c_str());
 }
-
-
-// void	sendErrorResponse(int fd, int status, const std::string &reason)
-// {
-// 	std::ostringstream oss;
-// 	oss << "HTTP/1.1 " << status << " " << reason << "\r\n"
-// 	<< "Content-Type: text/plain\r\n"
-// 	<< "Content-Length: " << reason.size() << "\r\n"
-// 	<< "Connection: close\r\n"
-// 	<< "\r\n"
-// 	<< reason;
-// 	const std::string &res = oss.str();
-// 	//REDIRECTION POSSIBLE SUR FICHIER STATIC ET URL
-// 	write(fd, res.c_str(), res.size());
-// }
 
 
 void sendErrorResponse(int fd, int status, const std::string& reason)

@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 10:24:00 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/30 18:21:39 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/30 20:11:30 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,7 +201,7 @@ TEST(RequestValidatorTest, DuplicateNonWhitelistedHeaderThrows400) {
         FAIL() << "Expected HttpException";
     } catch (const HttpException& ex) {
         EXPECT_EQ(ex.status(), 400);
-        EXPECT_EQ(std::string(ex.what()), "Bad Request: Duplicate header: X-Foo");
+        EXPECT_EQ(std::string(ex.what()), "Bad Request: Duplicate header");
     } catch (...) {
         FAIL() << "Expected HttpException";
     }

@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 11:45:44 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/30 15:59:47 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/30 20:07:05 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ std::string urlDecode(const std::string& s)
             if (i + 2 >= s.size() || !std::isxdigit(static_cast<unsigned char>(s[i + 1]))
                 || !std::isxdigit(static_cast<unsigned char>(s[i + 2])))
             {
-                throw HttpException(400, "Bad Request: Invalid URL encoding");
+                throw HttpException(400, "Bad Request: Invalid URL encoding", "");
             }
             // lire les deux hex, les convertir
             hex[0]  = s[i + 1];
@@ -74,7 +74,7 @@ void splitKeyVal(const std::string& token, std::string& key, std::string& val)
         val = urlDecode(token.substr(pos + 1));
     }
     if (key.empty())
-        throw HttpException(400, "Bad Request: Empty parameter key");
+        throw HttpException(400, "Bad Request: Empty parameter key", "");
 }
 
 std::string trim(const std::string& s)

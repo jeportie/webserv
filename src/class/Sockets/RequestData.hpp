@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 16:22:15 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/28 12:04:55 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/30 19:34:14 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,7 @@ public:
     int getListeningSocketFd() const { return _listeningSocketFd; }
 
     ServerConfig getServerConfig() const { return _serverConfig; }
+
 
 private:
     RequestData(const RequestData& src);
