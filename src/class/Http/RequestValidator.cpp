@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/28 15:13:38 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/28 17:34:15 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/30 12:26:12 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,16 @@ _serverConfig(serverConfig) {}
 
 RequestValidator::~RequestValidator() {}
 
+std::string RequestValidator::matchedPrefix() const 
+{
+     return _matchedPrefix;
+}
+
+const RouteConfig* RequestValidator::matchedRoute() const
+{ 
+    return _matchedRoute;
+}
+ 
 void RequestValidator::validate() {
     matchRoute();       // Sets _matchedRoute (or NULL)
     validateMethod();
@@ -50,7 +60,7 @@ void RequestValidator::matchRoute() {
 void RequestValidator::validateMethod()
 {
     std::vector<std::string> allowed;
-    if (_matchedRoute)
+    if (_matchedRoute && _matchedRoute->allowedMethods.size() > 0)
     allowed = _matchedRoute->allowedMethods;
     else
     allowed = _serverConfig.allowedMethods;
@@ -78,7 +88,7 @@ void RequestValidator::validateBody()
     
     if ((_req.method == HttpRequest::METHOD_GET || _req.method == HttpRequest::METHOD_DELETE)
     && !_req.body.empty())
-    throw HttpException(400, "GET/DELETE should not have a body");
+    throw HttpException(400, "Bad Request");
 }
 
 // 5. Retrieve error page path for a given status code
@@ -108,21 +118,21 @@ static bool isNumeric(const std::string& s) {
 }
 
 
-static const std::set<std::string> kDuplicableHeaders = {
-    "Cookie"
-    // Ajoute ici d'autres headers si besoin, selon RFC
-};
-
-void RequestValidator::validateHeaders() {
+void RequestValidator::validateHeaders()
+ {
+    size_t cl_count;
+    size_t te_count;
+    SVSMAP::const_iterator it;
+    
     // 1. Host obligatoire et unique
-    SVSMAP::const_iterator it = _req.headers.find("Host");
+    it = _req.headers.find("Host");
     if (it == _req.headers.end())
         throw HttpException(400, "Missing Host header");
     if (it->second.size() != 1)
         throw HttpException(400, "Multiple Host header");
 
     // 2. Content-Length : au max 1 fois, valeur numérique >=0, pas avec Transfer-Encoding
-    size_t cl_count = _req.headers.count("Content-Length");
+    cl_count = _req.headers.count("Content-Length");
     if (cl_count > 1)
         throw HttpException(400, "Multiple Content-Length headers");
     if (cl_count == 1) {
@@ -134,19 +144,18 @@ void RequestValidator::validateHeaders() {
     }
 
     // 3. Transfer-Encoding : au max 1 fois, pas avec Content-Length
-    size_t te_count = _req.headers.count("Transfer-Encoding");
+    te_count = _req.headers.count("Transfer-Encoding");
     if (te_count > 1)
         throw HttpException(400, "Multiple Transfer-Encoding headers");
     if (cl_count == 1 && te_count == 1)
         throw HttpException(400, "Content-Length and Transfer-Encoding are mutually exclusive");
 
     // 4. Interdit tous headers dupliqués sauf whitelist
-    for (SVSMAP::const_iterator it = _req.headers.begin(); it != _req.headers.end(); ++it) {
-        if (it->second.size() > 1) {
-            if (it->first != "Host" && it->first != "Content-Length" && it->first != "Transfer-Encoding"
-                && kDuplicableHeaders.find(it->first) == kDuplicableHeaders.end())
+    for (SVSMAP::const_iterator it_h = _req.headers.begin(); it_h != _req.headers.end(); ++it_h) {
+        if (it_h->second.size() > 1) {
+            if (it_h->first != "Cookie")
             {
-                throw HttpException(400, "Duplicate header: " + it->first);
+                throw HttpException(400, "Duplicate header: " + it_h->first);
             }
         }
     }

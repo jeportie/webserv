@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpParserTest.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 13:54:53 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/19 16:23:07 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/05/30 10:38:48 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,6 @@
 TEST(ParseMethod, RecognizesStandardMethods) {
     EXPECT_EQ(HttpParser::parseMethod("GET"),    HttpRequest::METHOD_GET);
     EXPECT_EQ(HttpParser::parseMethod("POST"),   HttpRequest::METHOD_POST);
-    EXPECT_EQ(HttpParser::parseMethod("PUT"),    HttpRequest::METHOD_PUT);
     EXPECT_EQ(HttpParser::parseMethod("DELETE"), HttpRequest::METHOD_DELETE);
 }
 

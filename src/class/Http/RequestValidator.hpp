@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/28 15:11:43 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/28 16:28:52 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/30 12:25:34 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,8 @@ public:
     std::string getErrorPage(int statusCode) const;
 
     // Retourne la RouteConfig matchée ou NULL
-    const RouteConfig* matchedRoute() const { return _matchedRoute; }
+    const RouteConfig* matchedRoute() const;
+    std::string matchedPrefix() const;
 
 private:
     const HttpRequest& _req;
