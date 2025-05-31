@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/16 10:27:50 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/28 14:04:19 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/31 13:30:29 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,6 @@ struct ServerConfig {
     bool                            indexIsSet;              // Flag to indicate if index directive is set
     bool listenIsSet;
     bool rootIsSet;
-    // Autres directives comme error_pages, cgi, etc.
     
     ServerConfig();
 };

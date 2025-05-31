@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/19 12:08:34 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/28 14:38:13 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/31 14:51:46 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,3 +57,4 @@ static const std::size_t MAX_PARAM_COUNT = 50;
 static const std::size_t MAX_PARAM_LEN = 256;
 
 #endif  // *************************************************** HTTPLIMITS_HPP //
+

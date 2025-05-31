@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/31 11:50:05 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/31 14:45:33 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@
 #include "ErrorCallback.hpp"
 #include "../Http/HttpRequest.hpp"
 #include "../Http/RequestValidator.hpp"
+#include "../Http/HttpResponseBuilder.hpp"
+#include "../Http/ResponseFormatter.hpp"
 
 #include <unistd.h>
 #include <sys/epoll.h>
@@ -62,6 +64,7 @@ void ReadCallback::execute()
         
         std::cout << client->requestData.getBuffer() << std::endl;
         //pourquoi ce print ?
+        
         if (client->requestData.getBuffer().empty())
             throw HttpException(400, "Bad Request: Empty request buffer", "");
             
@@ -77,6 +80,14 @@ void ReadCallback::execute()
         RequestValidator validator(req, client->requestData.getServerConfig());
         validator.validate();  // peut lancer HttpException si erreur de validation
         
+         // Génère la réponse
+        HttpResponseBuilder builder(req, validator);
+        builder.buildResponse();
+        ResponseFormatter formatter(builder.getResponse());
+        std::string finalResponse = formatter.format();
+
+        // ➕ Enfile un WriteCallback avec la réponse
+        //_manager->enqueueCallback(new WriteCallback(fd, finalResponse, _manager, epoll_fd));
         // handleHttpRequest(fd, req, validator.matchedRoute());
 
         cleanupRequest(client);
@@ -98,7 +109,7 @@ void ReadCallback::execute()
         }
         else
         {
-            //sendCustomErrorResponse(_fd, he.status(), customPage);
+            sendCustomErrorResponse(_fd, he.status(), he.customPage());
         }
 		// retire de epoll, delete ClientSocket, close(fd)
         _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1));

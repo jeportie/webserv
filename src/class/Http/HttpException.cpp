@@ -6,11 +6,13 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/19 11:17:02 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/30 20:00:52 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/31 14:18:03 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpException.hpp"
+#include "ContentGenerator.hpp"
+#include "StatusUtils.hpp"
 #include "../../../include/webserv.h"
 
 #include <sstream>
@@ -85,3 +87,30 @@ void sendErrorResponse(int fd, int status, const std::string& reason)
 }
 
 
+
+void sendCustomErrorResponse(int fd, int status, const std::string& errorPagePath)
+{
+	std::string statusMessage = getStatusMessage(status);
+    std::string body;
+    bool fileLoaded = readFileContent(errorPagePath, body);
+
+    if (!fileLoaded) {
+        // Fallback : page HTML simple générée
+        std::ostringstream fallback;
+        fallback << "<html><head><title>" << status << " " << statusMessage << "</title></head>\n"
+                 << "<body><h1>" << status << " " << statusMessage << "</h1>\n"
+                 << "<p>The server encountered an error.</p></body></html>";
+        body = fallback.str();
+    }
+
+    std::ostringstream oss;
+    oss << "HTTP/1.1 " << status << " " << statusMessage << "\r\n"
+        << "Content-Type: text/html\r\n"
+        << "Content-Length: " << body.size() << "\r\n"
+        << "Connection: close\r\n"
+        << "\r\n"
+        << body;
+
+    std::string response = oss.str();
+    write(fd, response.c_str(), response.size());
+}

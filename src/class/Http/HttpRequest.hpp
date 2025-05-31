@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:03:17 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/30 19:57:57 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/31 12:53:08 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ struct HttpRequest
     std::string body;
     SSMAP       query_params;
     SSMAP       form_data;
+    
 };
 
 #endif  // ************************************************** HTTPREQUEST_HPP //

@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/19 11:14:39 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/30 20:00:49 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/31 15:02:57 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,8 @@ private:
 };
 
 void sendErrorResponse(int fd, int status, const std::string &reason);
+void sendCustomErrorResponse(int fd, int status, const std::string& errorPagePath);
 
-// void sendCustomErrorResponse(int fd, int status, const std::string& customPage);
+
 
 #endif // ************************************************ HTTPEXCEPTION_HPP //
