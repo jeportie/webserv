@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 18:24:17 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/28 11:56:48 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/31 11:48:01 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,9 +24,9 @@
 #include "../../src/class/Sockets/Socket.hpp"
 #include "../../src/class/Http/RequestLine.hpp"
 #include "../../src/class/Http/HttpException.hpp"
-#include "../../include/webserv.h"
+#include "../../src/class/Http/RequestData.hpp"
 #include "../../src/class/ConfigFile/ServerConfig.hpp"
-#include "../../src/class/Sockets/RequestData.hpp"
+#include "../../include/webserv.h"
 
 class TestRequestData : public RequestData {
 public:

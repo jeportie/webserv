@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/30 20:02:52 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/31 11:50:05 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ void ReadCallback::execute()
         RequestValidator validator(req, client->requestData.getServerConfig());
         validator.validate();  // peut lancer HttpException si erreur de validation
         
-        // handleHttpRequest(fd, req);
+        // handleHttpRequest(fd, req, validator.matchedRoute());
 
         cleanupRequest(client);
         if (req.headers.count("Connection") && req.headers["Connection"][0] == "close")

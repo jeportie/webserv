@@ -6,19 +6,11 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 16:31:21 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/27 16:57:41 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/31 11:39:15 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-
-#include "ClientSocket.hpp"
-#include "../../../include/webserv.h"
-
-#include <cerrno>
-#include <cstring>
-#include <iostream>
-#include <sstream>
-#include <cstdlib>
+#include "RequestData.hpp"
 
 // Constructor - Destructor
 

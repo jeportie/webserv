@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:16:38 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/27 16:51:53 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/31 11:42:07 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,15 +16,16 @@
 #define LOG_CLIENTSOCKET_CONSTRUCTOR "ClientSocket Constructor called."
 #define LOG_CLIENTSOCKET_DESTRUCTOR "ClientSocket Destructor called."
 
-#include "Socket.hpp"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <string>
-#include "../Http/RequestLine.hpp"
 #include "../../../include/webserv.h"
+#include "../Http/RequestLine.hpp"
+#include "../Http/RequestData.hpp"
 #include "../ConfigFile/ServerConfig.hpp"
-#include "RequestData.hpp"
+#include "Socket.hpp"
 
+class RequestData;
 
 class ClientSocket : public Socket
 {

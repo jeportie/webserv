@@ -6,24 +6,11 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 16:40:52 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/30 20:08:19 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/31 11:44:37 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "RequestData.hpp"
-#include "../Http/HttpException.hpp"
-#include "../Http/HttpLimits.hpp"
-#include "../../../include/webserv.h"
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <cerrno>
-#include <cstring>
-#include <iostream>
-#include <sstream>
-#include <cstdlib>
 
 void RequestData::checkChunkedBodyMode()
 {

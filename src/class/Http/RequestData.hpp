@@ -6,23 +6,31 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 16:22:15 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/30 19:34:14 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/05/31 11:46:00 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef REQUESTDATA_HPP
 # define REQUESTDATA_HPP
 
-
-
-#include "Socket.hpp"
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <arpa/inet.h>
 #include <string>
-#include "../Http/RequestLine.hpp"
+#include <cerrno>
+#include <cstring>
+#include <sstream>
+#include <iostream>
+#include <cstdlib>
+
+
 #include "../../../include/webserv.h"
 #include "../ConfigFile/ServerConfig.hpp"
-#include "RequestData.hpp"
+#include "../Sockets/Socket.hpp"
+#include "HttpException.hpp"
+#include "HttpLimits.hpp"
+#include "RequestLine.hpp"
 
 #define LOG_REQUESTDATA_CONSTRUCTOR "RequestData Constructor called."
 #define LOG_REQUESTDATA_DESTRUCTOR "RequestData Destructor called."
