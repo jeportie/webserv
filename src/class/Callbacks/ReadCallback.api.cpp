@@ -33,6 +33,7 @@
 #include "../SocketManager/SocketManager.hpp"
 #include "../ConfigFile/ServerConfig.hpp"
 #include "../Http/RequestValidator.hpp"
+#include "WriteCallback.hpp"
 
 bool ReadCallback::readFromClient(int fd, ClientSocket* client)
 {
@@ -182,4 +183,48 @@ HttpRequest ReadCallback::buildHttpRequest(ClientSocket* client)
 
 void ReadCallback::cleanupRequest(ClientSocket* client) { client->requestData.resetParserState(); }
 
+void ReadCallback::sendErrorResponse(int fd, int status, const std::string& message)
+{
+    std::ostringstream oss;
+    std::string body;
+    std::string response;
+
+    // Create a simple HTML error page
+    body = "<html><head><title>Error " + std::to_string(status) + "</title></head>";
+    body += "<body><h1>Error " + std::to_string(status) + "</h1>";
+    body += "<p>" + message + "</p>";
+    body += "</body></html>";
+
+    // Create the HTTP response
+    oss << "HTTP/1.1 " << status << " " << message << "\r\n";
+    oss << "Content-Type: text/html\r\n";
+    oss << "Content-Length: " << body.length() << "\r\n";
+    oss << "Connection: close\r\n";
+    oss << "\r\n";
+    oss << body;
+
+    response = oss.str();
+    
+    // Queue a WriteCallback to send the error response
+    _manager->getCallbackQueue().push(new WriteCallback(fd, _manager, response, _epoll_fd));
+}
+
+void ReadCallback::sendCustomErrorResponse(int fd, int status, const std::string& customPage)
+{
+    std::ostringstream oss;
+    std::string response;
+
+    // Create the HTTP response with the custom error page
+    oss << "HTTP/1.1 " << status << " Error\r\n";
+    oss << "Content-Type: text/html\r\n";
+    oss << "Content-Length: " << customPage.length() << "\r\n";
+    oss << "Connection: close\r\n";
+    oss << "\r\n";
+    oss << customPage;
+
+    response = oss.str();
+    
+    // Queue a WriteCallback to send the custom error response
+    _manager->getCallbackQueue().push(new WriteCallback(fd, _manager, response, _epoll_fd));
+}
 

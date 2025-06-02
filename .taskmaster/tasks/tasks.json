@@ -450,7 +450,7 @@
       "id": 7,
       "title": "Client Connection Handler",
       "description": "Implement a client connection handler that manages the lifecycle of client connections, from acceptance to closure.",
-      "status": "pending",
+      "status": "in-progress",
       "dependencies": [
         3,
         4,
@@ -506,7 +506,7 @@
             4
           ],
           "details": "Create a non-blocking write mechanism that sends response data when the socket is ready for writing. Handle partial writes, implement output buffering, and manage write events through the event loop. Include error handling for connection failures during writes.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,

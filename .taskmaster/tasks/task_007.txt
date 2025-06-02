@@ -1,6 +1,6 @@
 # Task ID: 7
 # Title: Client Connection Handler
-# Status: pending
+# Status: in-progress
 # Dependencies: 3, 4, 5
 # Priority: medium
 # Description: Implement a client connection handler that manages the lifecycle of client connections, from acceptance to closure.
@@ -76,7 +76,7 @@ Design a buffer management system that efficiently accumulates partial request d
 ### Details:
 Develop a request processing pipeline that parses the buffered request data, validates it, and routes it to the appropriate handler. Implement error handling for malformed requests and create a mechanism to generate appropriate responses based on the request content.
 
-## 5. Implement non-blocking write operations [pending]
+## 5. Implement non-blocking write operations [done]
 ### Dependencies: 7.4
 ### Description: Develop a system to write response data to client sockets without blocking
 ### Details:

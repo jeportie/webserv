@@ -131,6 +131,12 @@ void SocketManager::enqueueReadyCallbacks(int n, EVENT_LIST& events, int epoll_f
         {
             _callbackQueue.push(new ReadCallback(fd, this, epoll_fd));
         }
+        else if ((ev & EPOLLOUT))
+        {
+            // Socket is ready for writing - this is handled by WriteCallback
+            // We don't need to do anything here as the WriteCallback is already in the queue
+            // from the ReadCallback that processed the request
+        }
         else if (ev & (EPOLLERR | EPOLLHUP))
         {
             _callbackQueue.push(new ErrorCallback(fd, this, epoll_fd));

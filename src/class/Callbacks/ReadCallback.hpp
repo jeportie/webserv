@@ -38,6 +38,8 @@ private:
     HttpRequest buildHttpRequest(ClientSocket* client);
     void        handleHttpRequest(int fd, HttpRequest& req);
     void        cleanupRequest(ClientSocket* client);
+    void        sendErrorResponse(int fd, int status, const std::string& message);
+    void        sendCustomErrorResponse(int fd, int status, const std::string& customPage);
 };
 
 #endif  // ************************************************* READCALLBACK_HPP //

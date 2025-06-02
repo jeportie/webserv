@@ -20,6 +20,7 @@
 #include "../Http/ResponseFormatter.hpp"
 #include "ReadCallback.hpp"
 #include "ErrorCallback.hpp"
+#include "WriteCallback.hpp"
 
 #include <unistd.h>
 #include <sys/epoll.h>
@@ -86,9 +87,8 @@ void ReadCallback::execute()
         ResponseFormatter formatter(builder.getResponse());
         std::string finalResponse = formatter.format();
 
-        // ➕ Enfile un WriteCallback avec la réponse
-        //_manager->enqueueCallback(new WriteCallback(fd, finalResponse, _manager, epoll_fd));
-        // handleHttpRequest(fd, req, validator.matchedRoute());
+                 // Enfile un WriteCallback avec la réponse
+                 _manager->getCallbackQueue().push(new WriteCallback(_fd, _manager, finalResponse, _epoll_fd));
 
         cleanupRequest(client);
         if (req.headers.count("Connection") && req.headers["Connection"][0] == "close")
