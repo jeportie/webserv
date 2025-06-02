@@ -301,7 +301,7 @@
       "id": 5,
       "title": "HTTP Response Generator",
       "description": "Implement an HTTP response generator that creates properly formatted HTTP responses with appropriate status codes and headers.",
-      "status": "done",
+      "status": "pending",
       "dependencies": [
         4
       ],
@@ -361,7 +361,7 @@
       "id": 6,
       "title": "Static File Handler",
       "description": "Implement a handler for serving static files from the filesystem, mapping URIs to file paths and generating appropriate responses.",
-      "status": "done",
+      "status": "pending",
       "dependencies": [
         5
       ],

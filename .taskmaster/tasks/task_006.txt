@@ -1,6 +1,6 @@
 # Task ID: 6
 # Title: Static File Handler
-# Status: done
+# Status: pending
 # Dependencies: 5
 # Priority: medium
 # Description: Implement a handler for serving static files from the filesystem, mapping URIs to file paths and generating appropriate responses.
