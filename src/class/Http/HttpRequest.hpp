@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:03:17 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/31 12:53:08 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 16:42:06 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ struct HttpRequest
     std::string body;
     SSMAP       query_params;
     SSMAP       form_data;
+    std::string methodString() const;
     
 };
 

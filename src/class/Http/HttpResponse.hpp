@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 12:40:19 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/31 14:43:40 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 18:35:52 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,10 @@ public:
     std::string getHeader(const std::string &key) const;
     std::string getBody() const;
     const std::map<std::string, std::string> &getAllHeaders() const;
+    void HttpResponse::parseCgiOutputAndSet(const std::string& cgi_output);
+    bool HttpResponse::hasHeader(const std::string& key) const;
+
+
 };
 
 #endif

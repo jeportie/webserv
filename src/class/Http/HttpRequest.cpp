@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:03:14 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/30 19:58:04 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 16:42:01 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,4 +25,19 @@ HttpRequest::HttpRequest()
 , form_data()
 {
 	LOG_ERROR(DEBUG, HTTP_REQ_ERROR, HTTPREQ_CONST, __FUNCTION__);
+}
+
+std::string HttpRequest::methodString() const
+{	
+	    switch (method)
+    {
+        case METHOD_GET : 
+            return ("GET");
+        case METHOD_DELETE : 
+            return ("DELETE");
+        case METHOD_POST :
+			return ("POST");
+		default:
+            return "INVALID";
+    }
 }
