@@ -56,9 +56,7 @@
 
     Assure que le chemin retourné est un chemin absolu vers la ressource réelle.
 
-
-
-
+)
 
  Gestion du MIME Type
 
