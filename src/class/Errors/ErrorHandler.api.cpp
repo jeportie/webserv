@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ErrorHandler.cpp                                   :+:      :+:    :+:   */
+/*   ErrorHandler.api.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 15:30:00 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/14 15:30:00 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/02 18:00:02 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,14 +42,17 @@ bool ErrorHandler::setLogFile(const std::string& path)
 
 void ErrorHandler::resetErrorStats()
 {
-	ERRMAP::iterator it;
+    ERRMAP::iterator it;
 
     for (it = _errorStats.begin(); it != _errorStats.end(); ++it)
         it->second = 0;
 }
 
-void ErrorHandler::logError(ErrorLevel level, ErrorCategory category,
-	const std::string& message, const std::string& source, bool shouldThrow)
+void ErrorHandler::logError(ErrorLevel         level,
+                            ErrorCategory      category,
+                            const std::string& message,
+                            const std::string& source,
+                            bool               shouldThrow)
 {
     std::ostringstream logStream;
 
@@ -60,13 +63,13 @@ void ErrorHandler::logError(ErrorLevel level, ErrorCategory category,
     logStream << getTimestamp() << " [" << levelToString(level) << "]\t"
               << "[" << categoryToString(category) << "]\t";
     if (!source.empty())
-	{
+    {
         logStream << "[" << source << "]\t";
-	}
-	if (source.length() < 5)
-	{
-		logStream << "\t";
-	}
+    }
+    if (source.length() < 5)
+    {
+        logStream << "\t";
+    }
     logStream << message;
 
     if (_logFile.is_open())
@@ -85,11 +88,14 @@ void ErrorHandler::logError(ErrorLevel level, ErrorCategory category,
         throw std::runtime_error(logStream.str());
 }
 
-void ErrorHandler::logSystemError(ErrorLevel level, ErrorCategory category,
-	const std::string& message, const std::string& source, bool shouldThrow)
+void ErrorHandler::logSystemError(ErrorLevel         level,
+                                  ErrorCategory      category,
+                                  const std::string& message,
+                                  const std::string& source,
+                                  bool               shouldThrow)
 {
     std::string errorMsg;
 
-	errorMsg = message + ": " + std::string(strerror(errno));
+    errorMsg = message + ": " + std::string(strerror(errno));
     logError(level, category, errorMsg, source, shouldThrow);
 }

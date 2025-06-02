@@ -6,14 +6,13 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 16:11:45 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/27 16:40:35 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 18:10:24 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ClientSocket.hpp"
-#include "../Http/HttpException.hpp"
-#include "../Http/HttpLimits.hpp"
-#include "../../../include/webserv.h"
+#include "../Errors/ErrorHandler.hpp"
+#include "../../../include/webserv.hpp"
 
 #include <cerrno>
 #include <cstring>
@@ -21,21 +20,21 @@
 #include <sstream>
 #include <cstdlib>
 
-void   ClientSocket::touch()
+void ClientSocket::touch()
 {
-	std::string clientID;
+    std::string clientID;
 
-	clientID = _socketFd;
-	LOG_SYSTEM_ERROR(DEBUG, SOCKET_ERROR, LOG_UPDATED_TIMESTAMP + clientID, __FUNCTION__);
-	_lastActivity = time(NULL); 
+    clientID = _socketFd;
+    LOG_SYSTEM_ERROR(DEBUG, SOCKET_ERROR, LOG_UPDATED_TIMESTAMP + clientID, __FUNCTION__);
+    _lastActivity = time(NULL);
 }
 
 int ClientSocket::safeFcntl(int fd, int cmd, int flag)
 {
-    int					ret;
-    std::stringstream	ss;
+    int               ret;
+    std::stringstream ss;
 
-	ret = fcntl(fd, cmd, flag);
+    ret = fcntl(fd, cmd, flag);
     if (ret == -1)
     {
         ss << fd;

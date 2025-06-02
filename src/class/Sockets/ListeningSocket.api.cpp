@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ListeningSocket.api.cpp                               :+:      :+:    :+:   */
+/*   ListeningSocket.api.cpp                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 15:42:02 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/23 16:59:15 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/02 18:10:45 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,13 +18,13 @@
 #include "ListeningSocket.hpp"
 #include "ClientSocket.hpp"
 #include "../Errors/ErrorHandler.hpp"
-#include "../../../include/webserv.h"
+#include "../../../include/webserv.hpp"
 
 int ListeningSocket::safeFcntl(int fd, int cmd, int flag)
 {
     int retFd;
 
-	retFd = fcntl(fd, cmd, flag);
+    retFd = fcntl(fd, cmd, flag);
     if (retFd == -1)
         THROW_SYSTEM_ERROR(CRITICAL, SOCKET_ERROR, LOG_FCNTL_LISTENING_FAIL, __FUNCTION__);
 
@@ -36,8 +36,8 @@ int ListeningSocket::setNonBlocking(int fd)
     int flags;
     int retFd;
 
-	flags = safeFcntl(fd, F_GETFL, 0);
-	retFd = safeFcntl(fd, F_SETFL, flags | O_NONBLOCK);
+    flags = safeFcntl(fd, F_GETFL, 0);
+    retFd = safeFcntl(fd, F_SETFL, flags | O_NONBLOCK);
 
     _isNonBlocking = true;
 
@@ -53,12 +53,12 @@ bool ListeningSocket::safeBind(int port, const std::string& adress)
         return (false);
     }
 
-    (void) adress; //DO SOMETHING WITH ADDR
-	
+    (void) adress;  // DO SOMETHING WITH ADDR
+
     setNonBlocking(this->_socketFd);
 
-    _ListeningAddr.sin_port   = htons(port);
-    _ListeningAddr.sin_family = AF_INET;
+    _ListeningAddr.sin_port        = htons(port);
+    _ListeningAddr.sin_family      = AF_INET;
     _ListeningAddr.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(this->_socketFd, (struct sockaddr*) &_ListeningAddr, sizeof(_ListeningAddr)) < 0)
@@ -80,19 +80,19 @@ void ListeningSocket::safeListen(int backlog)
 
 ClientSocket* ListeningSocket::safeAccept(int epoll_fd)
 {
-    struct sockaddr_in	clientAddr;
-    epoll_event			client_ev;
-    ClientSocket*		client;
-	int					clientFd;
-    socklen_t			clientAddrLen = sizeof(clientAddr);
-    std::ostringstream	oss;
+    struct sockaddr_in clientAddr;
+    epoll_event        client_ev;
+    ClientSocket*      client;
+    int                clientFd;
+    socklen_t          clientAddrLen = sizeof(clientAddr);
+    std::ostringstream oss;
 
     if (!isValid())
-	{
+    {
         THROW_ERROR(CRITICAL, SOCKET_ERROR, LOG_INVALID_SOCKET_ACCEPT, __FUNCTION__);
-	}
+    }
 
-	client = new ClientSocket();
+    client   = new ClientSocket();
     clientFd = accept(this->_socketFd, (struct sockaddr*) &clientAddr, &clientAddrLen);
     if (clientFd < 0)
     {
@@ -100,7 +100,7 @@ ClientSocket* ListeningSocket::safeAccept(int epoll_fd)
         {
             // No more clients to accept, not a real error
             delete client;
-			LOG_ERROR(INFO, SOCKET_ERROR, LOG_NO_MORE_CLIENTS, __FUNCTION__);
+            LOG_ERROR(INFO, SOCKET_ERROR, LOG_NO_MORE_CLIENTS, __FUNCTION__);
             return (NULL);
         }
         delete client;
@@ -111,10 +111,10 @@ ClientSocket* ListeningSocket::safeAccept(int epoll_fd)
     client->setClientAddr(clientAddr, clientAddrLen);
     client->setNonBlocking(clientFd);
 
-	oss << LOG_ACCEPTED_CONNECTION << client->getClientIP() << ":"
-        << client->getClientPort() << std::endl;
-	std::cout << oss.str();
-	LOG_ERROR(INFO, SOCKET_ERROR, oss.str(), __FUNCTION__);
+    oss << LOG_ACCEPTED_CONNECTION << client->getClientIP() << ":" << client->getClientPort()
+        << std::endl;
+    std::cout << oss.str();
+    LOG_ERROR(INFO, SOCKET_ERROR, oss.str(), __FUNCTION__);
 
     // If epoll_fd is valid, register the client with epoll
     if (epoll_fd >= 0)
@@ -135,9 +135,9 @@ int ListeningSocket::getPort(void) const { return ntohs(_ListeningAddr.sin_port)
 
 std::string ListeningSocket::getAddress(void) const
 {
-	uint32_t			ip;
-    unsigned char		bytes[4];
-    std::ostringstream	oss;
+    uint32_t           ip;
+    unsigned char      bytes[4];
+    std::ostringstream oss;
 
     // Convert network byte order to host byte order
     ip = ntohl(_ListeningAddr.sin_addr.s_addr);

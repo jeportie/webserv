@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:23:58 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/31 14:53:41 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 18:10:21 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 #include "../Sockets/ClientSocket.hpp"
 #include "../Sockets/ListeningSocket.hpp"
 #include "../Callbacks/CallbackQueue.hpp"
-#include "../../../include/webserv.h"
+#include "../../../include/webserv.hpp"
 
 class Callback;
 
@@ -33,38 +33,38 @@ public:
     SocketManager(void);
     ~SocketManager(void);
 
-    void init_connect();
-    void eventLoop(int epoll_fd);
-    void addClientSocket(int fd, ClientSocket *client);
-    void cleanupClientSocket(int fd, int epoll_fd);
-    void enqueueReadyCallbacks(int n, EVENT_LIST &events, int epoll_fd);
-    bool isListeningSocket(int fd) const;
-    void scanClientTimeouts(int epoll_fd);
-    void instantiateConfig(const std::string &content);
-    int safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event *event);
-    void safeRegisterToEpoll(int epoll_fd, int listeningFd);
-    IVSCMAP ReadandParseConfigFile(const std::string &content);
+    void    init_connect();
+    void    eventLoop(int epoll_fd);
+    void    addClientSocket(int fd, ClientSocket* client);
+    void    cleanupClientSocket(int fd, int epoll_fd);
+    void    enqueueReadyCallbacks(int n, EVENT_LIST& events, int epoll_fd);
+    bool    isListeningSocket(int fd) const;
+    void    scanClientTimeouts(int epoll_fd);
+    void    instantiateConfig(const std::string& content);
+    int     safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event* event);
+    void    safeRegisterToEpoll(int epoll_fd, int listeningFd);
+    IVSCMAP ReadandParseConfigFile(const std::string& content);
 
-    ListeningSocket *getListeningSocket(int fd);
-    LSVECTOR &getVectorListeningSocket();
-    CallbackQueue &getCallbackQueue();
-    int getCheckIntervalMs(void);
-    int getClientSocketFd(void) const;
-    IVSCMAP getConfiguration(void) const { return _serversByPort; }
+    ListeningSocket* getListeningSocket(int fd);
+    LSVECTOR&        getVectorListeningSocket();
+    CallbackQueue&   getCallbackQueue();
+    int              getCheckIntervalMs(void);
+    int              getClientSocketFd(void) const;
+    IVSCMAP          getConfiguration(void) const { return _serversByPort; }
 
     int setNonBlockingListening(int fd);
 
-    const ICMAP &getClientMap(void) const;
+    const ICMAP& getClientMap(void) const;
 
 private:
-    SocketManager(const SocketManager &src);
-    SocketManager &operator=(const SocketManager &rhs);
+    SocketManager(const SocketManager& src);
+    SocketManager& operator=(const SocketManager& rhs);
 
-    ICMAP _clientSockets;         ///< Map of client sockets by file descriptor
-    LSVECTOR _listeningSockets;   ///< The listening socket
-    int _clientSocketFd;          ///< Client socket file descriptor (most recent)
-    CallbackQueue _callbackQueue; ///< Simple callback queue
-    IVSCMAP _serversByPort;
+    ICMAP         _clientSockets;     ///< Map of client sockets by file descriptor
+    LSVECTOR      _listeningSockets;  ///< The listening socket
+    int           _clientSocketFd;    ///< Client socket file descriptor (most recent)
+    CallbackQueue _callbackQueue;     ///< Simple callback queue
+    IVSCMAP       _serversByPort;
 };
 
-#endif // ************************************************ SOCKETMANAGER_HPP //
+#endif  // ************************************************ SOCKETMANAGER_HPP //

@@ -6,13 +6,13 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 08:50:28 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/27 12:20:13 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 17:57:22 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parser.hpp"
 #include "../Errors/ErrorHandler.hpp"
-#include "../../../include/webserv.h"
+#include "../../../include/webserv.hpp"
 
 void Parser::parseListenDirective(std::string& host, int& port)
 {

@@ -6,12 +6,12 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 11:45:44 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/30 20:07:05 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 18:02:06 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <cctype>  // isspace, isdigit
-#include <cerrno>  // errno
+#include <cctype>   // isspace, isdigit
+#include <cerrno>   // errno
 #include <cstring>  // strerror
 #include <cstdlib>  // pour strtol
 
@@ -108,14 +108,14 @@ bool pathEscapesRoot(const std::string& path)
     std::vector<std::string> stack;
     std::string              segment;
     size_t                   i;
-	size_t					 j;	
-	    
-    if (path.empty() || path[0] != '/')
-	{
-        return true;
-	}
+    size_t                   j;
 
-	i = 1; // on skippe le '/' initial
+    if (path.empty() || path[0] != '/')
+    {
+        return true;
+    }
+
+    i = 1;  // on skippe le '/' initial
     while (i <= path.size())
     {
         // extraire le segment jusqu'au prochain '/' ou fin
@@ -125,7 +125,7 @@ bool pathEscapesRoot(const std::string& path)
 
         segment.assign(path, i, j - i);
 
-        if (segment == "..") // on remonte d'un niveau : si on ne peut plus, c'est une évasion
+        if (segment == "..")  // on remonte d'un niveau : si on ne peut plus, c'est une évasion
         {
             if (stack.empty())
                 return true;
@@ -133,7 +133,7 @@ bool pathEscapesRoot(const std::string& path)
         }
         else if (!segment.empty() && segment != ".")
         {
-            stack.push_back(segment); // un nom de dossier/fichier valide → on descend une branche
+            stack.push_back(segment);  // un nom de dossier/fichier valide → on descend une branche
         }
         i = j + 1;
     }

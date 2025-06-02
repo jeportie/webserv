@@ -6,20 +6,22 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:22:41 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/31 16:03:10 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 18:01:11 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ContentGenerator.hpp"
 #include "StatusUtils.hpp"
+#include <map>
 #include <sys/stat.h>  // Pour struct stat
-#include <fstream>   
-#include <sstream> 
+#include <fstream>
+#include <sstream>
 #include <cstddef>  // std::size_t
 #include <string>
 #include <dirent.h>
 
-bool fileExists(const std::string& path) {
+bool fileExists(const std::string& path)
+{
     struct stat fileStat;
 
     if (stat(path.c_str(), &fileStat) != 0)
@@ -28,17 +30,19 @@ bool fileExists(const std::string& path) {
     return S_ISREG(fileStat.st_mode);
 }
 
-bool isDirectory(const std::string& path) {
+bool isDirectory(const std::string& path)
+{
     struct stat dirStat;
     return (stat(path.c_str(), &dirStat) == 0 && S_ISDIR(dirStat.st_mode));
 }
 
-bool isExecutable(const std::string& path) {
+bool isExecutable(const std::string& path)
+{
     struct stat statbuf;
     return (stat(path.c_str(), &statbuf) == 0 && (statbuf.st_mode & S_IXUSR));
 }
 bool readFileContent(const std::string& path, std::string& out)
- {
+{
     std::ifstream file(path.c_str(), std::ios::in | std::ios::binary);
 
     if (!file.is_open())
@@ -53,11 +57,12 @@ bool readFileContent(const std::string& path, std::string& out)
 }
 
 // Fonction pour obtenir le type MIME à partir de l'extension du fichier
-//std::string mime = getMimeType("/www/index.html");
+// std::string mime = getMimeType("/www/index.html");
 // → "text/html"
-//std::string mime2 = getMimeType("image.unknown");
+// std::string mime2 = getMimeType("image.unknown");
 // → "application/octet-stream"
-std::string getMimeType(const std::string& path) {
+std::string getMimeType(const std::string& path)
+{
     std::map<std::string, std::string> mimeTypes;
 
     mimeTypes[".html"] = "text/html";
@@ -77,9 +82,10 @@ std::string getMimeType(const std::string& path) {
 
     // Extraire l’extension à partir du nom de fichier
     std::size_t dot = path.rfind('.');
-    if (dot != std::string::npos) {
-        std::string ext = path.substr(dot);
-        std::map<std::string, std::string>::const_iterator it = mimeTypes.find(ext);
+    if (dot != std::string::npos)
+    {
+        std::string                                        ext = path.substr(dot);
+        std::map<std::string, std::string>::const_iterator it  = mimeTypes.find(ext);
         if (it != mimeTypes.end())
             return it->second;
     }
@@ -88,10 +94,9 @@ std::string getMimeType(const std::string& path) {
 }
 
 
-
-
 // Résout un chemin relatif par rapport à root
-std::string resolvePath(const std::string& relativePath, const std::string& root) {
+std::string resolvePath(const std::string& relativePath, const std::string& root)
+{
     if (relativePath.empty())
         return "";
 
@@ -108,17 +113,19 @@ std::string resolvePath(const std::string& relativePath, const std::string& root
 
 // Génère la page d'erreur, si le fichier errorPagePath existe et est lisible, retourne son contenu
 // sinon retourne une page HTML générée par défaut
-std::string generateErrorPage(int code, const std::string& errorPagePath) {
+std::string generateErrorPage(int code, const std::string& errorPagePath)
+{
     std::string content;
 
-    if (!errorPagePath.empty()) {
+    if (!errorPagePath.empty())
+    {
         if (readFileContent(errorPagePath, content))
             return content;
         // Sinon on continue et génère la page par défaut
     }
 
     std::ostringstream ss;
-    std::string message = getStatusMessage(code);
+    std::string        message = getStatusMessage(code);
 
     ss << "<!DOCTYPE html>\n"
        << "<html>\n"

@@ -6,17 +6,20 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 16:40:52 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/31 11:44:37 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 18:07:02 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "RequestData.hpp"
+#include "HttpException.hpp"
+#include "HttpLimits.hpp"
+#include "../Sockets/Socket.hpp"
 
 void RequestData::checkChunkedBodyMode()
 {
     std::vector<std::string>::const_iterator it;
-    std::string lower;
-    std::string::size_type i;
+    std::string                              lower;
+    std::string::size_type                   i;
 
     // Recherche "chunked" dans Transfer-Encoding
     if (_parsedHeaders.count("Transfer-Encoding"))
@@ -30,8 +33,8 @@ void RequestData::checkChunkedBodyMode()
                 lower[i] = static_cast<char>(std::tolower(lower[i]));
             if (lower == "chunked")
             {
-                _bodyMode = BODY_CHUNKED;
-                _isChunked  = true;
+                _bodyMode  = BODY_CHUNKED;
+                _isChunked = true;
                 return;
                 if (lower != "chunked" && lower != "identity")
                     throw HttpException(501, LOG_NOT_IMPLEMENTED, "");
@@ -55,7 +58,7 @@ void RequestData::checkContentLengthBodyMode()
 void RequestData::determineBodyMode()
 {
     std::vector<std::string>::const_iterator it;
-    std::string lower;
+    std::string                              lower;
 
     // Initialisation par défaut : pas de corps
     _bodyMode      = BODY_NONE;
@@ -72,11 +75,11 @@ void RequestData::resetParserState()
 {
     _buffer.clear();
     _isHeadersParsed = false;
-    _bodyMode      = BODY_NONE;
-    _contentLength = 0;
-    _requestLine   = RequestLine();  // remet à défaut
+    _bodyMode        = BODY_NONE;
+    _contentLength   = 0;
+    _requestLine     = RequestLine();  // remet à défaut
     _parsedHeaders.clear();
-    _isChunked   = false;
+    _isChunked = false;
     _chunkSize = 0;
     _bodyAccumulator.clear();
 }
@@ -87,28 +90,29 @@ std::string RequestData::findHostInHeaders()
 {
     std::string rtn;
     rtn = "";
-    
+
     SVSMAP::iterator it;
-    
+
     it = _parsedHeaders.begin();
 
-    for (; it != _parsedHeaders.end() ; ++it)
+    for (; it != _parsedHeaders.end(); ++it)
     {
         if (it->first == "host")
             return (it->second[0]);
     }
     return (rtn);
-    
 }
 
-int RequestData::getPortFromFd(int fd) {
+int RequestData::getPortFromFd(int fd)
+{
     struct sockaddr_in addr;
-    socklen_t addrLen = sizeof(addr);
+    socklen_t          addrLen = sizeof(addr);
     std::memset(&addr, 0, sizeof(addr));
 
-    if (getsockname(fd, (struct sockaddr*)&addr, &addrLen) == -1) {
+    if (getsockname(fd, (struct sockaddr*) &addr, &addrLen) == -1)
+    {
         perror("getsockname");
-        return -1; // ou throw une exception selon ton design
+        return -1;  // ou throw une exception selon ton design
     }
 
     return ntohs(addr.sin_port);  // convertit en port lisible (host byte order)
@@ -129,7 +133,8 @@ ServerConfig RequestData::findMyConfig(int port, std::string host, IVSCMAP serve
         return configs[0];  // retourner la première config par défaut
 
     // Recherche manuelle car pas de lambda en C++98
-    for (std::vector<ServerConfig>::iterator itConfig = configs.begin(); itConfig != configs.end(); ++itConfig)
+    for (std::vector<ServerConfig>::iterator itConfig = configs.begin(); itConfig != configs.end();
+         ++itConfig)
     {
         ServerConfig& config = *itConfig;
 
@@ -148,12 +153,10 @@ ServerConfig RequestData::findMyConfig(int port, std::string host, IVSCMAP serve
 void RequestData::initServerConfig(IVSCMAP ServerConfigMap)
 {
     std::string host;
-    int port;
-    
+    int         port;
+
     port = getPortFromFd(_listeningSocketFd);
     host = findHostInHeaders();
-    
-    _serverConfig = findMyConfig(port, host, ServerConfigMap);
-    
-}
 
+    _serverConfig = findMyConfig(port, host, ServerConfigMap);
+}

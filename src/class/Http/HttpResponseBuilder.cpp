@@ -6,21 +6,21 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:00:11 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/31 17:13:10 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 18:03:08 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpResponseBuilder.hpp"
 #include "HttpException.hpp"
-#include "ResponseFormatter.hpp"
 #include "ContentGenerator.hpp"
-#include "StatusUtils.hpp"
 #include "RequestValidator.hpp"
 #include <sstream>
 
 // Constructeur
-HttpResponseBuilder::HttpResponseBuilder(const HttpRequest &req, const RequestValidator &validator)
-    : _request(req), _validator(validator), _response()
+HttpResponseBuilder::HttpResponseBuilder(const HttpRequest& req, const RequestValidator& validator)
+: _request(req)
+, _validator(validator)
+, _response()
 {
 }
 
@@ -34,29 +34,25 @@ std::string toString(size_t value)
 // Point d’entrée principal
 void HttpResponseBuilder::buildResponse()
 {
-
     switch (_request.method)
     {
-    case HttpRequest::METHOD_GET:
-        handleGET();
-        break;
-    case HttpRequest::METHOD_POST:
-        handlePOST();
-        break;
-    case HttpRequest::METHOD_DELETE:
-        handleDELETE();
-        break;
-    default:
-        throw HttpException(405, "Method Not Allowed", _validator.getErrorPage(405));
-        break;
+        case HttpRequest::METHOD_GET:
+            handleGET();
+            break;
+        case HttpRequest::METHOD_POST:
+            handlePOST();
+            break;
+        case HttpRequest::METHOD_DELETE:
+            handleDELETE();
+            break;
+        default:
+            throw HttpException(405, "Method Not Allowed", _validator.getErrorPage(405));
+            break;
     }
 }
 
 // Accès à la réponse finale
-const HttpResponse &HttpResponseBuilder::getResponse() const
-{
-    return _response;
-}
+const HttpResponse& HttpResponseBuilder::getResponse() const { return _response; }
 
 // Gestion GET
 void HttpResponseBuilder::handleGET()
@@ -71,7 +67,7 @@ void HttpResponseBuilder::handleGET()
             // Pas de route correspondante, refuse l'accès ou 404
             throw HttpException(404, "Not Found", _validator.getErrorPage(404));
         }
-        const RouteConfig &route = _validator.getMatchedRoute();
+        const RouteConfig& route = _validator.getMatchedRoute();
 
         if (route.autoindex)
         {
@@ -110,7 +106,7 @@ void HttpResponseBuilder::handlePOST()
 {
     if (_validator.hasMatchedRoute())
     {
-        const RouteConfig &route = _validator.getMatchedRoute();
+        const RouteConfig& route = _validator.getMatchedRoute();
 
         if (!route.cgiExecutor.first.empty())
         {
@@ -152,7 +148,7 @@ void HttpResponseBuilder::handlePOST()
 }
 
 // fonction pour supprimer le fichier
-bool deleteFile(const std::string &path)
+bool deleteFile(const std::string& path)
 {
     // std::remove retourne 0 si succès
     return (std::remove(path.c_str()) == 0);
@@ -185,27 +181,27 @@ void HttpResponseBuilder::handleDELETE()
 
 std::string HttpResponseBuilder::resolveTargetPath()
 {
-    std::string root;
+    std::string              root;
     std::vector<std::string> indexFiles;
-    bool indexIsSet = false;
-    std::string defaultFile;
-    std::string uri = _request.path;
+    bool                     indexIsSet = false;
+    std::string              defaultFile;
+    std::string              uri = _request.path;
 
     if (_validator.hasMatchedRoute())
     {
-        const RouteConfig &route = _validator.getMatchedRoute();
-        root = route.root;
-        indexFiles = route.indexFiles;
-        indexIsSet = route.indexIsSet;
-        defaultFile = route.defaultFile;
+        const RouteConfig& route = _validator.getMatchedRoute();
+        root                     = route.root;
+        indexFiles               = route.indexFiles;
+        indexIsSet               = route.indexIsSet;
+        defaultFile              = route.defaultFile;
     }
     else
     {
-        const ServerConfig &serverConf = _validator.getServerConfig();
-        root = serverConf.root;
-        indexFiles = serverConf.indexFiles;
-        indexIsSet = serverConf.indexIsSet;
-        defaultFile = "index.html"; // Fallback
+        const ServerConfig& serverConf = _validator.getServerConfig();
+        root                           = serverConf.root;
+        indexFiles                     = serverConf.indexFiles;
+        indexIsSet                     = serverConf.indexIsSet;
+        defaultFile                    = "index.html";  // Fallback
     }
 
     // Construction du chemin complet
@@ -221,7 +217,8 @@ std::string HttpResponseBuilder::resolveTargetPath()
         // Si des fichiers index ont été définis explicitement
         if (indexIsSet)
         {
-            for (std::vector<std::string>::iterator it = indexFiles.begin(); it != indexFiles.end(); ++it)
+            for (std::vector<std::string>::iterator it = indexFiles.begin(); it != indexFiles.end();
+                 ++it)
             {
                 std::string candidate = fullPath + *it;
                 if (fileExists(candidate))
@@ -246,7 +243,8 @@ std::string HttpResponseBuilder::resolveTargetPath()
 
 void HttpResponseBuilder::setConnection()
 {
-    std::map<std::string, std::vector<std::string> >::const_iterator it = _request.headers.find("Connection");
+    std::map<std::string, std::vector<std::string>>::const_iterator it
+        = _request.headers.find("Connection");
 
     if (it == _request.headers.end())
     {
@@ -277,21 +275,23 @@ void HttpResponseBuilder::setConnection()
     }
 }
 
-std::string HttpResponseBuilder::runCgiScript(HttpRequest &request, const std::string &scriptPath)
+std::string HttpResponseBuilder::runCgiScript(HttpRequest& request, const std::string& scriptPath)
 {
-    (void)request; // Pour éviter l'avertissement non utilisé
-    (void)scriptPath; // Pour éviter l'avertissement non utilisé
+    (void) request;     // Pour éviter l'avertissement non utilisé
+    (void) scriptPath;  // Pour éviter l'avertissement non utilisé
     return "";
-    // TO DO 
+    // TO DO
     /*Comportement attendu
 
     Préparer l’environnement d’exécution CGI
 
-        Initialiser les variables d’environnement nécessaires (ex : REQUEST_METHOD, QUERY_STRING, CONTENT_LENGTH, CONTENT_TYPE, SCRIPT_NAME, etc.) selon la requête HTTP et la spécification CGI.
+        Initialiser les variables d’environnement nécessaires (ex : REQUEST_METHOD, QUERY_STRING,
+CONTENT_LENGTH, CONTENT_TYPE, SCRIPT_NAME, etc.) selon la requête HTTP et la spécification CGI.
 
     Créer un processus fils (fork + exec)
 
-        Exécuter le script CGI indiqué (route.cgiExecutor.second représente généralement le chemin du script).
+        Exécuter le script CGI indiqué (route.cgiExecutor.second représente généralement le chemin
+du script).
 
         Passer l’entrée standard du script (pour POST, le corps de la requête) via un pipe.
 
@@ -305,7 +305,8 @@ std::string HttpResponseBuilder::runCgiScript(HttpRequest &request, const std::s
 
         Lire la sortie du script depuis le pipe de sortie standard.
 
-        Cette sortie inclut généralement les headers HTTP (Content-Type, etc.) suivis d’une ligne vide puis du corps.
+        Cette sortie inclut généralement les headers HTTP (Content-Type, etc.) suivis d’une ligne
+vide puis du corps.
 
     Fermer les pipes et attendre la fin du processus fils
 
@@ -321,7 +322,8 @@ Points importants
 
     Le script CGI doit respecter la norme CGI (produire des headers HTTP valides avant le contenu).
 
-    Les variables d’environnement doivent être configurées avec soin pour que le script reçoive toutes les infos nécessaires.
+    Les variables d’environnement doivent être configurées avec soin pour que le script reçoive
+toutes les infos nécessaires.
 
     Penser à gérer les permissions d’exécution du script.
 
@@ -351,17 +353,19 @@ Exemple des étapes internes (conceptuelles) de runCgiScript
 }
 
 
-bool HttpResponseBuilder::storeUploadedFile(HttpRequest &request, const std::string &uploadStorePath)
+bool HttpResponseBuilder::storeUploadedFile(HttpRequest&       request,
+                                            const std::string& uploadStorePath)
 {
-    (void)request; // Pour éviter l'avertissement non utilisé
-    (void)uploadStorePath; // Pour éviter l'avertissement non utilisé
+    (void) request;          // Pour éviter l'avertissement non utilisé
+    (void) uploadStorePath;  // Pour éviter l'avertissement non utilisé
     return true;
-    // TO DO 
+    // TO DO
     /* Comportement attendu
 
     Analyser la requête pour extraire le fichier envoyé
 
-        En fonction du type de contenu (généralement multipart/form-data), il faut parser le corps pour récupérer le contenu du fichier et son nom.
+        En fonction du type de contenu (généralement multipart/form-data), il faut parser le corps
+pour récupérer le contenu du fichier et son nom.
 
     Vérifier la validité du dossier de destination
 
@@ -397,7 +401,9 @@ Exemple de tâches concrètes dans storeUploadedFile
 
 Attention
 
-    Si le parsing multipart/form-data n’est pas encore fait, il faudra l’implémenter ou s’assurer que _request.form_data contient déjà le fichier et ses données.
+    Si le parsing multipart/form-data n’est pas encore fait, il faudra l’implémenter ou s’assurer
+que _request.form_data contient déjà le fichier et ses données.
 
-    La fonction peut aussi gérer la limitation de taille, le contrôle des extensions, etc. selon ta config. */
+    La fonction peut aussi gérer la limitation de taille, le contrôle des extensions, etc. selon ta
+config. */
 }

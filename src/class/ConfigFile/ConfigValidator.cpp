@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 16:31:54 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/27 12:24:29 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 17:53:38 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 
 #include "ConfigValidator.hpp"
 #include "../Errors/ErrorHandler.hpp"
-#include "../../../include/webserv.h"
+#include "../../../include/webserv.hpp"
 
 #include <sstream>
 #include <set>

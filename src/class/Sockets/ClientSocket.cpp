@@ -6,12 +6,13 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 16:11:45 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/27 16:37:45 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 17:48:56 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ClientSocket.hpp"
-#include "../../../include/webserv.h"
+#include "../Errors/ErrorHandler.hpp"
+#include "../../../include/webserv.hpp"
 
 #include <cerrno>
 #include <cstring>

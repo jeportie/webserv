@@ -6,13 +6,13 @@
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/20 10:00:00 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/22 13:46:11 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/02 17:51:19 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "CallbackQueue.hpp"
 #include "../Errors/ErrorHandler.hpp"
-#include "../../../include/webserv.h"
+#include "../../../include/webserv.hpp"
 
 void CallbackQueue::push(Callback* callback)
 {

@@ -6,7 +6,7 @@
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/20 10:00:00 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/20 10:00:00 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/02 17:59:08 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,8 @@ public:
     Callback(int fd);
     virtual ~Callback();
 
-    virtual void	execute() = 0;
-    int				getFd() const;
+    virtual void execute() = 0;
+    int          getFd() const;
 
 protected:
     int _fd;  // File descriptor associated with this callback

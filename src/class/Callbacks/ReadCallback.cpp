@@ -6,11 +6,11 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/31 14:45:33 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 17:52:38 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../../include/webserv.h"
+#include "../../../include/webserv.hpp"
 #include "../SocketManager/SocketManager.hpp"
 #include "../Errors/ErrorHandler.hpp"
 #include "../Http/HttpException.hpp"
@@ -22,6 +22,7 @@
 #include "ErrorCallback.hpp"
 #include "WriteCallback.hpp"
 
+#include <iostream>
 #include <unistd.h>
 #include <sys/epoll.h>
 #include <sstream>

@@ -6,14 +6,14 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 16:21:43 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/27 12:02:11 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 17:58:15 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parser.hpp"
 #include "ServerConfig.hpp"
 #include "../Errors/ErrorHandler.hpp"
-#include "../../../include/webserv.h"
+#include "../../../include/webserv.hpp"
 
 Parser::Parser(Lexer& lexer)
 : _lexer(lexer)
@@ -203,7 +203,7 @@ std::map<std::string, RouteConfig> Parser::parseLocationBlocks()
             {
                 route.uploadStore = parseUploadStoreDirective();
             }
-                        else if (directive == "index")
+            else if (directive == "index")
             {
                 route.indexFiles = parseIndexDirective();
                 route.indexIsSet = true;

@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:17:22 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/19 16:06:32 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/02 18:01:52 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #define HTTPPARSER_HPP
 
 #include "RequestLine.hpp"
-#include "HttpRequest.hpp"   // contient enum Method, struct RequestLine, struct HttpRequest
+#include "HttpRequest.hpp"  // contient enum Method, struct RequestLine, struct HttpRequest
 
 #include <sys/socket.h>
 #include <unistd.h>  // pour read()
@@ -25,41 +25,36 @@ class HttpParser
 {
 public:
     // 1) Méthode HTTP
-    static HttpRequest::Method
-    parseMethod(const std::string& token);
+    static HttpRequest::Method parseMethod(const std::string& token);
 
     // 2) Request-Line complète
-    static RequestLine
-    parseRequestLine(const std::string& line);
+    static RequestLine parseRequestLine(const std::string& line);
 
-    static void 
-    parsePathAndQuerry(std::string path, std::string raw_query);
+    static void parsePathAndQuerry(std::string path, std::string raw_query);
 
     // 3) Toutes les lignes d’en-têtes (avant "\r\n\r\n")
     //    map<nom, liste de valeurs>
     static SVSMAP parseHeaders(const std::string& hdr_block);
 
     // 4) Sépare target en path + raw_query
-    static void
-    splitTarget(const std::string& target,
-                std::string&      outPath,
-                std::string&      outRawQuery);
+    static void splitTarget(const std::string& target,
+                            std::string&       outPath,
+                            std::string&       outRawQuery);
 
     // 5) Paramètres de requête (query string) : map<clé, valeur>
-    static SSMAP	parseQueryParams(const std::string& raw_query);
+    static SSMAP parseQueryParams(const std::string& raw_query);
 
     // 6) Form data x-www-form-urlencoded : map<clé, valeur>
-    static SSMAP	parseFormUrlencoded(const std::string& body);
+    static SSMAP parseFormUrlencoded(const std::string& body);
 };
 
-std::string			urlDecode(const std::string &s);
-void				splitKeyVal(const std::string &token, std::string &key,
-					std::string &val);
-std::string			trim(const std::string &s);
-        
-#endif // HTTPPARSER_HPP
+std::string urlDecode(const std::string& s);
+void        splitKeyVal(const std::string& token, std::string& key, std::string& val);
+std::string trim(const std::string& s);
+
+#endif  // HTTPPARSER_HPP
 
 // L'utilisation des Static ici est motive par le concept de realiser une boite a outils.
-// Un parser n'a pas besoin d'avoir une instance. C'est simplement une "usine" 
-// dans laquelle passe un input ici : ce qui est dans le buffer de chaque socket de communication client. 
-// et recrache un output qu'il store dans la structure HttpRequest. 
+// Un parser n'a pas besoin d'avoir une instance. C'est simplement une "usine"
+// dans laquelle passe un input ici : ce qui est dans le buffer de chaque socket de communication
+// client. et recrache un output qu'il store dans la structure HttpRequest.

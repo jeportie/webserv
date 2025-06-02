@@ -6,12 +6,12 @@
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 15:30:00 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/14 15:30:00 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/02 18:13:18 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ErrorHandler.hpp"
-#include "../../../include/webserv.h"
+#include "../../../include/webserv.hpp"
 #include "../Errors/ErrorHandler.hpp"
 
 ErrorHandler::ErrorHandler()
@@ -37,9 +37,9 @@ ErrorHandler::~ErrorHandler()
 /* Private Methodes of ErrorHandler */
 std::string ErrorHandler::getTimestamp() const
 {
-    char		buffer[80];
-    time_t		now      = time(NULL);
-    struct tm*	timeinfo = localtime(&now);
+    char       buffer[80];
+    time_t     now      = time(NULL);
+    struct tm* timeinfo = localtime(&now);
 
     strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timeinfo);
 

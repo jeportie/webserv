@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/30 20:06:34 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 17:52:17 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,6 @@
 #include "../Http/HttpException.hpp"
 #include "../Http/HttpLimits.hpp"
 #include "../SocketManager/SocketManager.hpp"
-#include "../ConfigFile/ServerConfig.hpp"
-#include "../Http/RequestValidator.hpp"
 #include "WriteCallback.hpp"
 
 bool ReadCallback::readFromClient(int fd, ClientSocket* client)

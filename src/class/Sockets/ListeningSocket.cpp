@@ -6,11 +6,9 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 14:51:58 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/27 14:52:45 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/02 18:10:59 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
-
 
 #include <sys/epoll.h>
 #include <cerrno>
@@ -18,7 +16,7 @@
 #include "ListeningSocket.hpp"
 #include "Socket.hpp"
 #include "../Errors/ErrorHandler.hpp"
-#include "../../../include/webserv.h"
+#include "../../../include/webserv.hpp"
 
 ListeningSocket::ListeningSocket(void)
 : Socket()
@@ -34,7 +32,7 @@ ListeningSocket::ListeningSocket(const ListeningSocket& src)
 }
 
 ListeningSocket::~ListeningSocket(void)
-{ 
+{
     LOG_ERROR(DEBUG, SOCKET_ERROR, LOG_LISTENINGSOCKET_DESTRUCTOR, __FUNCTION__);
-	closeSocket();
+    closeSocket();
 }

@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 12:42:25 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/27 14:55:21 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/02 17:51:00 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "../Sockets/ListeningSocket.hpp"
 #include "AcceptCallback.hpp"
 
+#include <iostream>
 #include <unistd.h>
 #include <sys/epoll.h>
 #include <sstream>

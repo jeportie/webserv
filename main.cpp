@@ -6,59 +6,30 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 11:49:58 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/26 12:35:33 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 18:12:56 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "include/webserv.h"
+#include "include/webserv.hpp"
 #include "src/class/SocketManager/SocketManager.hpp"
 #include "src/class/Errors/ErrorHandler.hpp"
 
 #include <cstdlib>
 #include <stdexcept>
 #include <iostream>
-#include <sstream>
 
 std::string Start("Server starting...");
-std::string RunT ("Runtime Error: ");
-std::string Excp ("Exception Error: ");
-std::string Ukwn ("Unknown Error: ");
-std::string Crit ("Critical error occurred, shutting down server");
+std::string RunT("Runtime Error: ");
+std::string Excp("Exception Error: ");
+std::string Ukwn("Unknown Error: ");
+std::string Crit("Critical error occurred, shutting down server");
 
-std::string readFileToString(const std::string& filename)
-{
-    std::ifstream file(filename.c_str(), std::ios::in | std::ios::binary);
-    std::stringstream ss;
-
-    if (!file.is_open())
-    {
-        ss << "readFileToString: cannot open file:" << filename;
-        THROW_ERROR(ERROR, CONFIG_FILE_ERROR, ss.str(), __FUNCTION__);
-    }
-
-    std::string content;
-    char        c;
-
-    while (file.get(c))
-    {
-        content += c;
-    }
-
-    if (file.bad())
-    {
-        ss << "readFileToString: error while reading file: " << filename;
-        THROW_ERROR(ERROR, CONFIG_FILE_ERROR, ss.str(), __FUNCTION__);
-    }
-
-    return content;
-}
-
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 
 {
-    std::string content;
+    std::string   content;
     SocketManager theSocketMaster;
-    
+
     if (argc < 2)
     {
         std::cout << "Usage: " << argv[0] << " [config_file.conf]" << std::endl;
@@ -67,12 +38,12 @@ int main(int argc, char **argv)
     ErrorHandler& errorHandler = ErrorHandler::getInstance();
     errorHandler.setLogLevel(DEBUG);
     errorHandler.setLogFile("webserv.log");
-    
+
     try
     {
         content = readFileToString(argv[1]);
         theSocketMaster.instantiateConfig(content);
-        
+
         std::cout << "Starting webserv!" << std::endl;
         LOG_ERROR(INFO, INTERNAL_ERROR, Start, "main");
 
@@ -95,10 +66,10 @@ int main(int argc, char **argv)
     }
     if (errorHandler.shouldShutdown())
     {
-		errorHandler.logSystemError(CRITICAL, INTERNAL_ERROR, Crit);
+        errorHandler.logSystemError(CRITICAL, INTERNAL_ERROR, Crit);
         std::cerr << Crit << std::endl;
-		exit(EXIT_FAILURE);
+        exit(EXIT_FAILURE);
     }
-    std::cout << "Server shutdown without errors" << PORT << std::endl;
+    std::cout << "Server shutdown without errors" << std::endl;
     return (0);
 }

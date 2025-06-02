@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/28 15:11:43 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/31 14:26:24 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 17:45:38 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,9 +18,8 @@
 #include <cstring> // strerror
 #include <cstdlib> // pour strtol
 
-#include "HttpException.hpp"
-#include "HttpParser.hpp"
-#include "HttpLimits.hpp"
+#include "../ConfigFile/ServerConfig.hpp"
+#include "HttpRequest.hpp"
 
 class RequestValidator
 {

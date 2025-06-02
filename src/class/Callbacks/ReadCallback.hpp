@@ -6,12 +6,12 @@
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 12:59:00 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/22 13:52:18 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/02 17:59:21 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef READCALLBACK_HPP
-# define READCALLBACK_HPP
+#define READCALLBACK_HPP
 
 #include "Callback.hpp"
 #include "../Http/HttpRequest.hpp"
@@ -28,8 +28,8 @@ public:
     virtual void execute();
 
 private:
-    SocketManager*     _manager;
-    int                _epoll_fd;
+    SocketManager* _manager;
+    int            _epoll_fd;
 
     void        closeConnection(int fd, int epoll_fd);
     bool        readFromClient(int fd, ClientSocket* client);

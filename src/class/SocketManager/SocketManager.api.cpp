@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/30 15:21:22 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 18:09:45 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 #include <ostream>
 #include <sstream>
 #include <unistd.h>
-#include <vector>
 #include <cstdlib>
 
 #include "SocketManager.hpp"
@@ -28,7 +27,8 @@
 #include "../ConfigFile/Parser.hpp"
 #include "../ConfigFile/Lexer.hpp"
 #include "../ConfigFile/ConfigValidator.hpp"
-#include "../../../include/webserv.h"
+#include "../Errors/ErrorHandler.hpp"
+#include "../../../include/webserv.hpp"
 
 void SocketManager::init_connect()
 {

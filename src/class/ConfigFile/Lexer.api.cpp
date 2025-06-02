@@ -6,15 +6,13 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 09:31:48 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/27 12:22:34 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 17:59:41 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Lexer.hpp"
 
-bool Lexer::isAtEnd() const {
-    return _pos >= _content.size();
-}
+bool Lexer::isAtEnd() const { return _pos >= _content.size(); }
 
 void Lexer::skipWhitespace()
 {
@@ -25,13 +23,12 @@ void Lexer::skipWhitespace()
 void Lexer::skipComment()
 {
     if (peek() == '#')
-    { 
+    {
         while (!isAtEnd() && get() != '\n')
         {
-            //consume until end of line
+            // consume until end of line
         }
     }
-        
 }
 
 bool Lexer::isValidIdentifierSymbol(char c) const
@@ -44,8 +41,8 @@ bool Lexer::isValidIdentifierSymbol(char c) const
 Token Lexer::parseIdentifier()
 {
     std::string value;
-    int startLine = _line;
-    int startColumn = _column;
+    int         startLine   = _line;
+    int         startColumn = _column;
 
 
     while (!isAtEnd() && (std::isalnum(peek()) || isValidIdentifierSymbol(peek())))
@@ -57,7 +54,7 @@ Token Lexer::parseIdentifier()
 
 bool Lexer::isNextTokenUrl() const
 {
-    size_t tmpPos = _pos;
+    size_t      tmpPos = _pos;
     std::string protocol;
 
     // Lire les lettres pour voir si c'est "http" ou "https"
@@ -68,16 +65,14 @@ bool Lexer::isNextTokenUrl() const
         return false;
 
     // Vérifie que c'est bien suivi de "://"
-    return tmpPos + 2 < _content.size()
-        && _content[tmpPos] == ':'
-        && _content[tmpPos + 1] == '/'
-        && _content[tmpPos + 2] == '/';
+    return tmpPos + 2 < _content.size() && _content[tmpPos] == ':' && _content[tmpPos + 1] == '/'
+           && _content[tmpPos + 2] == '/';
 }
 
 Token Lexer::parseUrl()
 {
-    int startLine = _line;
-    int startColumn = _column;
+    int         startLine   = _line;
+    int         startColumn = _column;
     std::string value;
 
     while (!isAtEnd())
@@ -95,56 +90,56 @@ Token Lexer::parseUrl()
 Token Lexer::parseString()
 {
     std::string value;
-    int startLine = _line;
-    int startColumn = _column;
-    
+    int         startLine   = _line;
+    int         startColumn = _column;
+
     while (!isAtEnd() && peek() != '"')
     {
         value += get();
     }
     if (peek() == '"')
     {
-       get();
+        get();
     }
     else
     {
         return Token(TOKEN_UNKNOWN, value, startLine, startColumn);
-    }   
-    
+    }
+
     return Token(TOKEN_STRING, value, startLine, startColumn);
 }
 
 Token Lexer::parseNumber()
 {
     std::string value;
-    int startLine = _line;
-    int startColumn = _column;
-    
+    int         startLine   = _line;
+    int         startColumn = _column;
+
     while (!isAtEnd() && isdigit(peek()))
     {
         value += get();
     }
-    
+
     return Token(TOKEN_NUMBER, value, startLine, startColumn);
 }
 
 Token Lexer::parseSymbol()
 {
-    int startLine = _line;
-    int startColumn = _column;
-    char c = get();
-    
+    int  startLine   = _line;
+    int  startColumn = _column;
+    char c           = get();
+
     switch (c)
     {
-        case '{' : 
+        case '{':
             return Token(TOKEN_LBRACE, "{", startLine, startColumn);
-        case '}' : 
+        case '}':
             return Token(TOKEN_RBRACE, "}", startLine, startColumn);
-        case ';' : 
+        case ';':
             return Token(TOKEN_SEMICOLON, ";", startLine, startColumn);
-        case ':' : 
+        case ':':
             return Token(TOKEN_COLON, ":", startLine, startColumn);
-        default:  
+        default:
             return Token(TOKEN_UNKNOWN, std::string(1, c), startLine, startColumn);
     }
 }
@@ -152,7 +147,7 @@ Token Lexer::parseSymbol()
 Token Lexer::parsePathLike()
 {
     std::string value;
-    
+
     while (!isAtEnd())
     {
         char c = peek();

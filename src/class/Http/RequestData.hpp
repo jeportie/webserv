@@ -6,12 +6,12 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 16:22:15 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/31 16:50:27 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 18:04:00 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef REQUESTDATA_HPP
-# define REQUESTDATA_HPP
+#define REQUESTDATA_HPP
 
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -20,17 +20,11 @@
 #include <string>
 #include <cerrno>
 #include <cstring>
-#include <sstream>
-#include <iostream>
 #include <cstdlib>
 
-
-#include "../../../include/webserv.h"
+#include "../../../include/webserv.hpp"
 #include "../ConfigFile/ServerConfig.hpp"
-#include "../Sockets/Socket.hpp"
-#include "HttpException.hpp"
 #include "RequestLine.hpp"
-#include "HttpLimits.hpp"
 
 #define LOG_REQUESTDATA_CONSTRUCTOR "RequestData Constructor called."
 #define LOG_REQUESTDATA_DESTRUCTOR "RequestData Destructor called."
@@ -42,54 +36,51 @@ enum BodyMode
     BODY_CHUNKED
 };
 
-// ATTENTION VIRTUAL ET DEUXIEME FONCTION INITSERVERCONFIG A ENLEVER UNIQUEMENT LA POUR LES TESTS UNITAIRE
+// ATTENTION VIRTUAL ET DEUXIEME FONCTION INITSERVERCONFIG A ENLEVER UNIQUEMENT LA POUR LES TESTS
+// UNITAIRE
 
 class RequestData
 {
 public:
-
     RequestData(void);
     ~RequestData(void);
 
-    void                        determineBodyMode();
-    void                        clearBodyAccumulator();
-    void                        resetParserState();
-    virtual std::string         findHostInHeaders();
-    virtual int                 getPortFromFd(int fd);
-    void                        initServerConfig(IVSCMAP ServerConfigMap, int port, const std::string& host)
+    void                determineBodyMode();
+    void                clearBodyAccumulator();
+    void                resetParserState();
+    virtual std::string findHostInHeaders();
+    virtual int         getPortFromFd(int fd);
+    void                initServerConfig(IVSCMAP ServerConfigMap, int port, const std::string& host)
     {
         _serverConfig = findMyConfig(port, host, ServerConfigMap);
     }
-    ServerConfig                findMyConfig(int port, std::string host, IVSCMAP ServerConfigMap);
-	void                        initServerConfig(IVSCMAP ServerConfigMap);
+    ServerConfig findMyConfig(int port, std::string host, IVSCMAP ServerConfigMap);
+    void         initServerConfig(IVSCMAP ServerConfigMap);
 
+    // Getters
+    std::string& getBuffer();
+    size_t       getContentLength() const;
+    SVSMAP       getParsedHeaders() const;
+    bool         getIsHeadersParsed() const;
+    RequestLine  getRequestLine() const;
+    BodyMode     getBodyMode() const;
+    std::string& getBodyAccumulator();
+    bool         getIsChunked() const;
+    size_t       getChunkSize() const;
 
-
-	// Getters
-    std::string&				getBuffer();
-    size_t                      getContentLength() const;
-    SVSMAP						getParsedHeaders() const;
-    bool                        getIsHeadersParsed() const;
-    RequestLine                 getRequestLine() const;
-    BodyMode                    getBodyMode() const;
-    std::string&                getBodyAccumulator();
-    bool                        getIsChunked() const;
-    size_t                      getChunkSize() const;
-	
-	// Setters
-    void                        setHeadersParsed(bool parsed);
-    void                        setContentLength(size_t length);
-    void						setRequestLine(RequestLine rl);
-    void                        setBodyMode(BodyMode mode);
-    void                        setParsedHeaders(SVSMAP hdrs);
-    void                        setChunked(bool);
-    void                        setChunkSize(size_t);
+    // Setters
+    void setHeadersParsed(bool parsed);
+    void setContentLength(size_t length);
+    void setRequestLine(RequestLine rl);
+    void setBodyMode(BodyMode mode);
+    void setParsedHeaders(SVSMAP hdrs);
+    void setChunked(bool);
+    void setChunkSize(size_t);
 
     void setListeningSocketFd(int fd) { _listeningSocketFd = fd; }
-    int getListeningSocketFd() const { return _listeningSocketFd; }
+    int  getListeningSocketFd() const { return _listeningSocketFd; }
 
     ServerConfig getServerConfig() const { return _serverConfig; }
-
 
 private:
     RequestData(const RequestData& src);
@@ -97,24 +88,21 @@ private:
 
     void checkChunkedBodyMode();
     void checkContentLengthBodyMode();
-    
+
     // requetedata
-    std::string                 _buffer;
-    bool                        _isHeadersParsed;
-    BodyMode                    _bodyMode;
-    size_t                      _contentLength;
-    RequestLine                 _requestLine;
-    SVSMAP						_parsedHeaders;
-    bool                        _isChunked;    // mode chunked activé
-    size_t                      _chunkSize;  // taille restante du chunk courant
-    std::string                 _bodyAccumulator;
-    int                         _listeningSocketFd;
-    ServerConfig                _serverConfig;
+    std::string  _buffer;
+    bool         _isHeadersParsed;
+    BodyMode     _bodyMode;
+    size_t       _contentLength;
+    RequestLine  _requestLine;
+    SVSMAP       _parsedHeaders;
+    bool         _isChunked;  // mode chunked activé
+    size_t       _chunkSize;  // taille restante du chunk courant
+    std::string  _bodyAccumulator;
+    int          _listeningSocketFd;
+    ServerConfig _serverConfig;
 
-    protected:
-
-    
+protected:
 };
-
 
 #endif  // ************************************************* CLIENTSOCKET_HPP //

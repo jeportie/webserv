@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 12:50:02 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/31 16:03:24 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 17:47:04 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #define CONTENTGENERATOR_HPP
 
 #include <string>
-#include "HttpRequest.hpp"
 
 bool fileExists(const std::string& path);
 bool isDirectory(const std::string& path);

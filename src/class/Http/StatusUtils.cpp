@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:03:38 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/31 13:42:49 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 18:09:19 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,8 @@
 #include <map>
 #include <string>
 
-std::string getStatusMessage(int code) {
+std::string getStatusMessage(int code)
+{
     std::map<int, std::string> statusMessages;
 
     statusMessages[200] = "OK";
@@ -38,5 +39,3 @@ std::string getStatusMessage(int code) {
 
     return "Unknown Status";
 }
-
-

@@ -6,15 +6,15 @@
 /*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:12:07 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/22 13:12:18 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/02 17:59:17 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef ERRORCALLBACK_HPP
-# define ERRORCALLBACK_HPP
+#define ERRORCALLBACK_HPP
 
-#define LOG_ERRCB_CONST	"ErrorCallback Constructor called."
-#define LOG_ERRCB_DEST	"ErrorCallback Destructor called"
+#define LOG_ERRCB_CONST "ErrorCallback Constructor called."
+#define LOG_ERRCB_DEST "ErrorCallback Destructor called"
 
 #include "Callback.hpp"
 

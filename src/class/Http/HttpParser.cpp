@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:17:24 by anastruc          #+#    #+#             */
-/*   Updated: 2025/05/30 20:07:44 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 18:01:41 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,8 @@ SVSMAP HttpParser::parseHeaders(const std::string& hdr_block)
             if (name.length() > MAX_FIELD_NAME || value.length() > MAX_FIELD_VALUE)
                 throw HttpException(431, "Request Header Fields Too Large", "");
             if (containsCtl(name) || containsCtl(value))
-                throw HttpException(400, "Bad Request: Control characters in header name or value", "");
+                throw HttpException(
+                    400, "Bad Request: Control characters in header name or value", "");
             if (!name.empty() && !value.empty())
                 headers[name].push_back(value);
             else
@@ -149,7 +150,8 @@ SVSMAP HttpParser::parseHeaders(const std::string& hdr_block)
 
 // 4) splitTarget
 void HttpParser::splitTarget(const std::string& target,
-	std::string& outPath, std::string& outRawQuery)
+                             std::string&       outPath,
+                             std::string&       outRawQuery)
 {
     size_t pos = target.find('?');
     if (pos == std::string::npos)
@@ -183,9 +185,9 @@ void HttpParser::parsePathAndQuerry(std::string path, std::string raw_query)
 // 5) parseQueryParams
 SSMAP HttpParser::parseQueryParams(const std::string& raw_query)
 {
-    SSMAP params;
-    size_t start;
-    size_t end;
+    SSMAP       params;
+    size_t      start;
+    size_t      end;
     std::string token;
     std::string key;
     std::string val;
@@ -200,7 +202,7 @@ SSMAP HttpParser::parseQueryParams(const std::string& raw_query)
         token = raw_query.substr(start, end - start);
         splitKeyVal(token, key, val);
         params[key] = val;
-        start = end + 1;
+        start       = end + 1;
     }
     if (start < raw_query.size())
     {

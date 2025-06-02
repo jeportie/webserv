@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:32:17 by jeportie          #+#    #+#             */
-/*   Updated: 2025/05/23 16:34:13 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/02 18:11:22 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,18 +20,18 @@
 #include <sys/socket.h>
 
 #include "Socket.hpp"
-#include "../../../include/webserv.h"
+#include "../Errors/ErrorHandler.hpp"
+#include "../../../include/webserv.hpp"
 
 bool Socket::socketCreate(void)
 {
-	std::string msg;
+    std::string msg;
 
     _socketFd = socket(AF_INET, SOCK_STREAM, 0);
     if (_socketFd < 0)
     {
-		msg = strerror(errno);
-		LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR,  LOG_ERROR_CREATING_SOCKET + msg,
-			__FUNCTION__);
+        msg = strerror(errno);
+        LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR, LOG_ERROR_CREATING_SOCKET + msg, __FUNCTION__);
         return (false);
     }
     return (true);
@@ -39,13 +39,12 @@ bool Socket::socketCreate(void)
 
 bool Socket::setReuseAddr(bool reuse)
 {
-	int			option;
-	std::string msg;
+    int         option;
+    std::string msg;
 
     if (!isValid())
     {
-		LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR, LOG_CANNOT_SET_SO_REUSEADDR,
-			__FUNCTION__);
+        LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR, LOG_CANNOT_SET_SO_REUSEADDR, __FUNCTION__);
         return (false);
     }
 
@@ -53,9 +52,8 @@ bool Socket::setReuseAddr(bool reuse)
 
     if (setsockopt(_socketFd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0)
     {
-		msg = strerror(errno);
-		LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR, LOG_ERROR_SETTING_SO_REUSEADDR + msg,
-			__FUNCTION__);
+        msg = strerror(errno);
+        LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR, LOG_ERROR_SETTING_SO_REUSEADDR + msg, __FUNCTION__);
         return (false);
     }
     return (true);

@@ -6,11 +6,12 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 16:31:21 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/31 11:39:15 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 18:07:27 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "RequestData.hpp"
+#include "../Errors/ErrorHandler.hpp"
 
 // Constructor - Destructor
 
@@ -25,14 +26,12 @@ RequestData::RequestData()
 , _chunkSize(0)
 , _bodyAccumulator()
 {
-    LOG_ERROR(
-        DEBUG, SOCKET_ERROR, LOG_REQUESTDATA_CONSTRUCTOR, __FUNCTION__);
+    LOG_ERROR(DEBUG, SOCKET_ERROR, LOG_REQUESTDATA_CONSTRUCTOR, __FUNCTION__);
 }
 
 RequestData::~RequestData(void)
 {
-    LOG_ERROR(
-        DEBUG, SOCKET_ERROR, LOG_REQUESTDATA_DESTRUCTOR, __FUNCTION__);
+    LOG_ERROR(DEBUG, SOCKET_ERROR, LOG_REQUESTDATA_DESTRUCTOR, __FUNCTION__);
 }
 
 // GETTERS
@@ -69,7 +68,4 @@ void RequestData::setChunked(bool c) { _isChunked = c; }
 
 void RequestData::setChunkSize(size_t s) { _chunkSize = s; }
 
-void RequestData::setParsedHeaders(SVSMAP hdrs)
-{
-    _parsedHeaders = hdrs;
-}
+void RequestData::setParsedHeaders(SVSMAP hdrs) { _parsedHeaders = hdrs; }

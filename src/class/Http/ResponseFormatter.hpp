@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 12:50:47 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/05/31 14:44:07 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/02 18:08:57 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 
 #include "HttpResponse.hpp"
 #include <string>
-#include <sstream>
 
 class ResponseFormatter
 {
