@@ -10,16 +10,16 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "../../../include/webserv.h"
 #include "../SocketManager/SocketManager.hpp"
 #include "../Errors/ErrorHandler.hpp"
-#include "../../../include/webserv.h"
 #include "../Http/HttpException.hpp"
-#include "ReadCallback.hpp"
-#include "ErrorCallback.hpp"
 #include "../Http/HttpRequest.hpp"
 #include "../Http/RequestValidator.hpp"
 #include "../Http/HttpResponseBuilder.hpp"
 #include "../Http/ResponseFormatter.hpp"
+#include "ReadCallback.hpp"
+#include "ErrorCallback.hpp"
 
 #include <unistd.h>
 #include <sys/epoll.h>
