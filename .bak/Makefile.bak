@@ -34,6 +34,7 @@ SRC = \
   src/class/Callbacks/TimeoutCallback.cpp \
   src/class/Http/HttpParser_utils.cpp \
   src/class/Http/HttpRequest.cpp \
+  src/class/Http/RequestData.api.cpp \
   src/class/Http/RequestData.cpp \
   src/class/Http/RequestLine.cpp \
   src/class/Http/ResponseFormatter.cpp \
@@ -44,7 +45,6 @@ SRC = \
   src/class/Http/HttpResponse.cpp \
   src/class/Http/HttpParser.cpp \
   src/class/Http/RequestValidator.cpp \
-  src/class/Http/RequestData.api.cpp \
   src/class/Sockets/ClientSocket.cpp \
   src/class/Sockets/ClientSocket.api.cpp \
   src/class/Sockets/ListeningSocket.api.cpp \

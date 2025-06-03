@@ -14,6 +14,7 @@
 #include "../../src/class/Http/HttpRequest.hpp"
 #include "../../src/class/ConfigFile/ServerConfig.hpp"
 #include "../../src/class/ConfigFile/RouteConfig.hpp"
+#include "../../src/class/Http/HttpException.hpp"
 
 #include <gtest/gtest.h>
 

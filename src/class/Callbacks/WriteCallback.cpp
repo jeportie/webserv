@@ -23,9 +23,15 @@
 
 // WriteCallback implementation
 WriteCallback::WriteCallback(int clientFd, SocketManager* manager, const std::string& data, int epoll_fd)
-: Callback(clientFd), _manager(manager), _data(data), _epoll_fd(epoll_fd)
+: Callback(clientFd), _manager(manager), _data(data), _epoll_fd(epoll_fd), _bytesWritten(0)
 {
 	LOG_ERROR(DEBUG, CALLBACK_ERROR, "WriteCallback Constructor called.", __FUNCTION__);
+}
+
+WriteCallback::WriteCallback(int clientFd, SocketManager* manager, const std::string& data, int epoll_fd, size_t bytesWritten)
+: Callback(clientFd), _manager(manager), _data(data), _epoll_fd(epoll_fd), _bytesWritten(bytesWritten)
+{
+	LOG_ERROR(DEBUG, CALLBACK_ERROR, "WriteCallback Constructor with bytesWritten called.", __FUNCTION__);
 }
 
 WriteCallback::~WriteCallback()

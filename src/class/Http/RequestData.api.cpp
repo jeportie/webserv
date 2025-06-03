@@ -15,6 +15,8 @@
 #include "HttpLimits.hpp"
 #include "../Sockets/Socket.hpp"
 
+#include <stdio.h>
+
 void RequestData::checkChunkedBodyMode()
 {
     std::vector<std::string>::const_iterator it;

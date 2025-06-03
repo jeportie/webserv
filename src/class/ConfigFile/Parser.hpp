@@ -22,7 +22,7 @@
 struct ServerConfig;
 struct RouteConfig;
 
-typedef std::map<int, std::vector<ServerConfig>> IVSCMAP;
+typedef std::map<int, std::vector<ServerConfig> > IVSCMAP;
 typedef std::vector<std::string>                 SVECTOR;
 typedef std::map<int, std::string>               ISMAP;
 typedef std::map<std::string, RouteConfig>       ROUTEMAP;

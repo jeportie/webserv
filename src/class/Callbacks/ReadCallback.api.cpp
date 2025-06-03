@@ -188,8 +188,11 @@ void ReadCallback::sendErrorResponse(int fd, int status, const std::string& mess
     std::string response;
 
     // Create a simple HTML error page
-    body = "<html><head><title>Error " + std::to_string(status) + "</title></head>";
-    body += "<body><h1>Error " + std::to_string(status) + "</h1>";
+    std::ostringstream statusStream;
+    statusStream << status;
+    std::string statusStr = statusStream.str();
+    body = "<html><head><title>Error " + statusStr + "</title></head>";
+    body += "<body><h1>Error " + statusStr + "</h1>";
     body += "<p>" + message + "</p>";
     body += "</body></html>";
 

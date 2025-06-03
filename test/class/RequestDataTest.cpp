@@ -26,7 +26,7 @@
 #include "../../src/class/Http/HttpException.hpp"
 #include "../../src/class/Http/RequestData.hpp"
 #include "../../src/class/ConfigFile/ServerConfig.hpp"
-#include "../../include/webserv.h"
+#include "../../include/webserv.hpp"
 
 class TestRequestData : public RequestData {
 public:

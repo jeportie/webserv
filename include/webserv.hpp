@@ -43,7 +43,7 @@
 // Map
 typedef std::map<int, std::string>                      ISMAP;
 typedef std::map<std::string, std::string>              SSMAP;
-typedef std::map<std::string, std::vector<std::string>> SVSMAP;
+typedef std::map<std::string, std::vector<std::string> > SVSMAP;
 
 // Pair
 typedef std::pair<std::string, std::string> SSPAIR;

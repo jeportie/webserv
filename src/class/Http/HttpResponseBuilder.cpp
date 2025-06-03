@@ -15,6 +15,7 @@
 #include "ContentGenerator.hpp"
 #include "RequestValidator.hpp"
 #include <sstream>
+#include <unistd.h>
 
 // Constructeur
 HttpResponseBuilder::HttpResponseBuilder(const HttpRequest& req, const RequestValidator& validator)
@@ -151,7 +152,7 @@ void HttpResponseBuilder::handlePOST()
 bool deleteFile(const std::string& path)
 {
     // std::remove retourne 0 si succès
-    return (std::remove(path.c_str()) == 0);
+    return (unlink(path.c_str()) == 0);
 }
 
 // Gestion DELETE (simplifiée)
@@ -243,7 +244,7 @@ std::string HttpResponseBuilder::resolveTargetPath()
 
 void HttpResponseBuilder::setConnection()
 {
-    std::map<std::string, std::vector<std::string>>::const_iterator it
+    std::map<std::string, std::vector<std::string> >::const_iterator it
         = _request.headers.find("Connection");
 
     if (it == _request.headers.end())
