@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/02 17:10:34 by anastruc          #+#    #+#             */
-/*   Updated: 2025/06/02 18:40:50 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/03 11:58:21 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ std::vector<std::string> buildCgiEnv(const HttpRequest &request,
 		env.push_back("CONTENT_TYPE=" + request.headers.at("Content-Type")[0]);
 	if (request.raw_query.length())
 		env.push_back("QUERY_STRING=" + request.raw_query);
-	// Ajout de tous les headers sous la forme HTTP_NAME_VAL, en bouclant sur la
+	// Ajout de tous les headers sous la forme HTTP_NAME=VAL, en bouclant sur la
 	for (std::map<std::string,
 		std::vector<std::string>>::const_iterator it = request.headers.begin(); it != request.headers.end(); ++it)
 	{
@@ -110,12 +110,10 @@ std::string runCgiScript(HttpRequest &request, const std::string &scriptPath, Re
 	int status;
 
 	if (pipe(pipe_in) == -1 || pipe(pipe_out) == -1)
-		throw std::runtime_error("pipe() failed");
+		throw HttpException(500, "Internal server error : pipe() failed", _validator.getErrorPage(500));
 	pid = fork();
 	if (pid < 0)
-	{
-		throw std::runtime_error("fork() failed");
-	}
+		throw HttpException(500, "Internal server error : fork() failed", _validator.getErrorPage(500));
 	else if (pid == 0)
 	{ // Child process
 		// Préparation de l'environnement
@@ -134,7 +132,7 @@ std::string runCgiScript(HttpRequest &request, const std::string &scriptPath, Re
 		argv[1] = NULL;
 		execve(scriptPath.c_str(), argv, envp);
 		// Si exec échoue :
-		perror("execve");
+		throw HttpException(500, "Internal server error : execve()", _validator.getErrorPage(500));
 	}
 	else
 	{ // Parent process
