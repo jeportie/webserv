@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponseBuilder.cpp                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:00:11 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/02 18:03:08 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/03 12:58:24 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,12 @@
 #include "HttpException.hpp"
 #include "ContentGenerator.hpp"
 #include "RequestValidator.hpp"
+#include "ResponseFormatter.hpp"
+#include "StatusUtils.hpp"
+#include <cerrno>
+#include <cstring>
+#include <fcntl.h>
+#include <map>
 #include <sstream>
 #include <unistd.h>
 
@@ -27,9 +33,9 @@ HttpResponseBuilder::HttpResponseBuilder(const HttpRequest& req, const RequestVa
 
 std::string toString(size_t value)
 {
-    std::ostringstream oss;
-    oss << value;
-    return oss.str();
+	std::ostringstream oss;
+	oss << value;
+	return (oss.str());
 }
 
 // Point d’entrée principal
@@ -58,94 +64,110 @@ const HttpResponse& HttpResponseBuilder::getResponse() const { return _response;
 // Gestion GET
 void HttpResponseBuilder::handleGET()
 {
-    std::string path = resolveTargetPath();
-
-    // Si le chemin est un répertoire sans index
-    if (isDirectory(path))
-    {
-        if (!_validator.hasMatchedRoute())
-        {
-            // Pas de route correspondante, refuse l'accès ou 404
-            throw HttpException(404, "Not Found", _validator.getErrorPage(404));
-        }
-        const RouteConfig& route = _validator.getMatchedRoute();
-
-        if (route.autoindex)
-        {
-            std::string html = generateAutoIndexPage(path, _request.path);
-            _response.setStatus(200, "OK");
-            _response.setHeader("Content-Type", "text/html");
-            _response.setHeader("Content-Length", toString(html.size()));
-            _response.setBody(html);
-        }
-        else
-        {
-            throw HttpException(403, "Forbidden", _validator.getErrorPage(403));
-        }
-        return;
-    }
-
-    // Sinon, comportement standard
-    if (!fileExists(path))
-        throw HttpException(404, "Not Found", _validator.getErrorPage(404));
-
-    std::string content;
-    if (!readFileContent(path, content))
-        throw HttpException(500, "Internal Server Error", _validator.getErrorPage(500));
-
-    std::string mimeType = getMimeType(path);
-    _response.setStatus(200, "OK");
-    _response.setHeader("Content-Type", mimeType);
-    _response.setHeader("Content-Length", toString(content.size()));
-    _response.setBody(content);
-
-    setConnection();
+    // rajout du bloc d'executation du CGi si presence d'un CGI, le CGI prime sur le reste
+	if (_validator.hasMatchedRoute())
+	{
+		const RouteConfig &route = _validator.getMatchedRoute();
+		if (!route.cgiExecutor.first.empty())
+		{
+			// Si la requête cible le script, on exécute le CGI
+			if (!isExecutable(route.cgiExecutor.second))
+				throw HttpException(403, "Forbidden",
+					_validator.getErrorPage(403));
+			std::string output = runCgiScript(_request,
+					route.cgiExecutor.second, _validator);
+			_response.setStatus(200, "OK");
+            _response.parseCgiOutputAndSet(output);
+			setConnection();
+			return ;
+		}
+	}
+	std::string path = resolveTargetPath();
+	// Si le chemin est un répertoire sans index
+	if (isDirectory(path))
+	{
+		if (!_validator.hasMatchedRoute())
+		{
+			// Pas de route correspondante, refuse l'accès ou 404
+			throw HttpException(404, "Not Found", _validator.getErrorPage(404));
+		}
+		const RouteConfig &route = _validator.getMatchedRoute();
+		if (route.autoindex)
+		{
+			std::string html = generateAutoIndexPage(path, _request.path);
+			_response.setStatus(200, "OK");
+			_response.setHeader("Content-Type", "text/html");
+			_response.setHeader("Content-Length", toString(html.size()));
+			_response.setBody(html);
+		}
+		else
+		{
+			throw HttpException(403, "Forbidden", _validator.getErrorPage(403));
+		}
+		return ;
+	}
+	// Sinon, comportement standard
+	if (!fileExists(path))
+		throw HttpException(404, "Not Found", _validator.getErrorPage(404));
+	std::string content;
+	if (!readFileContent(path, content))
+		throw HttpException(500, "Internal Server Error",
+			_validator.getErrorPage(500));
+	std::string mimeType = getMimeType(path);
+	_response.setStatus(200, "OK");
+	_response.setHeader("Content-Type", mimeType);
+	_response.setHeader("Content-Length", toString(content.size()));
+	_response.setBody(content);
+	setConnection();
 }
 
 // Gestion POST (exemple simple : echo ou cgi)
 void HttpResponseBuilder::handlePOST()
 {
-    if (_validator.hasMatchedRoute())
-    {
-        const RouteConfig& route = _validator.getMatchedRoute();
+	bool	success;
 
-        if (!route.cgiExecutor.first.empty())
-        {
-            // Route CGI configurée : exécuter script
-            std::string output = runCgiScript(_request, route.cgiExecutor.second);
-            _response.setStatus(200, "OK");
-            _response.setHeader("Content-Type", "text/html");
-            _response.setBody(output);
-        }
-        else if (route.uploadEnabled && !route.uploadStore.empty())
-        {
-            // Upload activé sur la route
-            bool success = storeUploadedFile(_request, route.uploadStore);
-            if (success)
-            {
-                _response.setStatus(201, "Created");
-                _response.setBody("File uploaded successfully.");
-            }
-            else
-            {
-                throw HttpException(500, "Internal Server Error", _validator.getErrorPage(500));
-            }
-        }
-        else
-        {
-            // Pas de CGI : renvoyer le corps brut
-            _response.setStatus(200, "OK");
-            _response.setHeader("Content-Type", "text/plain");
-            _response.setBody(_request.body);
-        }
-    }
-    else
-    {
-        // Aucun bloc de route ne matche -> POST non accepté ici
-        throw HttpException(404, "Not Found", _validator.getErrorPage(404));
-    }
-
-    setConnection();
+	if (_validator.hasMatchedRoute())
+	{
+		const RouteConfig &route = _validator.getMatchedRoute();
+		if (!route.cgiExecutor.first.empty())
+		{
+			if (!isExecutable(route.cgiExecutor.second))
+				throw HttpException(403, "Forbidden",
+					_validator.getErrorPage(403));
+			std::string output = runCgiScript(_request,
+					route.cgiExecutor.second, _validator);
+			_response.setStatus(200, "OK");
+			_response.parseCgiOutputAndSet(output);
+		}
+		else if (route.uploadEnabled && !route.uploadStore.empty())
+		{
+			// Upload activé sur la route
+			success = storeUploadedFile(_request, route.uploadStore);
+			if (success)
+			{
+				_response.setStatus(201, "Created");
+				_response.setBody("File uploaded successfully.");
+			}
+			else
+			{
+				throw HttpException(500, "Internal Server Error",
+					_validator.getErrorPage(500));
+			}
+		}
+		else
+		{
+			// Pas de CGI : renvoyer le corps brut
+			_response.setStatus(200, "OK");
+			_response.setHeader("Content-Type", "text/plain");
+			_response.setBody(_request.body);
+		}
+	}
+	else
+	{
+		// Aucun bloc de route ne matche -> POST non accepté ici
+		throw HttpException(404, "Not Found", _validator.getErrorPage(404));
+	}
+	setConnection();
 }
 
 // fonction pour supprimer le fichier
@@ -158,26 +180,23 @@ bool deleteFile(const std::string& path)
 // Gestion DELETE (simplifiée)
 void HttpResponseBuilder::handleDELETE()
 {
-    std::string path = resolveTargetPath();
-
-    if (!fileExists(path))
-    {
-        throw HttpException(404, "Not Found", _validator.getErrorPage(404));
-    }
-
-    if (!deleteFile(path))
-    {
-        throw HttpException(500, "Internal Server Error", _validator.getErrorPage(500));
-    }
-
-    // Réponse 204 No Content est classique pour un DELETE réussi sans corps de réponse
-    _response.setStatus(204, "No Content");
-    // Si tu veux renvoyer 200 OK avec un message, décommente ces lignes:
-    // _response.setStatus(200, "OK");
-    // _response.setHeader("Content-Type", "text/plain");
-    // _response.setBody("File deleted successfully.");
-
-    setConnection();
+	std::string path = resolveTargetPath();
+	if (!fileExists(path))
+	{
+		throw HttpException(404, "Not Found", _validator.getErrorPage(404));
+	}
+	if (!deleteFile(path))
+	{
+		throw HttpException(500, "Internal Server Error",
+			_validator.getErrorPage(500));
+	}
+	// Réponse 204 No Content est classique pour un DELETE réussi sans corps de réponse
+	_response.setStatus(204, "No Content");
+	// Si tu veux renvoyer 200 OK avec un message, décommente ces lignes:
+	// _response.setStatus(200, "OK");
+	// _response.setHeader("Content-Type", "text/plain");
+	// _response.setBody("File deleted successfully.");
+	setConnection();
 }
 
 std::string HttpResponseBuilder::resolveTargetPath()
@@ -241,7 +260,6 @@ std::string HttpResponseBuilder::resolveTargetPath()
     return fullPath;
 }
 
-
 void HttpResponseBuilder::setConnection()
 {
     std::map<std::string, std::vector<std::string> >::const_iterator it
@@ -274,83 +292,6 @@ void HttpResponseBuilder::setConnection()
         else
             _response.setHeader("Connection", "close");
     }
-}
-
-std::string HttpResponseBuilder::runCgiScript(HttpRequest& request, const std::string& scriptPath)
-{
-    (void) request;     // Pour éviter l'avertissement non utilisé
-    (void) scriptPath;  // Pour éviter l'avertissement non utilisé
-    return "";
-    // TO DO
-    /*Comportement attendu
-
-    Préparer l’environnement d’exécution CGI
-
-        Initialiser les variables d’environnement nécessaires (ex : REQUEST_METHOD, QUERY_STRING,
-CONTENT_LENGTH, CONTENT_TYPE, SCRIPT_NAME, etc.) selon la requête HTTP et la spécification CGI.
-
-    Créer un processus fils (fork + exec)
-
-        Exécuter le script CGI indiqué (route.cgiExecutor.second représente généralement le chemin
-du script).
-
-        Passer l’entrée standard du script (pour POST, le corps de la requête) via un pipe.
-
-        Récupérer la sortie standard du script via un autre pipe.
-
-    Écrire dans le pipe l’éventuel contenu POST
-
-        Envoyer le corps de la requête au script via son entrée standard.
-
-    Lire la sortie du script
-
-        Lire la sortie du script depuis le pipe de sortie standard.
-
-        Cette sortie inclut généralement les headers HTTP (Content-Type, etc.) suivis d’une ligne
-vide puis du corps.
-
-    Fermer les pipes et attendre la fin du processus fils
-
-        S’assurer que tout est proprement nettoyé.
-
-    Retourner la sortie complète du script sous forme de string
-
-        Le contenu retourné sera ensuite injecté dans le corps de la réponse HTTP.
-
-Points importants
-
-    La fonction doit gérer les erreurs (échec fork, exec, timeout, script non trouvé).
-
-    Le script CGI doit respecter la norme CGI (produire des headers HTTP valides avant le contenu).
-
-    Les variables d’environnement doivent être configurées avec soin pour que le script reçoive
-toutes les infos nécessaires.
-
-    Penser à gérer les permissions d’exécution du script.
-
-Exemple des étapes internes (conceptuelles) de runCgiScript
-
-    Préparer variables d’environnement CGI à partir de _request.
-
-    Créer 2 pipes : un pour envoyer la requête POST au script, un autre pour lire la sortie.
-
-    fork() un processus fils.
-
-    Dans le fils :
-
-        Rediriger stdin et stdout vers les pipes.
-
-        execve() du script CGI.
-
-    Dans le père :
-
-        Envoyer le corps de la requête via pipe entrée (si POST).
-
-        Lire la sortie complète du script via pipe sortie.
-
-        Attendre la fin du fils.
-
-    Retourner la sortie récupérée sous forme de string.*/
 }
 
 
@@ -388,23 +329,23 @@ pour récupérer le contenu du fichier et son nom.
 
 Exemple de tâches concrètes dans storeUploadedFile
 
-    Parser _request.body pour extraire le fichier (nom et contenu).
+	Parser _request.body pour extraire le fichier (nom et contenu).
 
-    Vérifier que route.uploadStore existe (créer si nécessaire).
+	Vérifier que route.uploadStore existe (créer si nécessaire).
 
-    Construire un chemin complet (ex : uploadStore/nomFichier).
+	Construire un chemin complet (ex : uploadStore/nomFichier).
 
-    Ouvrir et écrire dans ce fichier.
+	Ouvrir et écrire dans ce fichier.
 
-    Fermer le fichier.
+	Fermer le fichier.
 
-    Retourner true/false.
+	Retourner true/false.
 
 Attention
 
-    Si le parsing multipart/form-data n’est pas encore fait, il faudra l’implémenter ou s’assurer
-que _request.form_data contient déjà le fichier et ses données.
+	Si le parsing multipart/form-data n’est pas encore fait,
+		il faudra l’implémenter ou s’assurer que _request.form_data contient déjà le fichier et ses données.
 
-    La fonction peut aussi gérer la limitation de taille, le contrôle des extensions, etc. selon ta
-config. */
+	La fonction peut aussi gérer la limitation de taille,
+		le contrôle des extensions, etc. selon ta config. */
 }

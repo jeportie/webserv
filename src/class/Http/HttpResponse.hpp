@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 12:40:19 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/02 18:02:49 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/03 12:54:01 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,11 +31,15 @@ public:
     void setHeader(const std::string& key, const std::string& value);
     void setBody(const std::string& content);
 
-    int                                       getStatusCode() const;
-    std::string                               getStatusMessage() const;
-    std::string                               getHeader(const std::string& key) const;
-    std::string                               getBody() const;
-    const std::map<std::string, std::string>& getAllHeaders() const;
+    int getStatusCode() const;
+    std::string getStatusMessage() const;
+    std::string getHeader(const std::string &key) const;
+    std::string getBody() const;
+    const std::map<std::string, std::string> &getAllHeaders() const;
+    void parseCgiOutputAndSet(const std::string& cgi_output);
+    bool hasHeader(const std::string& key) const;
+
+
 };
 
 #endif
