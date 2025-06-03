@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Socket.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:32:17 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/02 18:11:29 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/03 17:46:46 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
+#include <iostream>
 
 Socket::Socket(void)
 : _socketFd(-1)
@@ -33,7 +34,8 @@ Socket::Socket(void)
 Socket::~Socket(void)
 {
     LOG_ERROR(DEBUG, SOCKET_ERROR, LOG_SOCKET_DESTRUCTOR, __FUNCTION__);
-    closeSocket();
+    // std::cout << "JE CLOSE LA SOCKET" << std::endl;
+    // closeSocket();
 }
 
 Socket::Socket(const Socket& src)
@@ -47,6 +49,9 @@ Socket::Socket(const Socket& src)
 Socket& Socket::operator=(const Socket& rhs)
 {
     if (this != &rhs)
+    {
         _isNonBlocking = rhs._isNonBlocking;
+        _socketFd = rhs._socketFd;
+    }
     return (*this);
 }

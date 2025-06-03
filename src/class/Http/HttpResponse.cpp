@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 12:52:12 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/03 12:53:48 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/03 14:46:10 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,6 @@ void HttpResponse::parseCgiOutputAndSet(const std::string& cgi_output)
 {
     std::istringstream iss(cgi_output);
     std::string line;
-    bool in_headers = true;
 
     // 1. Headers
     while (std::getline(iss, line)) {

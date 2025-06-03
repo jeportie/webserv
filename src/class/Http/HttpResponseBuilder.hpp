@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 12:49:19 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/03 12:58:41 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/03 16:21:18 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define HTTPRESPONSEBUILDER_HPP
 
 #include "HttpResponse.hpp"
+#include "HttpCGI.hpp"
 #include <string>
 #include "HttpRequest.hpp"
 #include "RequestValidator.hpp"

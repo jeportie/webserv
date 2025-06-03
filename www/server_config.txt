@@ -1,9 +1,9 @@
 
 server {
-    listen 8080;
+    listen 8081;
     root www;
     location /cgi-bin/ {
-        cgi_executor /usr/bin/python3;
+        cgi_executor .py /usr/bin/python3;
     }
     # autres locations...
 }

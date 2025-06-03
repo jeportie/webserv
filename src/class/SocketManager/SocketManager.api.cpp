@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocketManager.api.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/02 18:09:45 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/03 17:49:45 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ void SocketManager::init_connect()
         safeRegisterToEpoll(epoll_fd, socket_fd);
 
         _listeningSockets.push_back(socket);
-
+        
         oss << "Socket listening on port " << port << std::endl;
         std::cout << oss.str();
         LOG_ERROR(INFO, CALLBACK_ERROR, oss.str(), __FUNCTION__);

@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 14:51:58 by anastruc          #+#    #+#             */
-/*   Updated: 2025/06/02 18:10:59 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/03 17:05:59 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,5 +34,5 @@ ListeningSocket::ListeningSocket(const ListeningSocket& src)
 ListeningSocket::~ListeningSocket(void)
 {
     LOG_ERROR(DEBUG, SOCKET_ERROR, LOG_LISTENINGSOCKET_DESTRUCTOR, __FUNCTION__);
-    closeSocket();
+    // closeSocket();
 }

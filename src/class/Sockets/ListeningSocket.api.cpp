@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ListeningSocket.api.cpp                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 15:42:02 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/02 18:10:45 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/03 17:49:41 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,10 +53,9 @@ bool ListeningSocket::safeBind(int port, const std::string& adress)
         return (false);
     }
 
-    (void) adress;  // DO SOMETHING WITH ADDR
+    (void) adress;  // DO SOMETHING WIHT ADDR
 
     setNonBlocking(this->_socketFd);
-
     _ListeningAddr.sin_port        = htons(port);
     _ListeningAddr.sin_family      = AF_INET;
     _ListeningAddr.sin_addr.s_addr = INADDR_ANY;
@@ -72,10 +71,14 @@ bool ListeningSocket::safeBind(int port, const std::string& adress)
 void ListeningSocket::safeListen(int backlog)
 {
     if (!isValid())
-        THROW_ERROR(CRITICAL, SOCKET_ERROR, LOG_INVALID_SOCKET_LISTEN, __FUNCTION__);
+    {
+                THROW_ERROR(CRITICAL, SOCKET_ERROR, LOG_INVALID_SOCKET_LISTEN, __FUNCTION__);
+    }
 
     if (listen(this->_socketFd, backlog) < 0)
+    {
         THROW_SYSTEM_ERROR(CRITICAL, SOCKET_ERROR, LOG_LISTEN_FAIL, __FUNCTION__);
+    }
 }
 
 ClientSocket* ListeningSocket::safeAccept(int epoll_fd)

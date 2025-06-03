@@ -6,11 +6,12 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:00:11 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/03 12:58:24 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/03 16:18:48 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpResponseBuilder.hpp"
+#include "HttpCGI.hpp"
 #include "HttpException.hpp"
 #include "ContentGenerator.hpp"
 #include "RequestValidator.hpp"

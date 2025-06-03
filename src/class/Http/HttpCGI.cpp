@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/02 17:10:34 by anastruc          #+#    #+#             */
-/*   Updated: 2025/06/03 11:58:21 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/03 16:23:59 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ std::vector<std::string> buildCgiEnv(const HttpRequest &request,
 		env.push_back("QUERY_STRING=" + request.raw_query);
 	// Ajout de tous les headers sous la forme HTTP_NAME=VAL, en bouclant sur la
 	for (std::map<std::string,
-		std::vector<std::string>>::const_iterator it = request.headers.begin(); it != request.headers.end(); ++it)
+		std::vector<std::string> >::const_iterator it = request.headers.begin(); it != request.headers.end(); ++it)
 	{
 		std::string key = it->first;
 		std::string val;
@@ -98,22 +98,21 @@ bool waitWithTimeout(pid_t pid, int timeout_secs, int &status)
     }
 }
 
-std::string runCgiScript(HttpRequest &request, const std::string &scriptPath, RequestValidator &_validator)
+std::string HttpResponseBuilder::runCgiScript(HttpRequest &request, const std::string &scriptPath, RequestValidator &_validator)
 {
 	int pipe_in[2], pipe_out[2];
 	pid_t pid;
 	char **envp;
 	char *argv[2];
-	ssize_t written;
 	char buffer[4096];
 	ssize_t bytes_read;
 	int status;
-
+	
 	if (pipe(pipe_in) == -1 || pipe(pipe_out) == -1)
-		throw HttpException(500, "Internal server error : pipe() failed", _validator.getErrorPage(500));
+	throw HttpException(500, "Internal server error : pipe() failed", _validator.getErrorPage(500));
 	pid = fork();
 	if (pid < 0)
-		throw HttpException(500, "Internal server error : fork() failed", _validator.getErrorPage(500));
+	throw HttpException(500, "Internal server error : fork() failed", _validator.getErrorPage(500));
 	else if (pid == 0)
 	{ // Child process
 		// Préparation de l'environnement
@@ -139,11 +138,13 @@ std::string runCgiScript(HttpRequest &request, const std::string &scriptPath, Re
 		close(pipe_in[0]);
 		close(pipe_out[1]);
 		// Si POST, envoie le body de la requête sur stdin du CGI
+		ssize_t written;
 		if (request.method == HttpRequest::METHOD_POST && !request.body.empty())
 		{
 			written = write(pipe_in[1], request.body.c_str(),
 					request.body.size());
-			// Option: vérifier write et gérer si écrit partiellement
+			if (written != (ssize_t)request.body.size())
+				throw HttpException(500, "Internal server error : Write in children process failed", _validator.getErrorPage(500));
 		}
 		close(pipe_in[1]); // Très important, sinon CGI peut rester bloqué
 		// Lecture de la sortie du CGI

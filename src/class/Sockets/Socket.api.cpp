@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Socket.api.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:32:17 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/02 18:11:22 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/03 17:13:54 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,8 @@ bool Socket::socketCreate(void)
 {
     std::string msg;
 
-    _socketFd = socket(AF_INET, SOCK_STREAM, 0);
-    if (_socketFd < 0)
+    this->_socketFd = socket(AF_INET, SOCK_STREAM, 0);
+    if (this->_socketFd < 0)
     {
         msg = strerror(errno);
         LOG_SYSTEM_ERROR(ERROR, SOCKET_ERROR, LOG_ERROR_CREATING_SOCKET + msg, __FUNCTION__);

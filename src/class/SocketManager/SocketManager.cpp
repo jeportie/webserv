@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/02 18:10:06 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/03 17:49:07 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 #include "../Sockets/ClientSocket.hpp"
 #include "../Errors/ErrorHandler.hpp"
 #include "../../../include/webserv.hpp"
+#include <iostream>
 
 // Constrctor & Destructor
 SocketManager::SocketManager(void)
@@ -91,7 +92,9 @@ void SocketManager::safeRegisterToEpoll(int epoll_fd, int listeningFd)
     ev.data.fd = listeningFd;
 
     if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, listeningFd, &ev) == -1)
+    {
         THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, LOG_SM_EPOLL, __FUNCTION__);
+    }
 }
 
 int SocketManager::safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event* event)
