@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WriteCallback.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 12:56:33 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/02 17:53:23 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/03 14:42:05 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ void WriteCallback::execute()
     ssize_t written;
     std::ostringstream oss;
     struct epoll_event ev;
+    size_t remaining;
 
     // Modify the socket to be monitored for write events
     ev.events = EPOLLOUT;
@@ -56,8 +57,11 @@ void WriteCallback::execute()
         return;
     }
 
-    // Write the data to the client
-    written = write(_fd, _data.c_str(), _data.length());
+    // Calculate remaining data to write
+    remaining = _data.length() - _bytesWritten;
+    
+    // Write the remaining data to the client
+    written = write(_fd, _data.c_str() + _bytesWritten, remaining);
     
     if (written < 0)
     {
@@ -66,7 +70,32 @@ void WriteCallback::execute()
         return;
     }
     
-    oss << "Successfully wrote " << written << " bytes to client (fd=" << _fd << ")";
+    oss << "Wrote " << written << " bytes to client (fd=" << _fd << "), " 
+        << _bytesWritten << " bytes written previously";
+    LOG_ERROR(DEBUG, CALLBACK_ERROR, oss.str(), __FUNCTION__);
+    
+    // Check if we've written all the data
+    if (static_cast<size_t>(written) < remaining)
+    {
+        // Partial write - enqueue another WriteCallback to continue
+        size_t newBytesWritten;
+        
+        newBytesWritten = _bytesWritten + written;
+        oss.str("");
+        oss << "Partial write detected, enqueueing another WriteCallback. " 
+            << newBytesWritten << "/" << _data.length() << " bytes written";
+        LOG_ERROR(DEBUG, CALLBACK_ERROR, oss.str(), __FUNCTION__);
+        
+        _manager->getCallbackQueue().push(
+            new WriteCallback(_fd, _manager, _data, _epoll_fd, newBytesWritten));
+        
+        return;
+    }
+    
+    // All data written successfully
+    oss.str("");
+    oss << "Successfully wrote all " << (_bytesWritten + written) 
+        << " bytes to client (fd=" << _fd << ")";
     LOG_ERROR(DEBUG, CALLBACK_ERROR, oss.str(), __FUNCTION__);
     
     // Reset the socket to be monitored for read events
