@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/04 12:22:37 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/04 15:46:58 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@
 #include "../Http/HttpLimits.hpp"
 #include "../SocketManager/SocketManager.hpp"
 #include "WriteCallback.hpp"
+#include "ErrorCallback.hpp"
 
 bool ReadCallback::readFromClient(int fd, ClientSocket* client)
 {
@@ -48,11 +49,32 @@ bool ReadCallback::readFromClient(int fd, ClientSocket* client)
             client->touch();
             continue;
         }
-        // n <= 0 : soit EOF (n==0), soit plus de données pour l'instant (n<0/EAGAIN)
-        break;
+        else if (n == 0)
+        {
+            std::cout << "jai recu 0" << std::endl;
+            _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1));
+            return false; // signaler fermeture
+        }
+        else // n = -1
+        {
+            std::cout << "jai recu -1" << std::endl;
+
+            if (buf.empty())
+            {
+                std::cout << "je suis empty" << std::endl;
+                return false;
+            }
+            else
+            {
+                std::cout << "je suis pas empty" << std::endl;
+                return true;
+            }
+        }
     }
+    // Jamais atteint, mais pour être complet
     return true;
 }
+
 
 bool ReadCallback::parseClientHeaders(ClientSocket* client)
 {

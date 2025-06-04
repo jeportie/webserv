@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocketManager.api.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/03 17:49:45 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/04 13:16:34 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,6 +84,7 @@ void SocketManager::eventLoop(int epoll_fd)
     {
         /* 1) Wait up to CHECK_INTERVAL_MS for any I/O */
         n = epoll_wait(epoll_fd, &events[0], MAXEVENTS, checkIntervalMs);
+        std::cout << "N =" << n << std::endl;
         if (n < 0)
         {
             if (errno == EINTR)

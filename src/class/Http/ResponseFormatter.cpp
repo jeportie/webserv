@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 14:36:00 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/02 18:09:09 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/04 16:09:56 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,9 @@ std::string ResponseFormatter::format()
     std::map<std::string, std::string>::const_iterator it      = headers.begin();
     for (; it != headers.end(); ++it)
         oss << it->first << ": " << it->second << "\r\n";
+
+    if (headers.find("Content-Length") == headers.end())
+        oss << "Content-Length: " << _rep.getBody().size() << "\r\n";
 
     // 3. Séparateur
     oss << "\r\n";

@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/02 17:10:34 by anastruc          #+#    #+#             */
-/*   Updated: 2025/06/04 13:07:14 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/04 16:02:26 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,13 +120,16 @@ std::string HttpResponseBuilder::runCgiScript(HttpRequest &request, const std::s
 		std::vector<std::string> env = buildCgiEnv(request, interpreterPath);
 		envp = vectorToEnv(env);
 		// Redirection stdin et stdout
-		dup2(pipe_in[0], STDIN_FILENO);
-		dup2(pipe_out[1], STDOUT_FILENO);
 		close(pipe_in[1]);
-		close(pipe_out[0]);
-		// Ferme les extrémités inutiles
-		close(pipe_in[0]);
-		close(pipe_out[1]);
+close(pipe_out[0]);
+if (pipe_in[0] != STDIN_FILENO) {
+    dup2(pipe_in[0], STDIN_FILENO);
+    close(pipe_in[0]);
+}
+if (pipe_out[1] != STDOUT_FILENO) {
+    dup2(pipe_out[1], STDOUT_FILENO);
+    close(pipe_out[1]);
+}
 		// Prépare les arguments pour execve
 		argv[0] = strdup(interpreterPath.c_str());
 		argv[1] = strdup(scriptPath.c_str());//findscript
