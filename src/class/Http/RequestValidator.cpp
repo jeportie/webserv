@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/28 15:13:38 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/04 11:20:43 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/04 11:49:03 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,11 +59,6 @@ void RequestValidator::matchRoute()
              ++it)
         {
             const std::string& prefix = it->first;
-            std::cout << "prefix.size(): " << prefix.size() << std::endl;
-std::cout << "prefix.c_str(): " << prefix.c_str() << std::endl;
-std::cout << "_req.path.size(): " << _req.path.size() << std::endl;
-std::cout << "_req.path.c_str(): " << _req.path.c_str() << std::endl;
-
             if (_req.path.compare(0, prefix.size(), prefix) == 0)
             {
                 // Si ce prefix est plus long que le précédent, on retient
