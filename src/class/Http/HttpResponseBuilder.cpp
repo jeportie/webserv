@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponseBuilder.cpp                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:00:11 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/03 16:18:48 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/04 13:08:15 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 #include <map>
 #include <sstream>
 #include <unistd.h>
+#include <iostream>
 
 // Constructeur
 HttpResponseBuilder::HttpResponseBuilder(const HttpRequest& req, const RequestValidator& validator)
@@ -65,6 +66,7 @@ const HttpResponse& HttpResponseBuilder::getResponse() const { return _response;
 // Gestion GET
 void HttpResponseBuilder::handleGET()
 {
+	std::string scriptPath = resolveTargetPath();
     // rajout du bloc d'executation du CGi si presence d'un CGI, le CGI prime sur le reste
 	if (_validator.hasMatchedRoute())
 	{
@@ -72,7 +74,7 @@ void HttpResponseBuilder::handleGET()
 		if (!route.cgiExecutor.first.empty())
 		{
 			// Si la requête cible le script, on exécute le CGI
-			if (!isExecutable(route.cgiExecutor.second))
+			if (!isExecutable(route.cgiExecutor.second) || !isExecutable(scriptPath))
 				throw HttpException(403, "Forbidden",
 					_validator.getErrorPage(403));
 			std::string output = runCgiScript(_request,
@@ -211,7 +213,13 @@ std::string HttpResponseBuilder::resolveTargetPath()
     if (_validator.hasMatchedRoute())
     {
         const RouteConfig& route = _validator.getMatchedRoute();
-        root                     = route.root;
+		const ServerConfig& serverConf = _validator.getServerConfig();
+		if (route.root.empty())
+		{
+			root = serverConf.root;
+		}
+		else
+       	 root                     = route.root;
         indexFiles               = route.indexFiles;
         indexIsSet               = route.indexIsSet;
         defaultFile              = route.defaultFile;

@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:22:41 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/02 18:01:11 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/04 12:56:12 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ bool isExecutable(const std::string& path)
     struct stat statbuf;
     return (stat(path.c_str(), &statbuf) == 0 && (statbuf.st_mode & S_IXUSR));
 }
+
 bool readFileContent(const std::string& path, std::string& out)
 {
     std::ifstream file(path.c_str(), std::ios::in | std::ios::binary);

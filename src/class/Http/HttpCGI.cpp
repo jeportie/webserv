@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpCGI.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/02 17:10:34 by anastruc          #+#    #+#             */
-/*   Updated: 2025/06/03 16:23:59 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/04 13:07:14 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <vector>
+#include <iostream>
 
 std::vector<std::string> buildCgiEnv(const HttpRequest &request,
 	const std::string &scriptPath)
@@ -98,16 +99,16 @@ bool waitWithTimeout(pid_t pid, int timeout_secs, int &status)
     }
 }
 
-std::string HttpResponseBuilder::runCgiScript(HttpRequest &request, const std::string &scriptPath, RequestValidator &_validator)
+std::string HttpResponseBuilder::runCgiScript(HttpRequest &request, const std::string &interpreterPath, RequestValidator &_validator)
 {
 	int pipe_in[2], pipe_out[2];
 	pid_t pid;
 	char **envp;
-	char *argv[2];
+	char *argv[3];
 	char buffer[4096];
 	ssize_t bytes_read;
 	int status;
-	
+	std::string scriptPath = resolveTargetPath();
 	if (pipe(pipe_in) == -1 || pipe(pipe_out) == -1)
 	throw HttpException(500, "Internal server error : pipe() failed", _validator.getErrorPage(500));
 	pid = fork();
@@ -116,7 +117,7 @@ std::string HttpResponseBuilder::runCgiScript(HttpRequest &request, const std::s
 	else if (pid == 0)
 	{ // Child process
 		// Préparation de l'environnement
-		std::vector<std::string> env = buildCgiEnv(request, scriptPath);
+		std::vector<std::string> env = buildCgiEnv(request, interpreterPath);
 		envp = vectorToEnv(env);
 		// Redirection stdin et stdout
 		dup2(pipe_in[0], STDIN_FILENO);
@@ -127,9 +128,10 @@ std::string HttpResponseBuilder::runCgiScript(HttpRequest &request, const std::s
 		close(pipe_in[0]);
 		close(pipe_out[1]);
 		// Prépare les arguments pour execve
-		argv[0] = strdup(scriptPath.c_str());
-		argv[1] = NULL;
-		execve(scriptPath.c_str(), argv, envp);
+		argv[0] = strdup(interpreterPath.c_str());
+		argv[1] = strdup(scriptPath.c_str());//findscript
+		argv[2] = NULL;
+		execve(interpreterPath.c_str(), argv, envp);
 		// Si exec échoue :
 		throw HttpException(500, "Internal server error : execve()", _validator.getErrorPage(500));
 	}
