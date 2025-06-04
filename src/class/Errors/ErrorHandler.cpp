@@ -19,13 +19,16 @@ ErrorHandler::ErrorHandler()
 , _shouldShutdown(false)
 {
     // Initialize error statistics
-    _errorStats[SOCKET_ERROR]   = 0;
-    _errorStats[EPOLL_ERROR]    = 0;
-    _errorStats[CALLBACK_ERROR] = 0;
-    _errorStats[TIMER_ERROR]    = 0;
-    _errorStats[RESOURCE_ERROR] = 0;
-    _errorStats[SYSTEM_ERROR]   = 0;
-    _errorStats[INTERNAL_ERROR] = 0;
+    _errorStats[SOCKET_ERROR]      = 0;
+    _errorStats[EPOLL_ERROR]       = 0;
+    _errorStats[CALLBACK_ERROR]    = 0;
+    _errorStats[TIMER_ERROR]       = 0;
+    _errorStats[RESOURCE_ERROR]    = 0;
+    _errorStats[SYSTEM_ERROR]      = 0;
+    _errorStats[INTERNAL_ERROR]    = 0;
+    _errorStats[HTTP_REQ_ERROR]    = 0;
+    _errorStats[CONFIG_FILE_ERROR] = 0;
+    _errorStats[FILE_HANDLER_ERROR] = 0;
 }
 
 ErrorHandler::~ErrorHandler()
@@ -83,6 +86,12 @@ std::string ErrorHandler::categoryToString(ErrorCategory category) const
             return "SYSTEM";
         case INTERNAL_ERROR:
             return "INTERNAL";
+        case HTTP_REQ_ERROR:
+            return "HTTP_REQUEST";
+        case CONFIG_FILE_ERROR:
+            return "CONFIG_FILE";
+        case FILE_HANDLER_ERROR:
+            return "FILE_HANDLER";
         default:
             return "UNKNOWN";
     }

@@ -17,6 +17,7 @@
 #include "RequestValidator.hpp"
 #include "ResponseFormatter.hpp"
 #include "StatusUtils.hpp"
+#include "../FileHandler/FileHandler.hpp"
 #include <cerrno>
 #include <cstring>
 #include <fcntl.h>
@@ -107,19 +108,41 @@ void HttpResponseBuilder::handleGET()
 		}
 		return ;
 	}
-	// Sinon, comportement standard
-	if (!fileExists(path))
-		throw HttpException(404, "Not Found", _validator.getErrorPage(404));
-	std::string content;
-	if (!readFileContent(path, content))
-		throw HttpException(500, "Internal Server Error",
-			_validator.getErrorPage(500));
-	std::string mimeType = getMimeType(path);
-	_response.setStatus(200, "OK");
-	_response.setHeader("Content-Type", mimeType);
-	_response.setHeader("Content-Length", toString(content.size()));
-	_response.setBody(content);
-	setConnection();
+	
+	// Use FileHandler for serving static files
+	try
+	{
+		// Get root directory from route or server config
+		std::string rootDir;
+		if (_validator.hasMatchedRoute())
+			rootDir = _validator.getMatchedRoute().root;
+		else
+			rootDir = _validator.getServerConfig().root;
+		
+		// Create FileHandler with appropriate root directory
+		FileHandler fileHandler(rootDir);
+		
+		// Use FileHandler to handle the GET request
+		_response = fileHandler.handleGET(_request.path);
+		setConnection();
+		return;
+	}
+	catch (const std::exception& e)
+	{
+		// Fallback to original implementation if FileHandler fails
+		if (!fileExists(path))
+			throw HttpException(404, "Not Found", _validator.getErrorPage(404));
+		std::string content;
+		if (!readFileContent(path, content))
+			throw HttpException(500, "Internal Server Error",
+				_validator.getErrorPage(500));
+		std::string mimeType = getMimeType(path);
+		_response.setStatus(200, "OK");
+		_response.setHeader("Content-Type", mimeType);
+		_response.setHeader("Content-Length", toString(content.size()));
+		_response.setBody(content);
+		setConnection();
+	}
 }
 
 // Gestion POST (exemple simple : echo ou cgi)
@@ -142,17 +165,29 @@ void HttpResponseBuilder::handlePOST()
 		}
 		else if (route.uploadEnabled && !route.uploadStore.empty())
 		{
-			// Upload activé sur la route
-			success = storeUploadedFile(_request, route.uploadStore);
-			if (success)
+			// Try to use FileHandler for file upload
+			try
 			{
-				_response.setStatus(201, "Created");
-				_response.setBody("File uploaded successfully.");
+				// Create FileHandler with upload store directory
+				FileHandler fileHandler(route.uploadStore);
+				
+				// Use FileHandler to handle the POST request
+				_response = fileHandler.handlePOST(_request.path, _request.body);
 			}
-			else
+			catch (const std::exception& e)
 			{
-				throw HttpException(500, "Internal Server Error",
-					_validator.getErrorPage(500));
+				// Fallback to original implementation
+				success = storeUploadedFile(_request, route.uploadStore);
+				if (success)
+				{
+					_response.setStatus(201, "Created");
+					_response.setBody("File uploaded successfully.");
+				}
+				else
+				{
+					throw HttpException(500, "Internal Server Error",
+						_validator.getErrorPage(500));
+				}
 			}
 		}
 		else
@@ -181,23 +216,45 @@ bool deleteFile(const std::string& path)
 // Gestion DELETE (simplifiée)
 void HttpResponseBuilder::handleDELETE()
 {
-	std::string path = resolveTargetPath();
-	if (!fileExists(path))
+	// Try to use FileHandler for file deletion
+	try
 	{
-		throw HttpException(404, "Not Found", _validator.getErrorPage(404));
+		// Get root directory from route or server config
+		std::string rootDir;
+		if (_validator.hasMatchedRoute())
+			rootDir = _validator.getMatchedRoute().root;
+		else
+			rootDir = _validator.getServerConfig().root;
+		
+		// Create FileHandler with appropriate root directory
+		FileHandler fileHandler(rootDir);
+		
+		// Use FileHandler to handle the DELETE request
+		_response = fileHandler.handleDELETE(_request.path);
+		setConnection();
+		return;
 	}
-	if (!deleteFile(path))
+	catch (const std::exception& e)
 	{
-		throw HttpException(500, "Internal Server Error",
-			_validator.getErrorPage(500));
+		// Fallback to original implementation
+		std::string path = resolveTargetPath();
+		if (!fileExists(path))
+		{
+			throw HttpException(404, "Not Found", _validator.getErrorPage(404));
+		}
+		if (!deleteFile(path))
+		{
+			throw HttpException(500, "Internal Server Error",
+				_validator.getErrorPage(500));
+		}
+		// Réponse 204 No Content est classique pour un DELETE réussi sans corps de réponse
+		_response.setStatus(204, "No Content");
+		// Si tu veux renvoyer 200 OK avec un message, décommente ces lignes:
+		// _response.setStatus(200, "OK");
+		// _response.setHeader("Content-Type", "text/plain");
+		// _response.setBody("File deleted successfully.");
+		setConnection();
 	}
-	// Réponse 204 No Content est classique pour un DELETE réussi sans corps de réponse
-	_response.setStatus(204, "No Content");
-	// Si tu veux renvoyer 200 OK avec un message, décommente ces lignes:
-	// _response.setStatus(200, "OK");
-	// _response.setHeader("Content-Type", "text/plain");
-	// _response.setBody("File deleted successfully.");
-	setConnection();
 }
 
 std::string HttpResponseBuilder::resolveTargetPath()

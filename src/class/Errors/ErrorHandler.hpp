@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ErrorHandler.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/05/14 15:30:00 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/02 18:00:23 by jeportie         ###   ########.fr       */
+/*   Created: 2025/06/04 14:06:21 by jeportie          #+#    #+#             */
+/*   Updated: 2025/06/04 14:06:44 by jeportie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,15 +35,16 @@ enum ErrorLevel
 
 enum ErrorCategory
 {
-    SOCKET_ERROR,      // Socket-related errors
-    EPOLL_ERROR,       // Epoll-related errors
-    CALLBACK_ERROR,    // Callback-related errors
-    TIMER_ERROR,       // Timer-related errors
-    RESOURCE_ERROR,    // Resource exhaustion errors
-    SYSTEM_ERROR,      // System call errors
-    INTERNAL_ERROR,    // Internal logic errors
-    HTTP_REQ_ERROR,    // Http Request errors
-    CONFIG_FILE_ERROR  // Erreur dans le fichier config
+    SOCKET_ERROR,       // Socket-related errors
+    EPOLL_ERROR,        // Epoll-related errors
+    CALLBACK_ERROR,     // Callback-related errors
+    TIMER_ERROR,        // Timer-related errors
+    RESOURCE_ERROR,     // Resource exhaustion errors
+    SYSTEM_ERROR,       // System call errors
+    INTERNAL_ERROR,     // Internal logic errors
+    HTTP_REQ_ERROR,     // Http Request errors
+    CONFIG_FILE_ERROR,  // Erreur dans le fichier config
+    FILE_HANDLER_ERROR  // File handler related errors
 };
 
 typedef std::map<ErrorCategory, int> ERRMAP;
