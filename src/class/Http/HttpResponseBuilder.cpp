@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:00:11 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/04 13:08:15 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/04 13:10:49 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,6 +127,7 @@ void HttpResponseBuilder::handleGET()
 // Gestion POST (exemple simple : echo ou cgi)
 void HttpResponseBuilder::handlePOST()
 {
+	std::string scriptPath = resolveTargetPath();
 	bool	success;
 
 	if (_validator.hasMatchedRoute())
@@ -134,7 +135,8 @@ void HttpResponseBuilder::handlePOST()
 		const RouteConfig &route = _validator.getMatchedRoute();
 		if (!route.cgiExecutor.first.empty())
 		{
-			if (!isExecutable(route.cgiExecutor.second))
+			if (!isExecutable(route.cgiExecutor.second) || !isExecutable(scriptPath))
+
 				throw HttpException(403, "Forbidden",
 					_validator.getErrorPage(403));
 			std::string output = runCgiScript(_request,
