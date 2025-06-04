@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:17:24 by anastruc          #+#    #+#             */
-/*   Updated: 2025/06/02 18:01:41 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/04 09:40:26 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 #include <cctype>   // isspace, isdigit
 #include <cerrno>   // errno
 #include <cstring>  // strerror
+#include <iostream>
 
 // 1) parseMethod
 HttpRequest::Method HttpParser::parseMethod(const std::string& token)

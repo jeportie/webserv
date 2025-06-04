@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/02 17:52:17 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/04 10:01:05 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,9 +102,9 @@ bool ReadCallback::parseClientBody(ClientSocket* client)
 {
     std::string& buf  = client->requestData.getBuffer();
     BodyMode     mode = client->requestData.getBodyMode();
-
     if (mode == BODY_CONTENT_LENGTH)
     {
+
         size_t needed = client->requestData.getContentLength();
         if (needed > MAX_BODY_SIZE)
             throw HttpException(413, "Payload Too Large", "");
@@ -118,6 +118,7 @@ bool ReadCallback::parseClientBody(ClientSocket* client)
         // chunked state machine, append to internal temporary storage
         while (true)
         {
+
             if (client->requestData.getChunkSize() == 0)
             {
                 size_t pos = buf.find("\r\n");

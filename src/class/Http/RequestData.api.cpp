@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 16:40:52 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/02 18:07:02 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/04 10:19:57 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include "HttpException.hpp"
 #include "HttpLimits.hpp"
 #include "../Sockets/Socket.hpp"
-
+#include <iostream>
 #include <stdio.h>
 
 void RequestData::checkChunkedBodyMode()
@@ -113,8 +113,7 @@ int RequestData::getPortFromFd(int fd)
 
     if (getsockname(fd, (struct sockaddr*) &addr, &addrLen) == -1)
     {
-        perror("getsockname");
-        return -1;  // ou throw une exception selon ton design
+        throw HttpException(500, "Internal Server Error", "");
     }
 
     return ntohs(addr.sin_port);  // convertit en port lisible (host byte order)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ListeningSocket.api.cpp                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 15:42:02 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/03 17:49:41 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/04 10:08:41 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,7 +109,7 @@ ClientSocket* ListeningSocket::safeAccept(int epoll_fd)
         delete client;
         THROW_SYSTEM_ERROR(CRITICAL, SOCKET_ERROR, LOG_ACCEPT_FAIL, __FUNCTION__);
     }
-
+    client->requestData.setListeningSocketFd(this->_socketFd);
     client->setFd(clientFd);
     client->setClientAddr(clientAddr, clientAddrLen);
     client->setNonBlocking(clientFd);

@@ -6,7 +6,7 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/02 17:52:38 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/04 11:39:29 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ void ReadCallback::execute()
 
 	client = NULL;
     const std::map<int, ClientSocket*>& map = _manager->getClientMap();
+    std::cout << "fd - " << _fd << std::endl;
     std::map<int, ClientSocket*>::const_iterator it = map.find(_fd);
     (it != map.end()) ? client = it->second : NULL;
     if (!client)
@@ -73,21 +74,21 @@ void ReadCallback::execute()
         if (!parseClientHeaders(client))
             return ;
         
-        if (parseClientBody(client))
+        if (!parseClientBody(client))
             return ;
-            
+  
         //init config server des maintenant pour recuperer error page en cas de throw que une fois que la requete est complete et prete a etre build 
         HttpRequest req = buildHttpRequest(client);
         client->requestData.initServerConfig(_manager->getConfiguration());
-        RequestValidator validator(req, client->requestData.getServerConfig());
+        ServerConfig config = client->requestData.getServerConfig(); // copie
+        RequestValidator validator(req, config);
         validator.validate();  // peut lancer HttpException si erreur de validation
-        
          // Génère la réponse
         HttpResponseBuilder builder(req, validator);
         builder.buildResponse();
         ResponseFormatter formatter(builder.getResponse());
         std::string finalResponse = formatter.format();
-
+        std::cout << "finalreponse = " << finalResponse << std::endl;
                  // Enfile un WriteCallback avec la réponse
                  _manager->getCallbackQueue().push(new WriteCallback(_fd, _manager, finalResponse, _epoll_fd));
 

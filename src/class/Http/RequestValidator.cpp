@@ -6,13 +6,14 @@
 /*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/28 15:13:38 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/02 18:08:23 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/04 11:20:43 by fsalomon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "RequestValidator.hpp"
 #include "HttpException.hpp"
 #include <algorithm>
+#include <iostream>
 
 RequestValidator::RequestValidator(const HttpRequest& req, const ServerConfig& serverConfig)
 : _req(req)
@@ -51,17 +52,26 @@ void RequestValidator::matchRoute()
     _matchedRoute                                    = NULL;
     _matchedPrefix                                   = "";
 
-    for (std::map<std::string, RouteConfig>::const_iterator it = routes.begin(); it != routes.end();
-         ++it)
+    if (!routes.empty())
     {
-        const std::string& prefix = it->first;
-        if (_req.path.compare(0, prefix.size(), prefix) == 0)
+        
+        for (std::map<std::string, RouteConfig>::const_iterator it = routes.begin(); it != routes.end();
+             ++it)
         {
-            // Si ce prefix est plus long que le précédent, on retient
-            if (prefix.size() > _matchedPrefix.size())
+            const std::string& prefix = it->first;
+            std::cout << "prefix.size(): " << prefix.size() << std::endl;
+std::cout << "prefix.c_str(): " << prefix.c_str() << std::endl;
+std::cout << "_req.path.size(): " << _req.path.size() << std::endl;
+std::cout << "_req.path.c_str(): " << _req.path.c_str() << std::endl;
+
+            if (_req.path.compare(0, prefix.size(), prefix) == 0)
             {
-                _matchedRoute  = &it->second;
-                _matchedPrefix = prefix;
+                // Si ce prefix est plus long que le précédent, on retient
+                if (prefix.size() > _matchedPrefix.size())
+                {
+                    _matchedRoute  = &it->second;
+                    _matchedPrefix = prefix;
+                }
             }
         }
     }
@@ -75,7 +85,6 @@ void RequestValidator::validateMethod()
         allowed = _matchedRoute->allowedMethods;
     else
         allowed = _serverConfig.allowedMethods;
-
     std::string method;
     switch (_req.method)
     {
@@ -90,8 +99,15 @@ void RequestValidator::validateMethod()
             break;
         default:
             throw HttpException(400, "Bad Request: Unknown HTTP method", getErrorPage(400));
+        }
+    if (allowed.empty())
+    {
+        if (method != "GET")
+        {
+            throw HttpException(405, "Method Not Allowed", getErrorPage(405));
+        }
     }
-    if (std::find(allowed.begin(), allowed.end(), method) == allowed.end())
+    else if (std::find(allowed.begin(), allowed.end(), method) == allowed.end())
         throw HttpException(405, "Method Not Allowed", getErrorPage(405));
 }
 
