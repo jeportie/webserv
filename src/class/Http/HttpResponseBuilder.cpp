@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:00:11 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/05 11:06:58 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/05 14:59:14 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,9 @@
 #include <sstream>
 #include <unistd.h>
 #include <iostream>
+#include <fstream>
+#include <sys/stat.h>
+#include <ctime>
 
 // Constructeur
 HttpResponseBuilder::HttpResponseBuilder(const HttpRequest& req, const RequestValidator& validator)
@@ -273,6 +276,7 @@ std::string HttpResponseBuilder::resolveTargetPath()
 
 void HttpResponseBuilder::setConnection()
 {
+	
     std::map<std::string, std::vector<std::string> >::const_iterator it
         = _request.headers.find("Connection");
 
@@ -306,57 +310,111 @@ void HttpResponseBuilder::setConnection()
 }
 
 
-bool HttpResponseBuilder::storeUploadedFile(HttpRequest&       request,
-                                            const std::string& uploadStorePath)
-{
-    (void) request;          // Pour éviter l'avertissement non utilisé
-    (void) uploadStorePath;  // Pour éviter l'avertissement non utilisé
+// ----------- Fonctions utilitaires anonymes -----------
+
+std::string extractBoundary(const std::string& contentType) {
+    const std::string multipartPrefix = "multipart/form-data; boundary=";
+    if (contentType.compare(0, multipartPrefix.size(), multipartPrefix) == 0)
+        return "--" + contentType.substr(multipartPrefix.size());
+    return std::string();
+}
+
+bool isValidUploadDir(const std::string& dir) {
+    struct stat sb;
+    return stat(dir.c_str(), &sb) == 0 && (sb.st_mode & S_IFDIR);
+}
+
+bool isValidFilename(const std::string& filename) {
+    return filename.find("../") == std::string::npos && filename.find('/') == std::string::npos;
+}
+
+std::string makeUniqueFilepath(const std::string& dir, const std::string& filename) {
+    std::string filepath = dir + "/" + filename;
+    struct stat sb;
+    if (stat(filepath.c_str(), &sb) == 0) {
+        std::ostringstream oss;
+        oss << dir << "/" << time(NULL) << "_" << filename;
+        filepath = oss.str();
+    }
+    return filepath;
+}
+
+bool saveToFile(const std::string& filepath, const std::string& data) {
+    std::ofstream ofs(filepath.c_str(), std::ios::binary);
+    if (!ofs)
+        return false;
+    ofs.write(data.data(), data.size());
+    ofs.close();
     return true;
-    // TO DO
-    /* Comportement attendu
+}
 
-    Analyser la requête pour extraire le fichier envoyé
 
-        En fonction du type de contenu (généralement multipart/form-data), il faut parser le corps
-pour récupérer le contenu du fichier et son nom.
+// ----------- Fonction principale découpée -------------
 
-    Vérifier la validité du dossier de destination
+bool HttpResponseBuilder::storeUploadedFile(HttpRequest& request, const std::string& uploadStorePath)
+{
+    // 1. Vérifier Content-Type
+    if (!request.headers.count("Content-Type"))
+        return false;
+		
+    std::string contentType = request.headers["Content-Type"][0];
+    std::string boundary = extractBoundary(contentType);
+    if (boundary.empty())
+        return false;
 
-        S’assurer que le dossier uploadStore existe et est accessible en écriture.
+    // 2. Vérifier dossier upload
+    if (!isValidUploadDir(uploadStorePath))
+        return false;
 
-    Créer un nouveau fichier dans uploadStore
+    // 3. Découper le body en parties
+    const std::string& body = request.body;
+    size_t pos = 0, end;
+	
+    while ((pos = body.find(boundary, pos)) != std::string::npos) {
+        pos += boundary.size();
+        // fin de message ?
+		
+        if (body.compare(pos, 2, "--") == 0)
+            break;
+			
+        if (body.compare(pos, 2, "\r\n") == 0)
+            pos += 2;
+		
+        end = body.find("\r\n\r\n", pos);
+        if (end == std::string::npos)
+            break;
+			
+        std::string partHeaders = body.substr(pos, end - pos);
+        pos = end + 4;
+        size_t dispPos = partHeaders.find("Content-Disposition:");
+        size_t filenamePos = partHeaders.find("filename=\"");
+		
+        if (dispPos == std::string::npos || filenamePos == std::string::npos)
+            continue;
 
-        Le nom du fichier peut être récupéré depuis la requête ou généré (éviter collisions).
+        filenamePos += 10;
+        size_t filenameEnd = partHeaders.find('"', filenamePos);
+        if (filenameEnd == std::string::npos)
+            continue;
+			
+        std::string filename = partHeaders.substr(filenamePos, filenameEnd - filenamePos);
+        if (!isValidFilename(filename))
+            continue;
 
-        Ouvrir ce fichier en écriture binaire.
-
-    Écrire les données du fichier extrait dans ce fichier
-
-        Copier le contenu du fichier uploadé dans le fichier cible.
-
-    Gérer les erreurs (dossiers non accessibles, problèmes écriture...)
-
-    Retourner true si l’opération réussit, false sinon
-
-Exemple de tâches concrètes dans storeUploadedFile
-
-	Parser _request.body pour extraire le fichier (nom et contenu).
-
-	Vérifier que route.uploadStore existe (créer si nécessaire).
-
-	Construire un chemin complet (ex : uploadStore/nomFichier).
-
-	Ouvrir et écrire dans ce fichier.
-
-	Fermer le fichier.
-
-	Retourner true/false.
-
-Attention
-
-	Si le parsing multipart/form-data n’est pas encore fait,
-		il faudra l’implémenter ou s’assurer que _request.form_data contient déjà le fichier et ses données.
-
-	La fonction peut aussi gérer la limitation de taille,
-		le contrôle des extensions, etc. selon ta config. */
+        std::string filepath = makeUniqueFilepath(uploadStorePath, filename);
+        end = body.find(boundary, pos);
+        if (end == std::string::npos)
+            break;
+			
+        size_t fileDataEnd = end;
+        if (fileDataEnd >= 2 && body[fileDataEnd - 2] == '\r' && body[fileDataEnd - 1] == '\n')
+            fileDataEnd -= 2;
+			
+        std::string fileData = body.substr(pos, fileDataEnd - pos);
+        if (saveToFile(filepath, fileData))
+            return true; // on enregistre seulement le premier fichier
+        else
+            continue;
+    }
+    return false;
 }
