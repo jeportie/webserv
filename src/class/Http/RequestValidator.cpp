@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/28 15:13:38 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/05 15:56:51 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/05 16:18:46 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,7 +107,6 @@ void RequestValidator::validateMethod()
 	{
 		if (method != "GET")
 		{
-			std::cout << "ICIII ?" << std::endl;
 			throw HttpException(405, "Method Not Allowed", getErrorPage(405));
 		}
 	}

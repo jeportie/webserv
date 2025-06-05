@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:00:11 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/05 16:16:54 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/05 16:18:17 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,7 +140,7 @@ void HttpResponseBuilder::handlePOST()
 		{
 			if (!isExecutable(route.cgiExecutor.second) || !isExecutable(scriptPath))
 
-				throw HttpException(403, "Forbidden : LUI ",
+				throw HttpException(403, "Forbidden",
 					_validator.getErrorPage(403));
 			std::string output = runCgiScript(_request,
 					route.cgiExecutor.second, _validator);
