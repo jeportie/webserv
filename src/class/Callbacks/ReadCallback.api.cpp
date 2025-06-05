@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ReadCallback.api.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/04 15:46:58 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/05 11:03:24 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,9 +30,12 @@
 #include "../Http/HttpRequest.hpp"
 #include "../Http/HttpException.hpp"
 #include "../Http/HttpLimits.hpp"
+#include "../Http/StatusUtils.hpp"
+#include "../Http/ContentGenerator.hpp"
 #include "../SocketManager/SocketManager.hpp"
 #include "WriteCallback.hpp"
 #include "ErrorCallback.hpp"
+
 
 bool ReadCallback::readFromClient(int fd, ClientSocket* client)
 {
@@ -234,18 +237,29 @@ void ReadCallback::sendErrorResponse(int fd, int status, const std::string& mess
 
 void ReadCallback::sendCustomErrorResponse(int fd, int status, const std::string& customPage)
 {
+    std::string statusMessage = getStatusMessage(status);
+    std::string body;
+    bool        fileLoaded = readFileContent(customPage, body);
+
+    if (!fileLoaded)
+    {
+        // Fallback : page HTML simple générée
+        std::ostringstream fallback;
+        fallback << "<html><head><title>" << status << " " << statusMessage << "</title></head>\n"
+                 << "<body><h1>" << status << " " << statusMessage << "</h1>\n"
+                 << "<p>The server encountered an error.</p></body></html>";
+        body = fallback.str();
+    }
+
     std::ostringstream oss;
-    std::string response;
+    oss << "HTTP/1.1 " << status << " " << statusMessage << "\r\n"
+        << "Content-Type: text/html\r\n"
+        << "Content-Length: " << body.size() << "\r\n"
+        << "Connection: close\r\n"
+        << "\r\n"
+        << body;
 
-    // Create the HTTP response with the custom error page
-    oss << "HTTP/1.1 " << status << " Error\r\n";
-    oss << "Content-Type: text/html\r\n";
-    oss << "Content-Length: " << customPage.length() << "\r\n";
-    oss << "Connection: close\r\n";
-    oss << "\r\n";
-    oss << customPage;
-
-    response = oss.str();
+    std::string response = oss.str();
     
     // Queue a WriteCallback to send the custom error response
     _manager->getCallbackQueue().push(new WriteCallback(fd, _manager, response, _epoll_fd));

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ListeningSocket.api.cpp                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 15:42:02 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/04 15:48:23 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/05 10:40:48 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,7 +122,7 @@ ClientSocket* ListeningSocket::safeAccept(int epoll_fd)
     // If epoll_fd is valid, register the client with epoll
     if (epoll_fd >= 0)
     {
-        client_ev.events  = EPOLLIN | EPOLLET;
+        client_ev.events  = EPOLLIN | EPOLLET | EPOLLOUT;
         client_ev.data.fd = clientFd;
 
         if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, clientFd, &client_ev) < 0)

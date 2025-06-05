@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponseBuilder.cpp                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:00:11 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/04 13:10:49 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/05 11:06:58 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 

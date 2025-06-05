@@ -2,8 +2,8 @@
 server {
     listen 8086;
     root www;
+    error_page 404 /errors/404.html;
     location /cgi-bin/ {
         cgi_executor .py /usr/bin/python3;
     }
-    # autres locations...
 }
