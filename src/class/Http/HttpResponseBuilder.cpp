@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:00:11 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/05 17:18:41 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/05 17:52:01 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,6 +158,7 @@ void HttpResponseBuilder::handlePOST()
 			success = storeUploadedFile(_request, fullpath);
 			if (success)
 			{
+				
 				_response.setStatus(201, "Created");
 				_response.setBody("File uploaded successfully.");
 			}
