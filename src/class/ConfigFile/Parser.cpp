@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Parser.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 16:21:43 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/02 17:58:15 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/05 16:15:46 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,11 +139,11 @@ std::map<std::string, RouteConfig> Parser::parseLocationBlocks()
     std::string error_msg;
     std::string path;
     std::string directive;
-    RouteConfig route;
     
     
     while (current().type == TOKEN_IDENTIFIER && current().value == "location")
     {
+        RouteConfig route;
         advance();  // skip 'location'
         
         if (current().type != TOKEN_STRING && current().type != TOKEN_IDENTIFIER)

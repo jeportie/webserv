@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 11:49:58 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/02 18:12:56 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/05 16:10:09 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,11 @@ std::string RunT("Runtime Error: ");
 std::string Excp("Exception Error: ");
 std::string Ukwn("Unknown Error: ");
 std::string Crit("Critical error occurred, shutting down server");
+
+
+
+
+
 
 int main(int argc, char** argv)
 

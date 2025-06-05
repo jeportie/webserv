@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:00:11 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/05 14:59:14 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/05 16:16:54 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,7 +140,7 @@ void HttpResponseBuilder::handlePOST()
 		{
 			if (!isExecutable(route.cgiExecutor.second) || !isExecutable(scriptPath))
 
-				throw HttpException(403, "Forbidden",
+				throw HttpException(403, "Forbidden : LUI ",
 					_validator.getErrorPage(403));
 			std::string output = runCgiScript(_request,
 					route.cgiExecutor.second, _validator);
@@ -158,7 +158,7 @@ void HttpResponseBuilder::handlePOST()
 			}
 			else
 			{
-				throw HttpException(500, "Internal Server Error",
+				throw HttpException(500, "Internal Server Error : File upload failed",
 					_validator.getErrorPage(500));
 			}
 		}
@@ -355,16 +355,19 @@ bool HttpResponseBuilder::storeUploadedFile(HttpRequest& request, const std::str
 {
     // 1. Vérifier Content-Type
     if (!request.headers.count("Content-Type"))
-        return false;
+        throw HttpException(400, "Bad Request : Need a Content-Type when POST /uploads",
+					_validator.getErrorPage(400));
 		
     std::string contentType = request.headers["Content-Type"][0];
     std::string boundary = extractBoundary(contentType);
     if (boundary.empty())
-        return false;
+        throw HttpException(400, "Bad Request : No boundary found",
+					_validator.getErrorPage(400));
 
     // 2. Vérifier dossier upload
     if (!isValidUploadDir(uploadStorePath))
-        return false;
+        throw HttpException(500, "Internal Server Error : Invalid Upload Directory",
+					_validator.getErrorPage(500));
 
     // 3. Découper le body en parties
     const std::string& body = request.body;

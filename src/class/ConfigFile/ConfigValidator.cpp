@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigValidator.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 16:31:54 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/02 17:53:38 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/05 16:16:44 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 
 #include <sstream>
 #include <set>
+#include <iostream>
 
 ConfigValidator::ConfigValidator() {};
 
@@ -164,7 +165,7 @@ void ConfigValidator::validateServer(const ServerConfig& config)
          ++it)
     {
         validateRoute(it->second);
-    }
+    }    
 }
 
 
