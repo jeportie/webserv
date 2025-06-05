@@ -6,13 +6,13 @@
 #    By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/04/06 08:55:40 by jeportie          #+#    #+#              #
-#    Updated: 2025/05/27 16:55:36 by fsalomon         ###   ########.fr        #
+#    Updated: 2025/06/04 10:49:45 by fsalomon         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = webserv
 CXX = c++
-CXXFLAGS = -Wall -Wextra -Werror --debug -std=c++98
+CXXFLAGS = -Wall -Wextra -Werror --debug -std=c++98 -g3
 VALFLAGS = --leak-check=full
 OUTDIR = bin
 SRCDIR = src

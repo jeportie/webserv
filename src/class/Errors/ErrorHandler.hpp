@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ErrorHandler.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 15:30:00 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/02 18:00:23 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/05 11:59:05 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,10 @@
 #define LOG_ERR_CONST "ErrorHandler constructor Called"
 #define LOG_ERR_DEST "ErrorHandler destructor Called"
 
+
+#define FATAL 1
+#define SOFT 0
+
 // Error handling enums
 enum ErrorLevel
 {
@@ -38,6 +42,7 @@ enum ErrorCategory
     SOCKET_ERROR,      // Socket-related errors
     EPOLL_ERROR,       // Epoll-related errors
     CALLBACK_ERROR,    // Callback-related errors
+    CALLBACK_CLOSE,    // Close connection
     TIMER_ERROR,       // Timer-related errors
     RESOURCE_ERROR,    // Resource exhaustion errors
     SYSTEM_ERROR,      // System call errors

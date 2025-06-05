@@ -1,38 +1,37 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ErrorCallback.hpp                                  :+:      :+:    :+:   */
+/*   CloseCallback.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/05/22 13:12:07 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/05 12:08:23 by anastruc         ###   ########.fr       */
+/*   Created: 2025/06/05 11:35:51 by anastruc          #+#    #+#             */
+/*   Updated: 2025/06/05 12:03:49 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef ERRORCALLBACK_HPP
-#define ERRORCALLBACK_HPP
+#ifndef CLOSECALLBACK_HPP
+#define CLOSECALLBACK_HPP
 
-#define LOG_ERRCB_CONST "ErrorCallback Constructor called."
-#define LOG_ERRCB_DEST "ErrorCallback Destructor called"
+#define LOG_CLSCB_CONST "CloseCallback Constructor called."
+#define LOG_CLSCB_DEST "CloseCallback Destructor called"
 
 #include "Callback.hpp"
 
 // Forward declaration
 class SocketManager;
 
-// Error/cleanup callback
-class ErrorCallback : public Callback
+// Close/cleanup callback
+class CloseCallback : public Callback
 {
 public:
-    ErrorCallback(int fd, SocketManager* manager, int epollFd, bool _is_fatal);
-    virtual ~ErrorCallback();
+    CloseCallback(int fd, SocketManager* manager, int epollFd);
+    virtual ~CloseCallback();
     virtual void execute();
 
 private:
     SocketManager* _manager;
     int            _epollFd;
-    bool           _is_fatal;
 };
 
-#endif  // ************************************************ ERRORCALLBACK_HPP //
+#endif  // ************************************************ CLOSECALLBACK_HPP //

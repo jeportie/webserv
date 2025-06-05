@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/05 11:03:24 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/05 12:20:08 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,6 @@
 #include <ostream>
 #include <sstream>
 
-#include "../Callbacks/ReadCallback.hpp"
 #include "../Http/RequestLine.hpp"
 #include "../Sockets/ClientSocket.hpp"
 #include "../Http/HttpParser.hpp"
@@ -33,8 +32,11 @@
 #include "../Http/StatusUtils.hpp"
 #include "../Http/ContentGenerator.hpp"
 #include "../SocketManager/SocketManager.hpp"
+#include "ReadCallback.hpp"
 #include "WriteCallback.hpp"
 #include "ErrorCallback.hpp"
+#include "CloseCallback.hpp"
+
 
 
 bool ReadCallback::readFromClient(int fd, ClientSocket* client)
@@ -55,7 +57,7 @@ bool ReadCallback::readFromClient(int fd, ClientSocket* client)
         else if (n == 0)
         {
             std::cout << "jai recu 0" << std::endl;
-            _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1));
+            _manager->getCallbackQueue().push(new CloseCallback(_fd, _manager, -1));
             return false; // signaler fermeture
         }
         else // n = -1

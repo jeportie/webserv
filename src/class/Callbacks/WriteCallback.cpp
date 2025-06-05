@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WriteCallback.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 12:56:33 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/04 14:51:59 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/05 11:59:55 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ void WriteCallback::execute()
     if (_manager->safeEpollCtlClient(_epoll_fd, EPOLL_CTL_MOD, _fd, &ev) < 0)
     {
         LOG_SYSTEM_ERROR(ERROR, EPOLL_ERROR, "Failed to modify socket for write events", __FUNCTION__);
-        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, _epoll_fd));
+        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, _epoll_fd, FATAL));
         return;
     }
 
@@ -66,7 +66,7 @@ void WriteCallback::execute()
     if (written < 0)
     {
         LOG_SYSTEM_ERROR(WARNING, SOCKET_ERROR, "Failed to write response to client", __FUNCTION__);
-        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, _epoll_fd));
+        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, _epoll_fd, FATAL));
         return;
     }
     
@@ -105,7 +105,7 @@ void WriteCallback::execute()
     if (_manager->safeEpollCtlClient(_epoll_fd, EPOLL_CTL_MOD, _fd, &ev) < 0)
     {
         LOG_SYSTEM_ERROR(ERROR, EPOLL_ERROR, "Failed to reset socket for read events", __FUNCTION__);
-        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, _epoll_fd));
+        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, _epoll_fd, FATAL));
         return;
     }
 }

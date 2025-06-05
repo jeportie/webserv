@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ReadCallback.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/04 15:32:24 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/05 12:27:03 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 #include "../Http/ResponseFormatter.hpp"
 #include "ReadCallback.hpp"
 #include "ErrorCallback.hpp"
+#include "CloseCallback.hpp"
 #include "WriteCallback.hpp"
 
 #include <iostream>
@@ -55,8 +56,11 @@ void ReadCallback::execute()
     (it != map.end()) ? client = it->second : NULL;
     if (!client)
 	{
-        LOG_ERROR(ERROR, CALLBACK_ERROR, "ClientSocket not found for fd", "ReadCallback::execute");
-        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1));
+        
+        // Cas normal si la socket a été récemment close
+        // Tu peux commenter cette ligne ou mettre en debug uniquement
+        // LOG_ERROR(ERROR, CALLBACK_ERROR, "ClientSocket not found for fd", "ReadCallback::execute");
+        // _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1, SOFT));
         return;
     }
 
@@ -99,7 +103,7 @@ void ReadCallback::execute()
             LOG_ERROR(INFO, SOCKET_ERROR,
                 "Closing client connection (fd=" + oss.str() + ")",
                 "ReadCallback::execute");
-                _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1));
+                _manager->getCallbackQueue().push(new CloseCallback(_fd, _manager, -1));
                 return ;  // plus de traitement sur cette socket
         }
     }
@@ -114,19 +118,19 @@ void ReadCallback::execute()
             sendCustomErrorResponse(_fd, he.status(), he.customPage());
         }
 		// retire de epoll, delete ClientSocket, close(fd)
-        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1));
+        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1, SOFT));
 
         return ;  // on arrête là pour ce fd
     }
     catch (const std::exception& e)
     {
         LOG_ERROR(ERROR, CALLBACK_ERROR, e.what(), "ReadCallback::execute");
-        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1));
+        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1, FATAL));
     }
     catch (...)
     {
         LOG_ERROR(ERROR, CALLBACK_ERROR, "Unknown error", "ReadCallback::execute");
-        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1));
+        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1, FATAL));
     }
 }
 

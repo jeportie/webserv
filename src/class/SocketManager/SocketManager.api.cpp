@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocketManager.api.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/04 13:16:34 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/05 12:03:05 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include "SocketManager.hpp"
 #include "../Callbacks/AcceptCallback.hpp"
 #include "../Callbacks/ErrorCallback.hpp"
+#include "../Callbacks/CloseCallback.hpp"
 #include "../Callbacks/ReadCallback.hpp"
 #include "../Callbacks/TimeoutCallback.hpp"
 #include "../Sockets/ClientSocket.hpp"
@@ -138,9 +139,13 @@ void SocketManager::enqueueReadyCallbacks(int n, EVENT_LIST& events, int epoll_f
             // We don't need to do anything here as the WriteCallback is already in the queue
             // from the ReadCallback that processed the request
         }
-        else if (ev & (EPOLLERR | EPOLLHUP))
+        else if (ev & (EPOLLERR))
         {
-            _callbackQueue.push(new ErrorCallback(fd, this, epoll_fd));
+            _callbackQueue.push(new ErrorCallback(fd, this, epoll_fd, FATAL));
+        }
+        else if (ev & (EPOLLHUP))
+        {
+            _callbackQueue.push(new CloseCallback(fd, this, epoll_fd));
         }
         i++;
     }

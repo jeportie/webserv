@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ErrorCallback.cpp                                  :+:      :+:    :+:   */
+/*   CloseCallback.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/05/22 13:13:44 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/05 12:14:29 by anastruc         ###   ########.fr       */
+/*   Created: 2025/06/05 11:35:53 by anastruc          #+#    #+#             */
+/*   Updated: 2025/06/05 12:28:00 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ErrorCallback.hpp"
+
 #include "CloseCallback.hpp"
 #include "../Errors/ErrorHandler.hpp"
 #include "../SocketManager/SocketManager.hpp"
@@ -20,25 +20,19 @@
 #include <sys/epoll.h>
 #include <iostream>
 
-
-// ErrorCallback implementation
-ErrorCallback::ErrorCallback(int fd, SocketManager* manager, int epollFd, bool is_fatal)
-: Callback(fd), _manager(manager), _epollFd(epollFd), _is_fatal(is_fatal)
+// CloseCallback implementation
+CloseCallback::CloseCallback(int fd, SocketManager* manager, int epollFd)
+: Callback(fd), _manager(manager), _epollFd(epollFd)
 {
-	 LOG_ERROR(DEBUG, CALLBACK_ERROR, LOG_ERRCB_CONST, __FUNCTION__);
+	 LOG_ERROR(DEBUG, CALLBACK_CLOSE, LOG_CLSCB_CONST, __FUNCTION__);
 }
 
-ErrorCallback::~ErrorCallback()
+CloseCallback::~CloseCallback()
 {
-	 LOG_ERROR(DEBUG, CALLBACK_ERROR, LOG_ERRCB_DEST, __FUNCTION__);
+	 LOG_ERROR(DEBUG, CALLBACK_CLOSE, LOG_CLSCB_DEST, __FUNCTION__);
 }
 
-void ErrorCallback::execute()
+void CloseCallback::execute()
 {
-	if (_is_fatal)
-	{
-		std::cout << "ici " << std::endl;
-		_manager->getCallbackQueue().push(new CloseCallback(_fd, _manager, _epollFd));
-
-	}
+    _manager->cleanupClientSocket(_fd, _epollFd);
 }

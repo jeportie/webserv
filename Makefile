@@ -32,6 +32,7 @@ SRC = \
   src/class/Callbacks/ReadCallback.cpp \
   src/class/Callbacks/TimeoutCallback.cpp \
   src/class/Callbacks/WriteCallback.cpp \
+  src/class/Callbacks/CloseCallback.cpp \
   src/class/ConfigFile/ConfigValidator.cpp \
   src/class/ConfigFile/Lexer.api.cpp \
   src/class/ConfigFile/Lexer.cpp \
@@ -42,19 +43,19 @@ SRC = \
   src/class/Errors/ErrorHandler.api.cpp \
   src/class/Errors/ErrorHandler.cpp \
   src/class/Http/ContentGenerator.cpp \
+  src/class/Http/HttpCGI.cpp \
   src/class/Http/HttpException.cpp \
   src/class/Http/HttpParser.cpp \
   src/class/Http/HttpParser_utils.cpp \
+  src/class/Http/HttpRequest.cpp \
+  src/class/Http/HttpResponse.cpp \
+  src/class/Http/HttpResponseBuilder.cpp \
   src/class/Http/RequestData.api.cpp \
   src/class/Http/RequestData.cpp \
   src/class/Http/RequestLine.cpp \
   src/class/Http/RequestValidator.cpp \
   src/class/Http/ResponseFormatter.cpp \
   src/class/Http/StatusUtils.cpp \
-  src/class/Http/HttpCGI.cpp \
-  src/class/Http/HttpRequest.cpp \
-  src/class/Http/HttpResponse.cpp \
-  src/class/Http/HttpResponseBuilder.cpp \
   src/class/SocketManager/SocketManager.api.cpp \
   src/class/SocketManager/SocketManager.cpp \
   src/class/Sockets/ClientSocket.api.cpp \
