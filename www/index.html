@@ -82,7 +82,10 @@
     <p>Votre serveur HTTP personnalisé est opérationnel ! Voici quelques liens utiles :</p>
     <div class="links">
       <a href="/">Index</a>
-      <a href="/upload">Upload</a>
+<form action="/upload" method="POST" enctype="multipart/form-data">
+  <input type="file" name="file" />
+  <button type="submit">Uploader</button>
+</form>
       <a href="/cgi-bin/script.py">CGI Script</a>
       <a href="/docs">Documentation</a>
     </div>
