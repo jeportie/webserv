@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:00:11 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/05 16:18:17 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/05 17:18:41 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,8 +149,13 @@ void HttpResponseBuilder::handlePOST()
 		}
 		else if (route.uploadEnabled && !route.uploadStore.empty())
 		{
+			std::string fullpath;
 			// Upload activé sur la route
-			success = storeUploadedFile(_request, route.uploadStore);
+			if (route.root.empty())
+				fullpath = resolvePath(route.uploadStore, _validator.getServerConfig().root);
+			else
+				fullpath = resolvePath(route.uploadStore, route.root);
+			success = storeUploadedFile(_request, fullpath);
 			if (success)
 			{
 				_response.setStatus(201, "Created");
