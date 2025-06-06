@@ -153,28 +153,10 @@
 <body>
   <header>
     <h1>Bienvenue sur Webserv 🖥️</h1>
-  </header>server {
-    listen 8085;
-    root www;
-    error_page 404 /errors/404.html;
-    allowed_methods POST GET DELETE;
-
-    location /cgi-bin/ {
-        cgi_executor .py /usr/bin/python3;
-    }
-
-    location /upload/ {
-        allowed_methods POST GET DELETE;
-        upload_enable on;
-        upload_store uploads;
-    }
-
-    location /redirect 
-    {
-        return 301 http://google.com;
-    }
-}
-
+  </header>
+  <main>
+    <p>Votre serveur HTTP personnalisé est opérationnel ! Voici quelques liens utiles :</p>
+    <div class="links">
       <a href="/">Index</a>
       <form class="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
         <label class="upload-label">
@@ -191,6 +173,7 @@
         </span>
         Supprimer TESTWEBSERVFILEUPLOAD.txt
       </button>
+      <button id="redirect-btn">Tester la redirection</button>
       <a href="/cgi-bin/script.py">CGI Script</a>
       <a href="/docs">Documentation</a>
     </div>
@@ -222,6 +205,11 @@
       }).catch(error => {
         alert("Erreur réseau ou serveur !");
       });
+    });
+
+    // Bouton de test de redirection
+    document.getElementById('redirect-btn').addEventListener('click', function() {
+      window.location.href = '/redirect';
     });
   </script>
 </body>
