@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:00:11 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/06 11:42:59 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/06 12:03:45 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,8 +111,10 @@ void HttpResponseBuilder::handleGET()
 	if (_validator.hasMatchedRoute())
 	{
 		const RouteConfig &route = _validator.getMatchedRoute();
+        std::cout << "ROUTE = " << route.path << std::endl;
          if (!route.returnCodes.empty())
         {
+            std::cout << "NOOOOON" << std::endl;
             executeReturnDirective(route);
             return ;
         }
@@ -182,6 +184,7 @@ void HttpResponseBuilder::handlePOST()
          if (!route.returnCodes.empty())
         {
             executeReturnDirective(route);
+            return ;
         }
 		if (!route.cgiExecutor.first.empty())
 		{
