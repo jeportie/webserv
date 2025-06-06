@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/05 16:11:01 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/06 17:38:38 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,9 @@
 #include "../ConfigFile/ConfigValidator.hpp"
 #include "../Errors/ErrorHandler.hpp"
 #include "../../../include/webserv.hpp"
+#include <signal.h>
+
+extern volatile sig_atomic_t g_stop;
 
 void SocketManager::init_connect()
 {
@@ -81,7 +84,7 @@ void SocketManager::eventLoop(int epoll_fd)
     checkIntervalMs = getCheckIntervalMs();
     running = true;
 
-    while (running)
+    while (!g_stop)
     {
         /* 1) Wait up to CHECK_INTERVAL_MS for any I/O */
         n = epoll_wait(epoll_fd, &events[0], MAXEVENTS, checkIntervalMs);

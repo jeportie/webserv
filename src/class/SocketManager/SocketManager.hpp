@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocketManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:23:58 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/02 18:10:21 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/06 17:33:59 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ public:
     int     safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event* event);
     void    safeRegisterToEpoll(int epoll_fd, int listeningFd);
     IVSCMAP ReadandParseConfigFile(const std::string& content);
+    ICMAP& getClientMapNonConst(void);
 
     ListeningSocket* getListeningSocket(int fd);
     LSVECTOR&        getVectorListeningSocket();

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CallbackQueue.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/20 10:00:00 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/02 17:59:13 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/06 17:33:07 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ public:
     bool   tryExecute(Callback* callback);
     bool   isEmpty() const;
     size_t size() const;
+    std::queue<Callback*>& getQueue();
 
 private:
     std::queue<Callback*> _queue;

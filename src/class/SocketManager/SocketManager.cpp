@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/03 17:49:07 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/06 17:38:25 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,3 +110,6 @@ int SocketManager::safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll
     }
     return (0);
 }
+
+
+ICMAP& SocketManager::getClientMapNonConst(void) { return (_clientSockets); }

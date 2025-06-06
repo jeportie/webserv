@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CallbackQueue.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/20 10:00:00 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/02 17:51:25 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/06 17:32:53 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,3 +35,4 @@ CallbackQueue::~CallbackQueue()
     }
 }
 
+std::queue<Callback*>& CallbackQueue::getQueue() { return (_queue); }

@@ -6,17 +6,21 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 11:49:58 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/05 16:10:09 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/06 17:34:20 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/webserv.hpp"
 #include "src/class/SocketManager/SocketManager.hpp"
 #include "src/class/Errors/ErrorHandler.hpp"
+#include "src/class/Errors/signal_handler.hpp"
+
+
 
 #include <cstdlib>
 #include <stdexcept>
 #include <iostream>
+#include <signal.h>
 
 std::string Start("Server starting...");
 std::string RunT("Runtime Error: ");
@@ -24,9 +28,7 @@ std::string Excp("Exception Error: ");
 std::string Ukwn("Unknown Error: ");
 std::string Crit("Critical error occurred, shutting down server");
 
-
-
-
+volatile sig_atomic_t g_stop = 0;
 
 
 int main(int argc, char** argv)
@@ -35,6 +37,7 @@ int main(int argc, char** argv)
     std::string   content;
     SocketManager theSocketMaster;
 
+    signal(SIGINT, handle_signal);
     if (argc < 2)
     {
         std::cout << "Usage: " << argv[0] << " [config_file.conf]" << std::endl;
@@ -75,6 +78,7 @@ int main(int argc, char** argv)
         std::cerr << Crit << std::endl;
         exit(EXIT_FAILURE);
     }
+    closeServer(theSocketMaster);
     std::cout << "Server shutdown without errors" << std::endl;
     return (0);
 }
