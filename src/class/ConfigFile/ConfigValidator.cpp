@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 16:31:54 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/05 16:16:44 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/06 11:01:51 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -197,9 +197,9 @@ void ConfigValidator::validateRoute(const RouteConfig& route)
         error_msg = "Invalid HTTP status code";
         THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
         }    
-        if (it->second.empty())
+        if (it->second.empty() && it->first > 299 && it->first < 400)
         {
-            error_msg = "return_url must not be empty for return_code";
+            error_msg = "return_url 3xx must not be empty for return_code";
             THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
         }    
     }

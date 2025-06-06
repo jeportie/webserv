@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Parser.api.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 08:50:28 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/02 17:57:22 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/06 11:29:59 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -317,16 +317,16 @@ std::string Parser::parseDefaultFileDirective()
 
     return filename;
 }
-
 std::map<int, std::string> Parser::parseReturnDirective()
 {
     std::string error_msg;
     std::map<int, std::string> returnCodes;
     int code;
     std::string url;
-    
+
     advance();  // skip 'return'
-    // Vérifier si le token suivant est un nombre, sinon lever une exception
+
+    // Vérifier si le token suivant est un nombre
     if (current().type != TOKEN_NUMBER)
     {
         error_msg = "Expected return code (number) after 'return'";
@@ -335,16 +335,24 @@ std::map<int, std::string> Parser::parseReturnDirective()
     while (current().type == TOKEN_NUMBER)
     {
         code = std::atoi(current().value.c_str());
-
         advance();
 
-        if (current().type != TOKEN_STRING && current().type != TOKEN_IDENTIFIER)
+        url = ""; // reset
+
+        // Vérifier si on a une URL (facultative sauf pour 3xx)
+        if ((current().type == TOKEN_STRING || current().type == TOKEN_IDENTIFIER)
+            && current().type != TOKEN_SEMICOLON)
         {
-            error_msg = "Expected return URL after code";
+            url = current().value;
+            advance();
+        }
+
+        // Pour 3xx, l’URL est obligatoire
+        if (code < 400  && url.empty())
+        {
+            error_msg = "Expected URL after return code 2xx 3xx";
             THROW_SYSTEM_ERROR(CRITICAL, CONFIG_FILE_ERROR, error_msg, __FUNCTION__);
         }
-        url = current().value;
-        advance();
 
         if (current().type != TOKEN_SEMICOLON)
         {
@@ -358,6 +366,7 @@ std::map<int, std::string> Parser::parseReturnDirective()
 
     return returnCodes;
 }
+
 
 std::pair<std::string, std::string> Parser::parseCgiExecutorsDirective()
 {

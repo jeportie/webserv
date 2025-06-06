@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/28 15:13:38 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/05 16:18:46 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/06 11:43:22 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,22 +165,22 @@ std::string RequestValidator::getErrorPage(int statusCode)
 {
 	// First, check route config (if matched)
 	std::string path;
-	if (_matchedRoute)
-	{
-		std::map<int,
-			std::string>::const_iterator it = _matchedRoute->returnCodes.find(statusCode);
-		if (it != _matchedRoute->returnCodes.end())
-		{
-			path = resolvePath(it->second, _matchedRoute->root);
-			return (path);
-		}
-	}
-	// Then, check server config
+	// if (_matchedRoute)
+	// {
+	// 	std::map<int,
+	// 		std::string>::const_iterator it = _matchedRoute->returnCodes.find(statusCode);
+	// 	if (it != _matchedRoute->returnCodes.end())
+	// 	{
+	// 		path = resolvePath(it->second, _matchedRoute->root);
+	// 		return (path);
+	// 	}
+	// }
+	// // Then, check server config
 	std::map<int,
-		std::string>::const_iterator it2 = _serverConfig.error_pages.find(statusCode);
-	if (it2 != _serverConfig.error_pages.end())
+		std::string>::const_iterator it = _serverConfig.error_pages.find(statusCode);
+	if (it != _serverConfig.error_pages.end())
 	{
-		path = resolvePath(it2->second, _serverConfig.root);
+		path = resolvePath(it->second, _serverConfig.root);
 		return (path);
 	}
 	// No custom page found

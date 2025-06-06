@@ -6,6 +6,7 @@ server {
 
     location /cgi-bin/ {
         cgi_executor .py /usr/bin/python3;
+        return 301 http://google.com;
     }
 
     location /upload/ {

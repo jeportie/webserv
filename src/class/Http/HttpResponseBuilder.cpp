@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:00:11 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/05 17:52:01 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/06 11:42:59 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,17 @@ std::string toString(size_t value)
 	return (oss.str());
 }
 
+std::string getHttpErrorMessage(int code) {
+    switch (code) {
+        case 400: return "Bad Request";
+        case 403: return "Forbidden";
+        case 404: return "Not Found";
+        case 500: return "Internal Server Error";
+        // ... Ajoute ce que tu veux
+        default: return "Error";
+    }
+}
+
 // Point d’entrée principal
 void HttpResponseBuilder::buildResponse()
 {
@@ -66,6 +77,32 @@ void HttpResponseBuilder::buildResponse()
 // Accès à la réponse finale
 const HttpResponse& HttpResponseBuilder::getResponse() const { return _response; }
 
+void HttpResponseBuilder::executeReturnDirective(const RouteConfig &route)
+{
+      // Ici, on prend le premier (ou celui correspondant au code voulu)
+            int code = route.returnCodes.begin()->first;
+            const std::string& url = route.returnCodes.begin()->second;
+            if (!url.empty())
+            {
+                // C'est une redirection (301, 302, etc.)
+                _response.setStatus(code, "Moved"); // Tu peux ajuster le message selon code
+                _response.setHeader("Location", url);
+                _response.setBody(
+                    "<html><body><h1>" + toString(code) +
+                    " Redirect</h1><p><a href=\"" + url +
+                    "\">Redirecting</a></p></body></html>");
+                    setConnection();
+                    return;
+            }
+            else
+            {
+                std::string errorMessage = getHttpErrorMessage(code);
+                throw HttpException(code, errorMessage, _validator.getErrorPage(code));
+                setConnection();
+                return;
+            }
+}
+
 // Gestion GET
 void HttpResponseBuilder::handleGET()
 {
@@ -74,6 +111,12 @@ void HttpResponseBuilder::handleGET()
 	if (_validator.hasMatchedRoute())
 	{
 		const RouteConfig &route = _validator.getMatchedRoute();
+         if (!route.returnCodes.empty())
+        {
+            executeReturnDirective(route);
+            return ;
+        }
+        
 		if (!route.cgiExecutor.first.empty())
 		{
 			// Si la requête cible le script, on exécute le CGI
@@ -136,6 +179,10 @@ void HttpResponseBuilder::handlePOST()
 	if (_validator.hasMatchedRoute())
 	{
 		const RouteConfig &route = _validator.getMatchedRoute();
+         if (!route.returnCodes.empty())
+        {
+            executeReturnDirective(route);
+        }
 		if (!route.cgiExecutor.first.empty())
 		{
 			if (!isExecutable(route.cgiExecutor.second) || !isExecutable(scriptPath))
@@ -194,6 +241,14 @@ bool deleteFile(const std::string& path)
 // Gestion DELETE (simplifiée)
 void HttpResponseBuilder::handleDELETE()
 {
+    if (_validator.hasMatchedRoute())
+	{
+		const RouteConfig &route = _validator.getMatchedRoute();
+         if (!route.returnCodes.empty())
+        {
+            executeReturnDirective(route);
+        }
+    }
 	std::string path = resolveTargetPath();
 	if (!fileExists(path))
 	{
