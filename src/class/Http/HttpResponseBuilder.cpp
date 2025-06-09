@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:00:11 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/09 12:29:03 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/09 15:42:43 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,8 @@ std::string toString(size_t value)
 	return (oss.str());
 }
 
+
+
 std::string getHttpErrorMessage(int code) {
     switch (code) {
         case 400: return "Bad Request";
@@ -54,6 +56,10 @@ std::string getHttpErrorMessage(int code) {
     }
 }
 
+void HttpResponseBuilder::setChunkedHeaders()
+{
+    _response.setHeader("Transfer-Encoding", "chunked");
+}
 // Point d’entrée principal
 void HttpResponseBuilder::buildResponse()
 {
@@ -87,6 +93,7 @@ void HttpResponseBuilder::executeReturnDirective(const RouteConfig &route)
                 // C'est une redirection (301, 302, etc.)
                 _response.setStatus(code, "Moved"); // Tu peux ajuster le message selon code
                 _response.setHeader("Location", url);
+                setChunkedHeaders();
                 _response.setBody(
                     "<html><body><h1>" + toString(code) +
                     " Redirect</h1><p><a href=\"" + url +
@@ -126,6 +133,7 @@ void HttpResponseBuilder::handleGET()
 			std::string output = runCgiScript(_request,
 					route.cgiExecutor.second, _validator);
 			_response.setStatus(200, "OK");
+            setChunkedHeaders();
             _response.parseCgiOutputAndSet(output);
 			setConnection();
 			return ;
@@ -146,7 +154,7 @@ void HttpResponseBuilder::handleGET()
 			std::string html = generateAutoIndexPage(path, _request.path);
 			_response.setStatus(200, "OK");
 			_response.setHeader("Content-Type", "text/html");
-			_response.setHeader("Content-Length", toString(html.size()));
+            setChunkedHeaders();
 			_response.setBody(html);
 		}
 		else
@@ -158,16 +166,16 @@ void HttpResponseBuilder::handleGET()
 	// Sinon, comportement standard
 	if (!fileExists(path))
 		throw HttpException(404, "Not Found", _validator.getErrorPage(404));
-	std::string content;
-	if (!readFileContent(path, content))
-		throw HttpException(500, "Internal Server Error",
-			_validator.getErrorPage(500));
+	// std::string content;
+	// if (!readFileContent(path, content))
+	// 	throw HttpException(500, "Internal Server Error",
+	// 		_validator.getErrorPage(500));
 	std::string mimeType = getMimeType(path);
 	_response.setStatus(200, "OK");
 	_response.setHeader("Content-Type", mimeType);
-	_response.setHeader("Content-Length", toString(content.size()));
-	_response.setBody(content);
-	setConnection();
+    setChunkedHeaders();
+    _response.setFileToStream(path);
+    setConnection();
 }
 
 // Gestion POST (exemple simple : echo ou cgi)

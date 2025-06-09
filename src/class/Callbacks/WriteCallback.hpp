@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WriteCallback.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 12:55:20 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/02 17:59:29 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/09 15:57:59 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,21 +22,28 @@ class SocketManager;
 class WriteCallback : public Callback
 {
 public:
-    WriteCallback(int clientFd, SocketManager* manager, const std::string& data, int epoll_fd);
-    WriteCallback(int                clientFd,
-                  SocketManager*     manager,
-                  const std::string& data,
-                  int                epoll_fd,
-                  size_t             bytesWritten);
+
+    WriteCallback(int fd, SocketManager* manager, const std::string& header, int file_fd, int epoll_fd);
+    WriteCallback(int fd, SocketManager* manager, const std::string& header, const std::string& body, int epoll_fd);
     virtual ~WriteCallback();
 
     virtual void execute();
 
 private:
+
+    int _epoll_fd;
     SocketManager* _manager;
-    std::string    _data;
-    int            _epoll_fd;
-    size_t         _bytesWritten;  // Track how many bytes have been written so far
+    std::string _header;
+    size_t _headerSent;
+    bool _headerDone;
+
+    int _file_fd; // -1 si pas de fichier à streamer
+    std::string _body;
+    size_t _bodyOffset;
+
+    std::string _chunkBuffer; // chunk hex + data + \r\n
+    size_t _chunkSent;
+    bool _fileDone, _finalChunkSent;
 };
 
 #endif  // ************************************************ WRITECALLBACK_HPP //

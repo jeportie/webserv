@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 12:52:12 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/03 14:46:10 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/09 15:01:51 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,11 @@ void HttpResponse::setHeader(const std::string& key, const std::string& value)
 {
     _headers[key] = value;
 }
+void HttpResponse::setFileToStream(const std::string& p) { _fileToStream = p; }
 
 void HttpResponse::setBody(const std::string& content) { _body = content; }
+
+const std::string& HttpResponse::getFileToStream() const { return _fileToStream; }
 
 int HttpResponse::getStatusCode() const { return _statusCode; }
 

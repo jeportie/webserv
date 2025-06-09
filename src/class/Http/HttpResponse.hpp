@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 12:40:19 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/03 12:54:01 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/09 15:01:26 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ private:
     std::string                        _statusMessage;
     std::map<std::string, std::string> _headers;
     std::string                        _body;
+    std::string                        _fileToStream;
 
 public:
     HttpResponse();
@@ -30,6 +31,7 @@ public:
     void setStatus(int code, const std::string& message);
     void setHeader(const std::string& key, const std::string& value);
     void setBody(const std::string& content);
+    void setFileToStream(const std::string& p);
 
     int getStatusCode() const;
     std::string getStatusMessage() const;
@@ -38,6 +40,7 @@ public:
     const std::map<std::string, std::string> &getAllHeaders() const;
     void parseCgiOutputAndSet(const std::string& cgi_output);
     bool hasHeader(const std::string& key) const;
+    const std::string& getFileToStream() const;
 
 
 };

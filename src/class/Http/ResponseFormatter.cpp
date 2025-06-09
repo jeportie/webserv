@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ResponseFormatter.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 14:36:00 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/04 16:09:56 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/09 15:27:42 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,27 +22,38 @@ ResponseFormatter::ResponseFormatter(HttpResponse response)
 {
 }
 
-std::string ResponseFormatter::format()
+std::string ResponseFormatter::formatHeadersOnly(const HttpResponse& resp)
 {
     std::ostringstream oss;
-
-    // 1. Ligne de statut
-    oss << "HTTP/1.1 " << _rep.getStatusCode() << " " << _rep.getStatusMessage() << "\r\n";
-
-    // 2. Headers
-    std::map<std::string, std::string>                 headers = _rep.getAllHeaders();
-    std::map<std::string, std::string>::const_iterator it      = headers.begin();
-    for (; it != headers.end(); ++it)
+    oss << "HTTP/1.1 " << resp.getStatusCode() << " " << resp.getStatusMessage() << "\r\n";
+    for (std::map<std::string, std::string>::const_iterator it = resp.getAllHeaders().begin(); it != resp.getAllHeaders().end(); ++it)
         oss << it->first << ": " << it->second << "\r\n";
-
-    if (headers.find("Content-Length") == headers.end())
-        oss << "Content-Length: " << _rep.getBody().size() << "\r\n";
-
-    // 3. Séparateur
     oss << "\r\n";
-
-    // 4. Corps
-    oss << _rep.getBody();
-
     return oss.str();
 }
+
+
+// std::string ResponseFormatter::format()
+// {
+//     std::ostringstream oss;
+
+//     // 1. Ligne de statut
+//     oss << "HTTP/1.1 " << _rep.getStatusCode() << " " << _rep.getStatusMessage() << "\r\n";
+
+//     // 2. Headers
+//     std::map<std::string, std::string>                 headers = _rep.getAllHeaders();
+//     std::map<std::string, std::string>::const_iterator it      = headers.begin();
+//     for (; it != headers.end(); ++it)
+//         oss << it->first << ": " << it->second << "\r\n";
+
+//     if (headers.find("Content-Length") == headers.end())
+//         oss << "Content-Length: " << _rep.getBody().size() << "\r\n";
+
+//     // 3. Séparateur
+//     oss << "\r\n";
+
+//     // 4. Corps
+//     oss << _rep.getBody();
+
+//     return oss.str();
+// }

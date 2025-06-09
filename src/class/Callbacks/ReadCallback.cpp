@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/05 12:27:03 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/09 15:51:55 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,14 +87,29 @@ void ReadCallback::execute()
         ServerConfig config = client->requestData.getServerConfig(); // copie
         RequestValidator validator(req, config);
         validator.validate();  // peut lancer HttpException si erreur de validation
-         // Génère la réponse
+        
         HttpResponseBuilder builder(req, validator);
         builder.buildResponse();
-        ResponseFormatter formatter(builder.getResponse());
-        std::string finalResponse = formatter.format();
-        std::cout << "finalreponse = " << finalResponse << std::endl;
-                 // Enfile un WriteCallback avec la réponse
-                 _manager->getCallbackQueue().push(new WriteCallback(_fd, _manager, finalResponse, _epoll_fd));
+        
+        const HttpResponse& resp = builder.getResponse();
+        ResponseFormatter formatter(resp);
+        std::string headers = formatter.formatHeadersOnly(resp);
+        if (!resp.getFileToStream().empty()) {
+            int file_fd = open(resp.getFileToStream().c_str(), O_RDONLY);
+        if (file_fd < 0) { /* gestion erreur */ }
+            _manager->getCallbackQueue().push(
+        new WriteCallback(_fd, _manager, headers, file_fd, _epoll_fd));
+        } else {
+        _manager->getCallbackQueue().push(
+        new WriteCallback(_fd, _manager, headers, resp.getBody(), _epoll_fd));
+}
+
+         // Génère la réponse
+        // ResponseFormatter formatter(builder.getResponse());
+        // std::string finalResponse = formatter.format();
+        // std::cout << "finalreponse = " << finalResponse << std::endl;
+        //          // Enfile un WriteCallback avec la réponse
+                //  _manager->getCallbackQueue().push(new WriteCallback(_fd, _manager, finalResponse, _epoll_fd));
 
         cleanupRequest(client);
         if (req.headers.count("Connection") && req.headers["Connection"][0] == "close")

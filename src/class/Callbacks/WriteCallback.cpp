@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 12:56:33 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/09 11:38:00 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/09 15:56:55 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,93 +20,127 @@
 #include <unistd.h>
 #include <sys/epoll.h>
 #include <sstream>
+#include <iostream>
 
-// WriteCallback implementation
-WriteCallback::WriteCallback(int clientFd, SocketManager* manager, const std::string& data, int epoll_fd)
-: Callback(clientFd), _manager(manager), _data(data), _epoll_fd(epoll_fd), _bytesWritten(0)
+
+WriteCallback::WriteCallback(int fd, SocketManager* manager, const std::string& header, int file_fd, int epoll_fd)
+    : Callback(fd), _epoll_fd(epoll_fd), _manager(manager), _header(header), _headerSent(0), _headerDone(false),
+      _file_fd(file_fd), _bodyOffset(0), _chunkBuffer(), _chunkSent(0), _fileDone(false), _finalChunkSent(false)
 {
-	LOG_ERROR(DEBUG, CALLBACK_ERROR, "WriteCallback Constructor called.", __FUNCTION__);
+    std::cout << "CONSTRUCTION AVEC FD = " << _fd << std::endl;
 }
 
-WriteCallback::WriteCallback(int clientFd, SocketManager* manager, const std::string& data, int epoll_fd, size_t bytesWritten)
-: Callback(clientFd), _manager(manager), _data(data), _epoll_fd(epoll_fd), _bytesWritten(bytesWritten)
+// Constructeur pour body en mémoire
+WriteCallback::WriteCallback(int fd, SocketManager* manager, const std::string& header, const std::string& body, int epoll_fd)
+    : Callback(fd), _epoll_fd(epoll_fd), _manager(manager), _header(header), _headerSent(0), _headerDone(false),
+      _file_fd(-1), _body(body), _bodyOffset(0), _chunkBuffer(), _chunkSent(0), _fileDone(false), _finalChunkSent(false)
 {
-	LOG_ERROR(DEBUG, CALLBACK_ERROR, "WriteCallback Constructor with bytesWritten called.", __FUNCTION__);
+std::cout << "CONSTRUCTION AVEC FD = " << _fd << std::endl;
 }
+
 
 WriteCallback::~WriteCallback()
 {
-	LOG_ERROR(DEBUG, CALLBACK_ERROR, "WriteCallback Destructor called.", __FUNCTION__);
+    LOG_ERROR(DEBUG, CALLBACK_ERROR, "WriteCallback Destructor called.", __FUNCTION__);
 }
-
-void WriteCallback::execute()
-{
+void WriteCallback::execute() {
     ssize_t written;
-    std::ostringstream oss;
     struct epoll_event ev;
-    size_t remaining;
 
-    // Modify the socket to be monitored for write events
     ev.events = EPOLLOUT;
     ev.data.fd = _fd;
-    
-    if (_manager->safeEpollCtlClient(_epoll_fd, EPOLL_CTL_MOD, _fd, &ev) < 0)
-    {
-        LOG_SYSTEM_ERROR(ERROR, EPOLL_ERROR, "Failed to modify socket for write events", __FUNCTION__);
-        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, _epoll_fd, FATAL));
+
+    // 1. Envoi du header
+    if (!_headerDone) {
+        size_t toSend = _header.size() - _headerSent;
+        std::cout << "[WriteCallback] HEADER: trying to send " << toSend << " bytes (already sent " << _headerSent << "/" << _header.size() << ")" << std::endl;
+        std::cout << "[WriteCallback] SENDING on fd=" << _fd << std::endl;
+        written = send(_fd, _header.c_str() + _headerSent, toSend, MSG_NOSIGNAL);
+       if (written < 0) {
+            std::cerr << "[WriteCallback] ERROR: send() failed when sending header (errno=" << errno << " : " << strerror(errno) << ")" << std::endl;
         return;
+        }
+
+        std::cout << "[WriteCallback] HEADER: sent " << written << " bytes" << std::endl;
+        _headerSent += written;
+        if (_headerSent < _header.size()) {
+            std::cout << "[WriteCallback] HEADER: partial send, re-enqueueing" << std::endl;
+            _manager->getCallbackQueue().push(new WriteCallback(*this));
+            return;
+        }
+        _headerDone = true;
+        std::cout << "[WriteCallback] HEADER: all header sent, moving to chunked body" << std::endl;
     }
 
-    // Calculate remaining data to write
-    remaining = _data.length() - _bytesWritten;
-    
-    // Write the remaining data to the client
-    written = send(_fd, _data.c_str() + _bytesWritten, remaining, MSG_NOSIGNAL); // evite les SiGPIPE si le client ferme brutalement pendant l'ecriture.
+    // 2. Envoi du chunk courant (si chunkBuffer partiellement envoyé)
+    if (!_chunkBuffer.empty() && _chunkSent < _chunkBuffer.size()) {
+        size_t toSend = _chunkBuffer.size() - _chunkSent;
+        std::cout << "[WriteCallback] CHUNK: sending " << toSend << " bytes (already sent " << _chunkSent << "/" << _chunkBuffer.size() << ")" << std::endl;
+        written = send(_fd, _chunkBuffer.c_str() + _chunkSent, toSend, MSG_NOSIGNAL);
+        if (written < 0) {
+            std::cerr << "[WriteCallback] ERROR: send() failed when sending chunk" << std::endl;
+            return;
+        }
+        std::cout << "[WriteCallback] CHUNK: sent " << written << " bytes" << std::endl;
+        _chunkSent += written;
+        if (_chunkSent < _chunkBuffer.size()) {
+            std::cout << "[WriteCallback] CHUNK: partial send, re-enqueueing" << std::endl;
+            _manager->getCallbackQueue().push(new WriteCallback(*this));
+            return;
+        }
+        std::cout << "[WriteCallback] CHUNK: chunk fully sent" << std::endl;
+        _chunkBuffer.clear();
+        _chunkSent = 0;
+    }
 
-    
-    if (written < 0)
-    {
-        LOG_SYSTEM_ERROR(WARNING, SOCKET_ERROR, "Failed to write response to client", __FUNCTION__);
-        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, _epoll_fd, FATAL));
+    // 3. Générer un chunk à partir du body ou du fichier
+    if (!_fileDone) {
+        char buf[8192];
+        ssize_t nread = -1;
+        if (_file_fd != -1) {
+            nread = read(_file_fd, buf, sizeof(buf));
+            std::cout << "[WriteCallback] FILE: read " << nread << " bytes from file_fd=" << _file_fd << std::endl;
+        } else if (_bodyOffset < _body.size()) {
+            nread = std::min<size_t>(sizeof(buf), _body.size() - _bodyOffset);
+            memcpy(buf, _body.c_str() + _bodyOffset, nread);
+            _bodyOffset += nread;
+            std::cout << "[WriteCallback] BODY: prepared " << nread << " bytes from memory (offset now " << _bodyOffset << "/" << _body.size() << ")" << std::endl;
+            if (_bodyOffset >= _body.size()) _fileDone = true;
+        }
+        if (nread < 0) {
+            std::cerr << "[WriteCallback] ERROR: read() failed" << std::endl;
+            return;
+        }
+        if (nread == 0 || (_file_fd == -1 && _fileDone)) {
+            _fileDone = true;
+            if (!_finalChunkSent) {
+                std::cout << "[WriteCallback] CHUNK: sending final chunk 0" << std::endl;
+                _chunkBuffer = "0\r\n\r\n";
+                _chunkSent = 0;
+                _finalChunkSent = true;
+                _manager->getCallbackQueue().push(new WriteCallback(*this));
+                return;
+            }
+            std::cout << "[WriteCallback] ALL DONE: switching fd to EPOLLIN" << std::endl;
+            ev.events = EPOLLIN;
+            ev.data.fd = _fd;
+            _manager->safeEpollCtlClient(_epoll_fd, EPOLL_CTL_MOD, _fd, &ev);
+            if (_file_fd != -1) {
+                std::cout << "[WriteCallback] FILE: closing file_fd=" << _file_fd << std::endl;
+                close(_file_fd);
+            }
+            return;
+        }
+        // Générer le chunk : taille (hex) + \r\n + data + \r\n
+        std::ostringstream chunkoss;
+        chunkoss << std::hex << nread << "\r\n";
+        _chunkBuffer = chunkoss.str();
+        _chunkBuffer.append(buf, nread);
+        _chunkBuffer.append("\r\n");
+        std::cout << "[WriteCallback] CHUNK: generated chunk of size " << nread << " bytes (" << std::hex << nread << " hex)" << std::endl;
+        _chunkSent = 0;
+        _manager->getCallbackQueue().push(new WriteCallback(*this));
         return;
     }
-    
-    oss << "Wrote " << written << " bytes to client (fd=" << _fd << "), " 
-        << _bytesWritten << " bytes written previously";
-    LOG_ERROR(DEBUG, CALLBACK_ERROR, oss.str(), __FUNCTION__);
-    
-    // Check if we've written all the data
-    if (static_cast<size_t>(written) < remaining)
-    {
-        // Partial write - enqueue another WriteCallback to continue
-        size_t newBytesWritten;
-        
-        newBytesWritten = _bytesWritten + written;
-        oss.str("");
-        oss << "Partial write detected, enqueueing another WriteCallback. " 
-            << newBytesWritten << "/" << _data.length() << " bytes written";
-        LOG_ERROR(DEBUG, CALLBACK_ERROR, oss.str(), __FUNCTION__);
-        
-        _manager->getCallbackQueue().push(
-            new WriteCallback(_fd, _manager, _data, _epoll_fd, newBytesWritten));
-        
-        return;
-    }
-    
-    // All data written successfully
-    oss.str("");
-    oss << "Successfully wrote all " << (_bytesWritten + written) 
-        << " bytes to client (fd=" << _fd << ")";
-    LOG_ERROR(DEBUG, CALLBACK_ERROR, oss.str(), __FUNCTION__);
-    
-    // Reset the socket to be monitored for read events
-    ev.events = EPOLLIN;
-    ev.data.fd = _fd;
-    
-    if (_manager->safeEpollCtlClient(_epoll_fd, EPOLL_CTL_MOD, _fd, &ev) < 0)
-    {
-        LOG_SYSTEM_ERROR(ERROR, EPOLL_ERROR, "Failed to reset socket for read events", __FUNCTION__);
-        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, _epoll_fd, FATAL));
-        return;
-    }
+    std::cout << "[WriteCallback] EXIT: nothing left to send." << std::endl;
 }

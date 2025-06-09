@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 12:49:19 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/06 11:33:48 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/09 15:03:47 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,8 @@ public:
     void buildResponse();  // Point d'entrée principal
 
     const HttpResponse& getResponse() const;
+    void setChunkedHeaders();
+
 
 private:
     void handleGET();
