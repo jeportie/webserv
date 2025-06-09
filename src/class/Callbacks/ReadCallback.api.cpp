@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/05 12:20:08 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/09 11:39:26 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,8 @@ bool ReadCallback::readFromClient(int fd, ClientSocket* client)
 
     while (true)
     {
-        n = ::read(fd, tmp, sizeof(tmp));
+        n = ::recv(fd, tmp, sizeof(tmp), 0); // preferable a read() dans le contexte de lecture sur socket. 
+
         if (n > 0)
         {
             buf.append(tmp, n);

@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 12:56:33 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/05 11:59:55 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/09 11:38:00 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,8 @@ void WriteCallback::execute()
     remaining = _data.length() - _bytesWritten;
     
     // Write the remaining data to the client
-    written = write(_fd, _data.c_str() + _bytesWritten, remaining);
+    written = send(_fd, _data.c_str() + _bytesWritten, remaining, MSG_NOSIGNAL); // evite les SiGPIPE si le client ferme brutalement pendant l'ecriture.
+
     
     if (written < 0)
     {

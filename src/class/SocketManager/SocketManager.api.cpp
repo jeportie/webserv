@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/06 17:38:38 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/09 11:23:12 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -222,6 +222,11 @@ void SocketManager::instantiateConfig(const std::string& content)
 	IVSCMAP::iterator it;
 
     _serversByPort = ReadandParseConfigFile(content);
+    if (_serversByPort.empty())
+    {
+        throw std::runtime_error("Empty config");   
+    }
+        
 	for (it = _serversByPort.begin(); it != _serversByPort.end(); ++it)
 	{
 		inspecteurGadget.validate(it->second);        

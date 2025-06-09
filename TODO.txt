@@ -6,8 +6,6 @@ TO DO ( apres correction blanche) :
 
 - verififier la taille de la reponse et la chunk si necessaire 
 
-
-
 - verifier que le content lenght et coherent avec la size du body 
 
 
@@ -24,9 +22,9 @@ si il y a une location bloc /pouet alors le resolve target path doit prendre pro
  et y ajouter soit le root de la location soit le root de la config 
 
 
--remove tous les write et les read et les remplacer par send et recv
+-remove tous les write et les read et les remplacer par send et recv  //ok
 
--Server marche quand pas de config ? Strange, isn'it ?
+-Server marche quand pas de config ? Strange, isn'it ?  //OK
 
 
  
