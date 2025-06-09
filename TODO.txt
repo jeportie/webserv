@@ -1,15 +1,15 @@
 TO DO ( apres correction blanche) :
 
 
-- si on met un while dans cgi server bloquer reger mieux le kill du cgi et la boucle qui va avec 
+- si on met un while dans cgi server bloquer reger mieux le kill du cgi et la boucle qui va avec // A FAIRE 
 
 
-- verififier la taille de la reponse et la chunk si necessaire 
+- verififier la taille de la reponse et la chunk si necessaire //OK
 
-- verifier que le content lenght et coherent avec la size du body 
+- verifier que le content lenght et coherent avec la size du body // reauest 
 
 
-- bien tester les autoindex
+- bien tester les autoindex // A FAIRE 
 
 
 

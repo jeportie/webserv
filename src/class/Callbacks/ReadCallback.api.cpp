@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/09 15:31:52 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/09 18:04:09 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,8 +184,8 @@ HttpRequest ReadCallback::buildHttpRequest(ClientSocket* client)
     // fill body
     if (client->requestData.getBodyMode() == BODY_CONTENT_LENGTH)
     {
-        req.body = client->requestData.getBuffer().substr(0, client->requestData.getContentLength());
-        client->requestData.getBuffer().erase(0, client->requestData.getContentLength());
+        req.body = client->requestData.getBuffer();
+        client->requestData.getBuffer().erase(0, req.body.size());
     }
     else if (client->requestData.getBodyMode() == BODY_CHUNKED)
     {
