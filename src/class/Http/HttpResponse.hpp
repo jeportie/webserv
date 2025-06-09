@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 12:40:19 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/09 15:01:26 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/09 16:31:12 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include <string>
 #include <map>
+#include <strings.h>
 
 class HttpResponse
 {

@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:00:11 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/09 15:42:43 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/09 16:29:58 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -216,6 +216,7 @@ void HttpResponseBuilder::handlePOST()
 			{
 				
 				_response.setStatus(201, "Created");
+                setChunkedHeaders();
 				_response.setBody("File uploaded successfully.");
 			}
 			else
@@ -228,7 +229,7 @@ void HttpResponseBuilder::handlePOST()
 		{
 			// Pas de CGI : renvoyer le corps brut
 			_response.setStatus(200, "OK");
-			_response.setHeader("Content-Type", "text/plain");
+            setChunkedHeaders();
 			_response.setBody(_request.body);
 		}
 	}

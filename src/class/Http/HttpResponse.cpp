@@ -6,12 +6,9 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 12:52:12 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/09 15:01:51 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/09 16:31:09 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
-#include "HttpResponse.hpp"
-
 
 #include "HttpResponse.hpp"
 
@@ -67,13 +64,12 @@ static std::string trim(const std::string &s) {
     while (end > start && (s[end - 1] == ' ' || s[end - 1] == '\t' || s[end - 1] == '\r' || s[end - 1] == '\n')) --end;
     return s.substr(start, end - start);
 }
-
 void HttpResponse::parseCgiOutputAndSet(const std::string& cgi_output)
 {
     std::istringstream iss(cgi_output);
     std::string line;
 
-    // 1. Headers
+    // 1. Headers (mais on ignore certains headers)
     while (std::getline(iss, line)) {
         if (line.empty() || line == "\r" || line == "\n" || line == "\r\n") {
             // Ligne vide = fin des headers
@@ -83,6 +79,12 @@ void HttpResponse::parseCgiOutputAndSet(const std::string& cgi_output)
         if (sep != std::string::npos) {
             std::string key = trim(line.substr(0, sep));
             std::string val = trim(line.substr(sep + 1));
+
+            // Filtrage pour "tout chunked"
+            if (strcasecmp(key.c_str(), "Content-Length") == 0)
+                continue;
+            if (strcasecmp(key.c_str(), "Transfer-Encoding") == 0)
+                continue;
             setHeader(key, val);
         }
     }
@@ -98,10 +100,10 @@ void HttpResponse::parseCgiOutputAndSet(const std::string& cgi_output)
 
     setBody(body);
 
-    // Optionnel : sécurité, si le CGI n’a pas donné de Content-Type, on en met un
-    if (!hasHeader("Content-Type"))
-        setHeader("Content-Type", "text/html");
+    // Ajoute systématiquement chunked (toujours à la fin pour écraser un header existant)
+    setHeader("Transfer-Encoding", "chunked");
 }
+
 
 bool HttpResponse::hasHeader(const std::string& key) const
 {
