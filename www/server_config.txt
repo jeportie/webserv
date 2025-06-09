@@ -10,6 +10,7 @@ server {
     }
 
     location /upload/ {
+        root www/toto;
         allowed_methods POST GET DELETE;
         upload_enable on;
         upload_store uploads;
