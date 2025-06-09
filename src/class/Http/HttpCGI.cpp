@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpCGI.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/02 17:10:34 by anastruc          #+#    #+#             */
-/*   Updated: 2025/06/04 16:02:26 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/09 12:16:54 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,6 +109,7 @@ std::string HttpResponseBuilder::runCgiScript(HttpRequest &request, const std::s
 	ssize_t bytes_read;
 	int status;
 	std::string scriptPath = resolveTargetPath();
+	std::cout << "CGI USE : " << scriptPath << std::endl;
 	if (pipe(pipe_in) == -1 || pipe(pipe_out) == -1)
 	throw HttpException(500, "Internal server error : pipe() failed", _validator.getErrorPage(500));
 	pid = fork();

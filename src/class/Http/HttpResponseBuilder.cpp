@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:00:11 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/06 12:03:45 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/09 12:15:14 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,10 +111,8 @@ void HttpResponseBuilder::handleGET()
 	if (_validator.hasMatchedRoute())
 	{
 		const RouteConfig &route = _validator.getMatchedRoute();
-        std::cout << "ROUTE = " << route.path << std::endl;
          if (!route.returnCodes.empty())
         {
-            std::cout << "NOOOOON" << std::endl;
             executeReturnDirective(route);
             return ;
         }
@@ -278,11 +276,13 @@ std::string HttpResponseBuilder::resolveTargetPath()
     bool                     indexIsSet = false;
     std::string              defaultFile;
     std::string              uri = _request.path;
-
+    std::string              routepath;
+    
     if (_validator.hasMatchedRoute())
     {
         const RouteConfig& route = _validator.getMatchedRoute();
 		const ServerConfig& serverConf = _validator.getServerConfig();
+        routepath = route.path;
 		if (route.root.empty())
 		{
 			root = serverConf.root;
@@ -302,6 +302,14 @@ std::string HttpResponseBuilder::resolveTargetPath()
         defaultFile                    = "index.html";  // Fallback
     }
 
+        // Retirer la partie routepath de l'uri
+    if (!routepath.empty() && routepath != "/" && uri.find(routepath) == 0)
+    {
+        uri = uri.substr(routepath.length());
+        if (!uri.empty() && uri[0] == '/')
+            uri = uri.substr(1);
+    }
+    
     // Construction du chemin complet
     if (!root.empty() && root[root.size() - 1] != '/' && uri[0] != '/')
         root += "/";

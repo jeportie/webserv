@@ -19,7 +19,7 @@ si non faire un fallback sur le root du server config
  si il y a un bloc location correspondant il faut lenlever de l uri pour resolve le path .
 ex : si il y a get /pouet/prout/script.py
 si il y a une location bloc /pouet alors le resolve target path doit prendre prout/script.py
- et y ajouter soit le root de la location soit le root de la config 
+ et y ajouter soit le root de la location soit le root de la config  //OK
 
 
 -remove tous les write et les read et les remplacer par send et recv  //ok
