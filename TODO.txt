@@ -1,15 +1,19 @@
 TO DO ( apres correction blanche) :
 
+- bien tester les autoindex // A FAIRE UN BOUTON
+- bien tester les reauetes chunked // FAIRE UN BOUTON 
+- bien tester le file upload //FAIRE UN BOUTON 
+
+
 
 - si on met un while dans cgi server bloquer reger mieux le kill du cgi et la boucle qui va avec // A FAIRE 
 
 
 - verififier la taille de la reponse et la chunk si necessaire //OK
 
-- verifier que le content lenght et coherent avec la size du body // reauest 
+- verifier que le content lenght et coherent avec la size du body // ok
 
 
-- bien tester les autoindex // A FAIRE 
 
 
 

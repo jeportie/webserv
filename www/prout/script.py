@@ -3,3 +3,5 @@ print("Content-Type: text/html")
 print()
 print("<h1>Hello from CGI!</h1>")
 
+# while True:
+#     pass  # boucle infinie pour tester le timeout du serveur

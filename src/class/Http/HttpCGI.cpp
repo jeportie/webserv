@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/02 17:10:34 by anastruc          #+#    #+#             */
-/*   Updated: 2025/06/09 12:16:54 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/09 18:23:52 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,8 +91,14 @@ bool waitWithTimeout(pid_t pid, int timeout_secs, int &status)
         if (result == -1)
             return false; // erreur waitpid
         if (time(NULL) - start >= timeout_secs) {
-            kill(pid, SIGKILL);       // tue le process CGI
-            waitpid(pid, NULL, 0);    // évite un zombie
+			std::cout << "waitWithTimeout: timeout reached, killing pid=" << pid << std::endl;
+int kret = kill(pid, SIGKILL);
+std::cout << "kill returned: " << kret << " errno=" << errno << " (" << strerror(errno) << ")" << std::endl;
+int wret = waitpid(pid, NULL, 0);
+std::cout << "waitpid returned: " << wret << " errno=" << errno << " (" << strerror(errno) << ")" << std::endl;
+
+            // kill(pid, SIGKILL);       // tue le process CGI
+            // waitpid(pid, NULL, 0);    // évite un zombie
             return false;             // timeout
         }
         usleep(1000); // 1 ms pour ne pas boucler comme un porc
@@ -153,6 +159,8 @@ if (pipe_out[1] != STDOUT_FILENO) {
 				throw HttpException(500, "Internal server error : Write in children process failed", _validator.getErrorPage(500));
 		}
 		close(pipe_in[1]); // Très important, sinon CGI peut rester bloqué
+		status = 0;
+		bool ok = waitWithTimeout(pid, 5, status);
 		// Lecture de la sortie du CGI
 		std::string output;
 		while ((bytes_read = read(pipe_out[0], buffer, sizeof(buffer))) > 0)
@@ -160,8 +168,6 @@ if (pipe_out[1] != STDOUT_FILENO) {
 			output.append(buffer, bytes_read);
 		}
 		close(pipe_out[0]);
-		status = 0;
-        bool ok = waitWithTimeout(pid, 5, status);
         if (!ok)
             throw HttpException(504, "Gateway Timeout",  _validator.getErrorPage(504));
 		// Option : vérifier le code de retour, détecter erreurs du script...
