@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:00:11 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/09 16:29:58 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 12:55:12 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,17 +140,22 @@ void HttpResponseBuilder::handleGET()
 		}
 	}
 	std::string path = resolveTargetPath();
+    std::cout << "PATH =" << path << std::endl;
 	// Si le chemin est un répertoire sans index
 	if (isDirectory(path))
 	{
+        std::cout << "ON TOMBE ICI " << std::endl;
 		if (!_validator.hasMatchedRoute())
 		{
 			// Pas de route correspondante, refuse l'accès ou 404
 			throw HttpException(404, "Not Found", _validator.getErrorPage(404));
 		}
 		const RouteConfig &route = _validator.getMatchedRoute();
+        std::cout <<"ROUTE PATH = '" << route.path << "'"<< std::endl;
 		if (route.autoindex)
 		{
+                            std::cout << "JE TOMBE ICI LA ?" << std::endl;
+
 			std::string html = generateAutoIndexPage(path, _request.path);
 			_response.setStatus(200, "OK");
 			_response.setHeader("Content-Type", "text/html");
@@ -165,7 +170,11 @@ void HttpResponseBuilder::handleGET()
 	}
 	// Sinon, comportement standard
 	if (!fileExists(path))
+    {
+                    std::cout << "JE TOMBE ICI ?" << std::endl;
+
 		throw HttpException(404, "Not Found", _validator.getErrorPage(404));
+    }
 	// std::string content;
 	// if (!readFileContent(path, content))
 	// 	throw HttpException(500, "Internal Server Error",

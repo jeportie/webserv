@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/09 18:04:09 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 12:31:45 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,7 +131,6 @@ bool ReadCallback::parseClientBody(ClientSocket* client)
     BodyMode     mode = client->requestData.getBodyMode();
     if (mode == BODY_CONTENT_LENGTH)
     {
-
         size_t needed = client->requestData.getContentLength();
         if (needed > MAX_BODY_SIZE)
             throw HttpException(413, "Payload Too Large", "");

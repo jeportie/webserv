@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/09 16:53:04 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 12:32:15 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,7 @@ void ReadCallback::execute()
             return ;
         
         std::cout << client->requestData.getBuffer() << std::endl;
-        //pourquoi ce print ?
+        //debug
         
         if (client->requestData.getBuffer().empty())
             throw HttpException(400, "Bad Request: Empty request buffer", "");
