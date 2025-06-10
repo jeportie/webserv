@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/02 17:10:34 by anastruc          #+#    #+#             */
-/*   Updated: 2025/06/10 17:32:04 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 17:36:04 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,6 +156,7 @@ std::string HttpResponseBuilder::runCgiScript(HttpRequest &request,
 		ssize_t written;
 		if (request.method == HttpRequest::METHOD_POST && !request.body.empty())
 		{
+			// CHECK -1 & 0
 			written = write(pipe_in[1], request.body.c_str(),
 					request.body.size());
 			if (written != (ssize_t)request.body.size())
@@ -170,7 +171,9 @@ std::string HttpResponseBuilder::runCgiScript(HttpRequest &request,
 		std::string output;
 		while ((bytes_read = read(pipe_out[0], buffer, sizeof(buffer))) > 0)
 		{
+			// CHECK -1 et 0 ici
 			output.append(buffer, bytes_read);
+			
 		}
 		close(pipe_out[0]);
 		if (!ok)

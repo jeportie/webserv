@@ -43,4 +43,7 @@ fetch('/uploads/TESTWEBSERVFILEUPLOAD.txt').then(r=>r.text()).then(console.log)
 
 
 
-// revoir les logs epurer
+revoir les logs epurer
+
+
+voir CHECK 

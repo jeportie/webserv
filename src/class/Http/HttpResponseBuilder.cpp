@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:00:11 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/10 17:26:53 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 17:36:32 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -431,6 +431,7 @@ bool saveToFile(const std::string& filepath, const std::string& data) {
     if (!ofs)
         return false;
     ofs.write(data.data(), data.size());
+    //CHECK -1 et 0
     ofs.close();
     return true;
 }

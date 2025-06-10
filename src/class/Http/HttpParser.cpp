@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 18:17:24 by anastruc          #+#    #+#             */
-/*   Updated: 2025/06/10 17:26:50 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 17:35:25 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,21 +131,6 @@ SVSMAP HttpParser::parseHeaders(const std::string& hdr_block)
     }
     return (headers);
 }
-
-
-// // 4) readFixedBody
-// std::string HttpParser::readFixedBody(int sockfd, size_t length) {
-//   std::string body;
-//   body.reserve(length);
-//   char buf[1024];
-//   size_t total = 0;
-//   while (total < length) {
-//     ssize_t r = read(sockfd, buf, std::min(sizeof(buf), length - total));
-//     if (r <= 0 || r == 0) break; // client fermé ou erreur, ou r == 0 --> plus rien a lire (non
-//     bloquant) body.append(buf, r); total += r;
-//   }
-//   return body;
-// }
 
 
 // 4) splitTarget
