@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:00:11 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/10 12:55:12 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 17:08:33 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,8 +154,6 @@ void HttpResponseBuilder::handleGET()
         std::cout <<"ROUTE PATH = '" << route.path << "'"<< std::endl;
 		if (route.autoindex)
 		{
-                            std::cout << "JE TOMBE ICI LA ?" << std::endl;
-
 			std::string html = generateAutoIndexPage(path, _request.path);
 			_response.setStatus(200, "OK");
 			_response.setHeader("Content-Type", "text/html");
@@ -171,8 +169,6 @@ void HttpResponseBuilder::handleGET()
 	// Sinon, comportement standard
 	if (!fileExists(path))
     {
-                    std::cout << "JE TOMBE ICI ?" << std::endl;
-
 		throw HttpException(404, "Not Found", _validator.getErrorPage(404));
     }
 	// std::string content;
@@ -392,6 +388,8 @@ void HttpResponseBuilder::setConnection()
         if (!it->second.empty())
             connection = it->second[0];
 
+
+        std::cout <<  "CONNECTION = " <<   connection << std::endl;  
         if (connection == "keep-alive")
             _response.setHeader("Connection", "keep-alive");
         else

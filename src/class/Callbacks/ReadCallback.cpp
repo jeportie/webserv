@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/10 12:32:15 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 17:17:24 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,25 +103,7 @@ void ReadCallback::execute()
         std::cout << "Body envoyé dans WriteCallback : [" << resp.getBody() << "]" << std::endl;
         _manager->getCallbackQueue().push(
         new WriteCallback(_fd, _manager, headers, resp.getBody(), _epoll_fd));
-}
-
-         // Génère la réponse
-        // ResponseFormatter formatter(builder.getResponse());
-        // std::string finalResponse = formatter.format();
-        // std::cout << "finalreponse = " << finalResponse << std::endl;
-        //          // Enfile un WriteCallback avec la réponse
-                //  _manager->getCallbackQueue().push(new WriteCallback(_fd, _manager, finalResponse, _epoll_fd));
-
         cleanupRequest(client);
-        if (req.headers.count("Connection") && req.headers["Connection"][0] == "close")
-        {
-            oss << _fd;
-            LOG_ERROR(INFO, SOCKET_ERROR,
-                "Closing client connection (fd=" + oss.str() + ")",
-                "ReadCallback::execute");
-                _manager->getCallbackQueue().push(new CloseCallback(_fd, _manager, -1));
-                return ;  // plus de traitement sur cette socket
-        }
     }
     catch (const HttpException& he)
     {

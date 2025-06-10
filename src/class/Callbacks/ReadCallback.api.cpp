@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/10 12:31:45 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 16:54:45 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,7 @@ bool ReadCallback::readFromClient(int fd, ClientSocket* client)
             if (buf.empty())
             {
                 std::cout << "je suis empty" << std::endl;
+                _manager->getCallbackQueue().push(new CloseCallback(_fd, _manager, -1));
                 return false;
             }
             else

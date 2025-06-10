@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 12:56:33 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/10 16:26:31 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 17:16:21 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ void WriteCallback::execute() {
     // 1. Envoi du header
     if (!_headerDone) {
         size_t toSend = _header.size() - _headerSent;
-        // std::cout << "[WriteCallback] HEADER: trying to send " << toSend << " bytes (already sent " << _headerSent << "/" << _header.size() << ")" << std::endl;
+        std::cout << "[WriteCallback] HEADER: trying to send " <<  _header.c_str() + _headerSent << std::endl;
         std::cout << "[WriteCallback] SENDING on fd=" << _fd << std::endl;
         written = send(_fd, _header.c_str() + _headerSent, toSend, MSG_NOSIGNAL);
        if (written < 0) {
@@ -88,7 +88,7 @@ void WriteCallback::execute() {
 // 2. Envoi du chunk courant (si chunkBuffer partiellement ou totalement à envoyer)
 if (!_chunkBuffer.empty()) {
     size_t toSend = _chunkBuffer.size() - _chunkSent;
-    std::cout << "[WriteCallback] CHUNK: sending :" <<  _chunkBuffer.c_str() + _chunkSent << std::endl;
+    // std::cout << "[WriteCallback] CHUNK: sending :" <<  _chunkBuffer.c_str() + _chunkSent << std::endl;
     written = send(_fd, _chunkBuffer.c_str() + _chunkSent, toSend, MSG_NOSIGNAL);
     if (written < 0) {
         std::cerr << "[WriteCallback] ERROR: send() failed when sending chunk" << std::endl;
