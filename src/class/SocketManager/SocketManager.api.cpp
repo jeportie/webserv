@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/10 15:59:37 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 16:04:28 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,6 +199,7 @@ void SocketManager::cleanupClientSocket(int fd, int epoll_fd)
     it = _clientSockets.find(fd);
     if (it != _clientSockets.end())
     {
+        close(it->first);
         delete it->second;
         _clientSockets.erase(it);
     }

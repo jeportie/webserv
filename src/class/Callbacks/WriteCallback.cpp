@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 12:56:33 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/10 12:39:43 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 16:26:31 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,7 +113,7 @@ if (!_fileDone) {
     ssize_t nread = -1;
     if (_file_fd != -1) {
         nread = read(_file_fd, buf, sizeof(buf));
-        // std::cout << "[WriteCallback] FILE: read " << nread << " bytes from file_fd=" << _file_fd << std::endl;
+        std::cout << "[WriteCallback] FILE: read " << nread << " bytes from file_fd=" << _file_fd << std::endl;
     } else if (_bodyOffset < _body.size()) {
         nread = std::min<size_t>(sizeof(buf), _body.size() - _bodyOffset);
         memcpy(buf, _body.c_str() + _bodyOffset, nread);
@@ -139,7 +139,7 @@ if (!_fileDone) {
             _manager->getCallbackQueue().push(new WriteCallback(*this));
             return;
         }
-        // std::cout << "[WriteCallback] ALL DONE: switching fd to EPOLLIN" << std::endl;
+        std::cout << "[WriteCallback] ALL DONE: switching fd to EPOLLIN" << std::endl;
         ev.events = EPOLLIN;
         ev.data.fd = _fd;
         _manager->safeEpollCtlClient(_epoll_fd, EPOLL_CTL_MOD, _fd, &ev);
@@ -162,4 +162,12 @@ if (!_fileDone) {
     _manager->getCallbackQueue().push(new WriteCallback(*this));
     return;
 }
+      std::cout << "[WriteCallback] ALL DONE: switching fd to EPOLLIN" << std::endl;
+        ev.events = EPOLLIN;
+        ev.data.fd = _fd;
+        _manager->safeEpollCtlClient(_epoll_fd, EPOLL_CTL_MOD, _fd, &ev);
+        if (_file_fd != -1) {
+            std::cout << "[WriteCallback] FILE: closing file_fd=" << _file_fd << std::endl;
+            close(_file_fd);
+        }
 }
