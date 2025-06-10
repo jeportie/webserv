@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 11:49:58 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/10 15:56:46 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 16:32:07 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,6 @@ int main(int argc, char** argv)
     {
         errorHandler.logSystemError(CRITICAL, INTERNAL_ERROR, Crit);
         std::cerr << Crit << std::endl;
-        exit(EXIT_FAILURE);
     }
     closeServer(theSocketMaster);
     std::cout << "Server shutdown without errors" << std::endl;

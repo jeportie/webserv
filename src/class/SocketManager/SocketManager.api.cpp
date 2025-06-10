@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/10 16:04:28 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 16:37:29 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ void SocketManager::init_connect()
         if (!socket.safeBind(port, "0.0.0.0"))
         {
             oss << "Failed to bind on port " << port;
+            close(socket.getFd());
             THROW_ERROR(CRITICAL, SOCKET_ERROR, oss.str(), __FUNCTION__);
         }
 
