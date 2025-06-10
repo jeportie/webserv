@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   readFileToString.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jeportie <jeportie@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/02 17:37:03 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/02 17:40:45 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/10 15:57:00 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ std::string readFileToString(const std::string& filename)
     std::ifstream file(filename.c_str(), std::ios::in | std::ios::binary);
     std::stringstream ss;
 
+
     if (!file.is_open())
     {
         ss << "readFileToString: cannot open file:" << filename;
@@ -27,6 +28,7 @@ std::string readFileToString(const std::string& filename)
     }
 
     std::string content;
+    content = "";
     char        c;
 
     while (file.get(c))

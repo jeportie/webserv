@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/09 11:23:12 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 15:59:37 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ void SocketManager::init_connect()
     epoll_fd = epoll_create(1);
     if (epoll_fd < 0)
         THROW_SYSTEM_ERROR(CRITICAL, EPOLL_ERROR, "Failed to create epoll instance", __FUNCTION__);
-
+    _EpollFd = epoll_fd;
     for (it = _serversByPort.begin(); it != _serversByPort.end(); ++it)
     {
         port = it->first;

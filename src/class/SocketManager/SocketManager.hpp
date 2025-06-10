@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:23:58 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/06 17:33:59 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 15:58:29 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ public:
     CallbackQueue&   getCallbackQueue();
     int              getCheckIntervalMs(void);
     int              getClientSocketFd(void) const;
+    int              getEpollFd(void) const;
     IVSCMAP          getConfiguration(void) const { return _serversByPort; }
 
     int setNonBlockingListening(int fd);
@@ -66,6 +67,7 @@ private:
     int           _clientSocketFd;    ///< Client socket file descriptor (most recent)
     CallbackQueue _callbackQueue;     ///< Simple callback queue
     IVSCMAP       _serversByPort;
+    int           _EpollFd;
 };
 
 #endif  // ************************************************ SOCKETMANAGER_HPP //

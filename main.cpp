@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 11:49:58 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/06 17:34:20 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 15:56:46 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,8 @@ int main(int argc, char** argv)
 {
     std::string   content;
     SocketManager theSocketMaster;
+
+    content = "";
 
     signal(SIGINT, handle_signal);
     if (argc < 2)

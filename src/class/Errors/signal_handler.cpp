@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 17:27:10 by anastruc          #+#    #+#             */
-/*   Updated: 2025/06/06 17:40:33 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 15:57:51 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,10 @@ void closeServer(SocketManager &sm)
     {
         delete queue.front();
         queue.pop();
+    }
+    if (sm.getEpollFd() != -1)
+    {
+        close(sm.getEpollFd());
     }
 }
 

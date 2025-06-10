@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 23:35:12 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/06 17:38:25 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 15:59:58 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@
 
 // Constrctor & Destructor
 SocketManager::SocketManager(void)
-: _clientSocketFd(-1)
+: _clientSocketFd(-1), _EpollFd(-1)
 {
     LOG_ERROR(DEBUG, SOCKET_ERROR, LOG_SM_CONST, __FUNCTION__);
 }
@@ -70,6 +70,9 @@ ListeningSocket* SocketManager::getListeningSocket(int fd)
 CallbackQueue& SocketManager::getCallbackQueue() { return _callbackQueue; }
 
 int SocketManager::getClientSocketFd(void) const { return (_clientSocketFd); }
+
+int SocketManager::getEpollFd(void) const { return (_EpollFd); }
+
 
 // IVSCMAP SocketManager::getConfiguration(void) const is now inline in the header
 
