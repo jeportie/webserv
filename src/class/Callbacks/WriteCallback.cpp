@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 12:56:33 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/10 17:16:21 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 17:31:12 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "WriteCallback.hpp"
 #include "ErrorCallback.hpp"
 #include "ReadCallback.hpp"
+#include "CloseCallback.hpp"
 
 #include <unistd.h>
 #include <sys/epoll.h>
@@ -71,7 +72,8 @@ void WriteCallback::execute() {
         std::cout << "[WriteCallback] SENDING on fd=" << _fd << std::endl;
         written = send(_fd, _header.c_str() + _headerSent, toSend, MSG_NOSIGNAL);
        if (written < 0) {
-            std::cerr << "[WriteCallback] ERROR: send() failed when sending header (errno=" << errno << " : " << strerror(errno) << ")" << std::endl;
+            std::cerr << "[WriteCallback] ERROR: send() failed " << std::endl;
+            _manager->getCallbackQueue().push(new CloseCallback(_fd, _manager, -1));
         return;
         }
 
@@ -92,6 +94,7 @@ if (!_chunkBuffer.empty()) {
     written = send(_fd, _chunkBuffer.c_str() + _chunkSent, toSend, MSG_NOSIGNAL);
     if (written < 0) {
         std::cerr << "[WriteCallback] ERROR: send() failed when sending chunk" << std::endl;
+         _manager->getCallbackQueue().push(new CloseCallback(_fd, _manager, -1));
         return;
     }
     // std::cout << "[WriteCallback] CHUNK: sent " << written << " bytes" << std::endl;

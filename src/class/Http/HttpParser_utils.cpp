@@ -3,15 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   HttpParser_utils.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 11:45:44 by anastruc          #+#    #+#             */
-/*   Updated: 2025/06/02 18:02:06 by jeportie         ###   ########.fr       */
+/*   Updated: 2025/06/10 17:26:47 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <cctype>   // isspace, isdigit
-#include <cerrno>   // errno
 #include <cstring>  // strerror
 #include <cstdlib>  // pour strtol
 

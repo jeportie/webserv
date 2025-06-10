@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 12:32:17 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/03 17:46:46 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 17:28:33 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 
 #include <cmath>
 #include <cstdio>
-#include <cerrno>
 #include <cstring>
 #include <fcntl.h>
 #include <unistd.h>

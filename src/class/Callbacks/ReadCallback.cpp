@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/10 17:17:24 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 17:30:34 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,6 +103,10 @@ void ReadCallback::execute()
         std::cout << "Body envoyé dans WriteCallback : [" << resp.getBody() << "]" << std::endl;
         _manager->getCallbackQueue().push(
         new WriteCallback(_fd, _manager, headers, resp.getBody(), _epoll_fd));
+}
+
+       
+
         cleanupRequest(client);
     }
     catch (const HttpException& he)

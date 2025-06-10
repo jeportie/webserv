@@ -6,12 +6,11 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 14:51:58 by anastruc          #+#    #+#             */
-/*   Updated: 2025/06/03 17:05:59 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 17:27:44 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <sys/epoll.h>
-#include <cerrno>
 
 #include "ListeningSocket.hpp"
 #include "Socket.hpp"

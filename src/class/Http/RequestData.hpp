@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RequestData.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 16:22:15 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/04 11:29:37 by fsalomon         ###   ########.fr       */
+/*   Updated: 2025/06/10 17:26:55 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <string>
-#include <cerrno>
 #include <cstring>
 #include <cstdlib>
 

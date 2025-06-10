@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 13:07:23 by jeportie          #+#    #+#             */
-/*   Updated: 2025/06/10 16:54:45 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 17:25:18 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 #include <unistd.h>
 #include <cstdlib>
 #include <sys/epoll.h>
-#include <cerrno>
 #include <vector>
 #include <cstring>
 #include <iostream>

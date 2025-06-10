@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/02 17:10:34 by anastruc          #+#    #+#             */
-/*   Updated: 2025/06/09 18:23:52 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 17:32:04 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,9 @@
 #include "RequestValidator.hpp"
 #include "ResponseFormatter.hpp"
 #include "StatusUtils.hpp"
-#include <cerrno>
 #include <cstring>
 #include <fcntl.h>
+#include <iostream>
 #include <map>
 #include <sstream>
 #include <stdexcept>
@@ -28,7 +28,6 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <vector>
-#include <iostream>
 
 std::vector<std::string> buildCgiEnv(const HttpRequest &request,
 	const std::string &scriptPath)
@@ -50,8 +49,7 @@ std::vector<std::string> buildCgiEnv(const HttpRequest &request,
 	if (request.raw_query.length())
 		env.push_back("QUERY_STRING=" + request.raw_query);
 	// Ajout de tous les headers sous la forme HTTP_NAME=VAL, en bouclant sur la
-	for (std::map<std::string,
-		std::vector<std::string> >::const_iterator it = request.headers.begin(); it != request.headers.end(); ++it)
+	for (std::map<std::string, std::vector<std::string> >::const_iterator it = request.headers.begin(); it != request.headers.end(); ++it)
 	{
 		std::string key = it->first;
 		std::string val;
@@ -81,31 +79,31 @@ char	**vectorToEnv(const std::vector<std::string> &env)
 	envp[env.size()] = NULL;
 	return (envp);
 }
-bool waitWithTimeout(pid_t pid, int timeout_secs, int &status)
+bool	waitWithTimeout(pid_t pid, int timeout_secs, int &status)
 {
-    time_t start = time(NULL);
-    while (true) {
-        pid_t result = waitpid(pid, &status, WNOHANG);
-        if (result == pid)
-            return true; // process terminé
-        if (result == -1)
-            return false; // erreur waitpid
-        if (time(NULL) - start >= timeout_secs) {
-			std::cout << "waitWithTimeout: timeout reached, killing pid=" << pid << std::endl;
-int kret = kill(pid, SIGKILL);
-std::cout << "kill returned: " << kret << " errno=" << errno << " (" << strerror(errno) << ")" << std::endl;
-int wret = waitpid(pid, NULL, 0);
-std::cout << "waitpid returned: " << wret << " errno=" << errno << " (" << strerror(errno) << ")" << std::endl;
+	time_t	start;
+	pid_t	result;
 
-            // kill(pid, SIGKILL);       // tue le process CGI
-            // waitpid(pid, NULL, 0);    // évite un zombie
-            return false;             // timeout
-        }
-        usleep(1000); // 1 ms pour ne pas boucler comme un porc
-    }
+	start = time(NULL);
+	while (true)
+	{
+		result = waitpid(pid, &status, WNOHANG);
+		if (result == pid)
+			return (true); // process terminé
+		if (result == -1)
+			return (false); // erreur waitpid
+		if (time(NULL) - start >= timeout_secs)
+		{
+			kill(pid, SIGKILL);       // tue le process CGI
+			waitpid(pid, NULL, 0);    // évite un zombie
+			return (false); // timeout
+		}
+		usleep(1000); // 1 ms pour ne pas boucler comme un porc
+	}
 }
 
-std::string HttpResponseBuilder::runCgiScript(HttpRequest &request, const std::string &interpreterPath, RequestValidator &_validator)
+std::string HttpResponseBuilder::runCgiScript(HttpRequest &request,
+	const std::string &interpreterPath, RequestValidator &_validator)
 {
 	int pipe_in[2], pipe_out[2];
 	pid_t pid;
@@ -117,10 +115,12 @@ std::string HttpResponseBuilder::runCgiScript(HttpRequest &request, const std::s
 	std::string scriptPath = resolveTargetPath();
 	std::cout << "CGI USE : " << scriptPath << std::endl;
 	if (pipe(pipe_in) == -1 || pipe(pipe_out) == -1)
-	throw HttpException(500, "Internal server error : pipe() failed", _validator.getErrorPage(500));
+		throw HttpException(500, "Internal server error : pipe() failed",
+			_validator.getErrorPage(500));
 	pid = fork();
 	if (pid < 0)
-	throw HttpException(500, "Internal server error : fork() failed", _validator.getErrorPage(500));
+		throw HttpException(500, "Internal server error : fork() failed",
+			_validator.getErrorPage(500));
 	else if (pid == 0)
 	{ // Child process
 		// Préparation de l'environnement
@@ -128,22 +128,25 @@ std::string HttpResponseBuilder::runCgiScript(HttpRequest &request, const std::s
 		envp = vectorToEnv(env);
 		// Redirection stdin et stdout
 		close(pipe_in[1]);
-close(pipe_out[0]);
-if (pipe_in[0] != STDIN_FILENO) {
-    dup2(pipe_in[0], STDIN_FILENO);
-    close(pipe_in[0]);
-}
-if (pipe_out[1] != STDOUT_FILENO) {
-    dup2(pipe_out[1], STDOUT_FILENO);
-    close(pipe_out[1]);
-}
+		close(pipe_out[0]);
+		if (pipe_in[0] != STDIN_FILENO)
+		{
+			dup2(pipe_in[0], STDIN_FILENO);
+			close(pipe_in[0]);
+		}
+		if (pipe_out[1] != STDOUT_FILENO)
+		{
+			dup2(pipe_out[1], STDOUT_FILENO);
+			close(pipe_out[1]);
+		}
 		// Prépare les arguments pour execve
 		argv[0] = strdup(interpreterPath.c_str());
-		argv[1] = strdup(scriptPath.c_str());//findscript
+		argv[1] = strdup(scriptPath.c_str()); // findscript
 		argv[2] = NULL;
 		execve(interpreterPath.c_str(), argv, envp);
 		// Si exec échoue :
-		throw HttpException(500, "Internal server error : execve()", _validator.getErrorPage(500));
+		throw HttpException(500, "Internal server error : execve()",
+			_validator.getErrorPage(500));
 	}
 	else
 	{ // Parent process
@@ -156,7 +159,9 @@ if (pipe_out[1] != STDOUT_FILENO) {
 			written = write(pipe_in[1], request.body.c_str(),
 					request.body.size());
 			if (written != (ssize_t)request.body.size())
-				throw HttpException(500, "Internal server error : Write in children process failed", _validator.getErrorPage(500));
+				throw HttpException(500,
+					"Internal server error : Write in children process failed",
+					_validator.getErrorPage(500));
 		}
 		close(pipe_in[1]); // Très important, sinon CGI peut rester bloqué
 		status = 0;
@@ -168,8 +173,9 @@ if (pipe_out[1] != STDOUT_FILENO) {
 			output.append(buffer, bytes_read);
 		}
 		close(pipe_out[0]);
-        if (!ok)
-            throw HttpException(504, "Gateway Timeout",  _validator.getErrorPage(504));
+		if (!ok)
+			throw HttpException(504, "Gateway Timeout",
+				_validator.getErrorPage(504));
 		// Option : vérifier le code de retour, détecter erreurs du script...
 		return (output);
 	}

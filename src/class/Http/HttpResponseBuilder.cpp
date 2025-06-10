@@ -6,7 +6,7 @@
 /*   By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 13:00:11 by fsalomon          #+#    #+#             */
-/*   Updated: 2025/06/10 17:08:33 by anastruc         ###   ########.fr       */
+/*   Updated: 2025/06/10 17:26:53 by anastruc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@
 #include "RequestValidator.hpp"
 #include "ResponseFormatter.hpp"
 #include "StatusUtils.hpp"
-#include <cerrno>
 #include <cstring>
 #include <fcntl.h>
 #include <map>
