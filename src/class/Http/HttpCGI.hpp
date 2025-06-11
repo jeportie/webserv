@@ -16,13 +16,11 @@
 #include "HttpException.hpp"
 #include "HttpRequest.hpp"
 
-std::vector<std::string> buildCgiEnv(const HttpRequest &request,
-	const std::string &scriptPath);
+std::vector<std::string> buildCgiEnv(const HttpRequest& request, const std::string& scriptPath);
 
-char	**vectorToEnv(const std::vector<std::string> &env);
+char** vectorToEnv(const std::vector<std::string>& env);
 
-bool waitWithTimeout(pid_t pid, int timeout_secs, int &status);
+bool waitWithTimeout(pid_t pid, int timeout_secs, int& status);
 
 
 #endif
-

@@ -29,6 +29,7 @@ public:
     virtual ~WriteCallback();
 
     virtual void execute();
+    void finalizeConnection();
 
 private:
 

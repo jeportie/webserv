@@ -58,6 +58,8 @@ WriteCallback::~WriteCallback()
 {
     LOG_ERROR(DEBUG, CALLBACK_ERROR, "WriteCallback Destructor called.", __FUNCTION__);
 }
+
+
 void WriteCallback::execute() {
     ssize_t written;
     struct epoll_event ev;
@@ -68,109 +70,95 @@ void WriteCallback::execute() {
     // 1. Envoi du header
     if (!_headerDone) {
         size_t toSend = _header.size() - _headerSent;
-        std::cout << "[WriteCallback] HEADER: trying to send " <<  _header.c_str() + _headerSent << std::endl;
-        std::cout << "[WriteCallback] SENDING on fd=" << _fd << std::endl;
         written = send(_fd, _header.c_str() + _headerSent, toSend, MSG_NOSIGNAL);
-       if (written < 0) {
-            std::cerr << "[WriteCallback] ERROR: send() failed " << std::endl;
+        if (written < 0) { // GESTION ERROR
             _manager->getCallbackQueue().push(new CloseCallback(_fd, _manager, -1));
-        return;
+            return;
         }
-
-        // std::cout << "[WriteCallback] HEADER: sent " << written << " bytes" << std::endl;
         _headerSent += written;
         if (_headerSent < _header.size()) {
-            // std::cout << "[WriteCallback] HEADER: partial send, re-enqueueing" << std::endl;
             _manager->getCallbackQueue().push(new WriteCallback(*this));
             return;
         }
         _headerDone = true;
-        // std::cout << "[WriteCallback] HEADER: all header sent, moving to chunked body" << std::endl;
-    }
-// 2. Envoi du chunk courant (si chunkBuffer partiellement ou totalement à envoyer)
-if (!_chunkBuffer.empty()) {
-    size_t toSend = _chunkBuffer.size() - _chunkSent;
-    // std::cout << "[WriteCallback] CHUNK: sending :" <<  _chunkBuffer.c_str() + _chunkSent << std::endl;
-    written = send(_fd, _chunkBuffer.c_str() + _chunkSent, toSend, MSG_NOSIGNAL);
-    if (written < 0) {
-        std::cerr << "[WriteCallback] ERROR: send() failed when sending chunk" << std::endl;
-         _manager->getCallbackQueue().push(new CloseCallback(_fd, _manager, -1));
-        return;
-    }
-    // std::cout << "[WriteCallback] CHUNK: sent " << written << " bytes" << std::endl;
-    _chunkSent += written;
-    if (_chunkSent < _chunkBuffer.size()) {
-        // std::cout << "[WriteCallback] CHUNK: partial send, re-enqueueing" << std::endl;
-        _manager->getCallbackQueue().push(new WriteCallback(*this));
-        return;
-    }
-    // std::cout << "[WriteCallback] CHUNK: chunk fully sent" << std::endl;
-    _chunkBuffer.clear();
-    _chunkSent = 0;
-    // NE PAS RETURN ICI : continuer pour générer un autre chunk si nécessaire !
-}
-
-// 3. Générer un chunk à partir du body ou du fichier
-if (!_fileDone) {
-    char buf[8192];
-    ssize_t nread = -1;
-    if (_file_fd != -1) {
-        nread = read(_file_fd, buf, sizeof(buf));
-        std::cout << "[WriteCallback] FILE: read " << nread << " bytes from file_fd=" << _file_fd << std::endl;
-    } else if (_bodyOffset < _body.size()) {
-        nread = std::min<size_t>(sizeof(buf), _body.size() - _bodyOffset);
-        memcpy(buf, _body.c_str() + _bodyOffset, nread);
-        _bodyOffset += nread;
-        // std::cout << "[WriteCallback] BODY: prepared " << nread << " bytes from memory (offset now " << _bodyOffset << "/" << _body.size() << ")" << std::endl;
-    } else if (_file_fd == -1 && _bodyOffset >= _body.size() && !_fileDone) {
-        // Body vidé mais chunk pas encore envoyé -> rien à lire
-        nread = 0;
     }
 
-    if (nread < 0) {
-        std::cerr << "[WriteCallback] ERROR: read() failed" << std::endl;
-        return;
-    }
-    if (nread == 0) {
-        _fileDone = true;
-        if (!_finalChunkSent) {
-            // std::cout << "[WriteCallback] CHUNK: sending final chunk 0" << std::endl;
-            _chunkBuffer = "0\r\n\r\n";
-            _chunkSent = 0;
-            _finalChunkSent = true;
-            // On queue l’envoi du chunk de fin
+    // 2. Envoi du chunk courant (si chunkBuffer à envoyer)
+    if (!_chunkBuffer.empty()) {
+        size_t toSend = _chunkBuffer.size() - _chunkSent;
+        written = send(_fd, _chunkBuffer.c_str() + _chunkSent, toSend, MSG_NOSIGNAL);
+        if (written < 0) {
+            //GETIO ERROR
+            _manager->getCallbackQueue().push(new CloseCallback(_fd, _manager, -1));
+            return;
+        }
+        _chunkSent += written;
+        if (_chunkSent < _chunkBuffer.size()) {
             _manager->getCallbackQueue().push(new WriteCallback(*this));
             return;
         }
-        std::cout << "[WriteCallback] ALL DONE: switching fd to EPOLLIN" << std::endl;
-        ev.events = EPOLLIN;
-        ev.data.fd = _fd;
-        _manager->safeEpollCtlClient(_epoll_fd, EPOLL_CTL_MOD, _fd, &ev);
-        if (_file_fd != -1) {
-            std::cout << "[WriteCallback] FILE: closing file_fd=" << _file_fd << std::endl;
-            close(_file_fd);
+        _chunkBuffer.clear();
+        _chunkSent = 0;
+
+        if (_finalChunkSent) {
+            finalizeConnection();
+            return;
         }
-        return;
+        // NE PAS RETURN : continuer pour générer un nouveau chunk si besoin
     }
 
-    // Générer le chunk : taille (hex) + \r\n + data + \r\n
-    std::ostringstream chunkoss;
-    chunkoss << std::hex << nread << "\r\n";
-    _chunkBuffer = chunkoss.str();
-    _chunkBuffer.append(buf, nread);
-    _chunkBuffer.append("\r\n");
-    // std::cout << "[WriteCallback] CHUNK: generated chunk of size " << nread << " bytes (" << std::hex << nread << " hex)" << std::endl;
-    _chunkSent = 0;
-    // Après génération du chunk, on requeue pour l'envoyer (passera dans le bloc au début)
-    _manager->getCallbackQueue().push(new WriteCallback(*this));
-    return;
-}
-      std::cout << "[WriteCallback] ALL DONE: switching fd to EPOLLIN" << std::endl;
-        ev.events = EPOLLIN;
-        ev.data.fd = _fd;
-        _manager->safeEpollCtlClient(_epoll_fd, EPOLL_CTL_MOD, _fd, &ev);
+    // 3. Générer un chunk à partir du body ou du fichier
+    if (!_fileDone) {
+        char buf[8192];
+        ssize_t nread = -1;
         if (_file_fd != -1) {
-            std::cout << "[WriteCallback] FILE: closing file_fd=" << _file_fd << std::endl;
-            close(_file_fd);
+            nread = read(_file_fd, buf, sizeof(buf));
+        } else if (_bodyOffset < _body.size()) {
+            nread = std::min<size_t>(sizeof(buf), _body.size() - _bodyOffset);
+            memcpy(buf, _body.c_str() + _bodyOffset, nread);
+            _bodyOffset += nread;
+        } else if (_file_fd == -1 && _bodyOffset >= _body.size() && !_fileDone) {
+            nread = 0;
         }
+
+        if (nread < 0) {
+            // read() a échoué, on abandonne la connexion// GESTION ERROR
+            return;
+        }
+        if (nread == 0) {
+            _fileDone = true;
+            if (!_finalChunkSent) {
+                // On prépare le chunk final (0\r\n\r\n)
+                _chunkBuffer = "0\r\n\r\n";
+                _chunkSent = 0;
+                _finalChunkSent = true;
+                _manager->getCallbackQueue().push(new WriteCallback(*this));
+                return;
+            }
+            return;
+        }
+
+        // Génère un chunk : taille (hex) + \r\n + data + \r\n
+        std::ostringstream chunkoss;
+        chunkoss << std::hex << nread << "\r\n";
+        _chunkBuffer = chunkoss.str();
+        _chunkBuffer.append(buf, nread);
+        _chunkBuffer.append("\r\n");
+        _chunkSent = 0;
+        _manager->getCallbackQueue().push(new WriteCallback(*this));
+        return;
+    }
+}
+
+// Nouvelle méthode privée : finalisation de la connexion après le dernier chunk envoyé
+void WriteCallback::finalizeConnection() {
+    std::cout << "[WriteCallback] ALL DONE: switching fd to EPOLLIN" << std::endl;
+    struct epoll_event ev;
+    ev.events = EPOLLIN;
+    ev.data.fd = _fd;
+    _manager->safeEpollCtlClient(_epoll_fd, EPOLL_CTL_MOD, _fd, &ev);
+    if (_file_fd != -1) {
+        std::cout << "[WriteCallback] FILE: closing file_fd=" << _file_fd << std::endl;
+        close(_file_fd);
+    }
 }

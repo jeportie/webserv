@@ -25,6 +25,7 @@ class RequestValidator
 public:
     RequestValidator(const HttpRequest &req, const ServerConfig &serverConfig);
     ~RequestValidator();
+    
 
     void validate(); // throw HttpException si erreur
 

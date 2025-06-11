@@ -54,6 +54,8 @@ void closeServer(SocketManager &sm)
     {
         close(sm.getEpollFd());
     }
+
+    //traverser la waiting iste et fermer les file fd qui ne snt pas a -1; et supprimer lesobjet de la waiting
 }
 
 

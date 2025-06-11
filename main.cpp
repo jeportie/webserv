@@ -34,10 +34,8 @@ volatile sig_atomic_t g_stop = 0;
 int main(int argc, char** argv)
 
 {
-    std::string   content;
+    std::string   content = "";
     SocketManager theSocketMaster;
-
-    content = "";
 
     signal(SIGINT, handle_signal);
     if (argc < 2)

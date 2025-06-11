@@ -94,21 +94,27 @@ void ReadCallback::execute()
         const HttpResponse& resp = builder.getResponse();
         ResponseFormatter formatter(resp);
         std::string headers = formatter.formatHeadersOnly(resp);
+
+        struct epoll_event ev;
+        ev.events = EPOLLOUT;
+        ev.data.fd = _fd;
+        _manager->safeEpollCtlClient(_epoll_fd, EPOLL_CTL_MOD, _fd, &ev);
+
+        // au lieu de push le new writecallback initialiser a la reponse quon veut on va le push sur une waiting list ;
         if (!resp.getFileToStream().empty()) {
             int file_fd = open(resp.getFileToStream().c_str(), O_RDONLY);
-        if (file_fd < 0) { /* gestion erreur */ }
-            _manager->getCallbackQueue().push(
+        if (file_fd < 0) { 
+            throw HttpException(500, "Internal Server Error: open() failed", validator.getErrorPage(500));
+         }
+        _manager->getWaitingList()[_fd].push(
         new WriteCallback(_fd, _manager, headers, file_fd, _epoll_fd));
         } else {
-        std::cout << "Body envoyé dans WriteCallback : [" << resp.getBody() << "]" << std::endl;
-        _manager->getCallbackQueue().push(
+        _manager->getWaitingList()[_fd].push(
         new WriteCallback(_fd, _manager, headers, resp.getBody(), _epoll_fd));
-}
-
-       
-
-        cleanupRequest(client);
     }
+    
+    cleanupRequest(client);
+}
     catch (const HttpException& he)
     {
         if (he.customPage().empty())
@@ -121,7 +127,7 @@ void ReadCallback::execute()
         }
 		// retire de epoll, delete ClientSocket, close(fd)
         _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1, SOFT));
-
+        
         return ;  // on arrête là pour ce fd
     }
     catch (const std::exception& e)
@@ -136,6 +142,15 @@ void ReadCallback::execute()
     }
 }
 
-/* TODO:
-mettre le sendErrorResponde des requete Http en cas de soucis dans la requete dans le Error pour suivre la meme logique consistant a mettre un evenement dans la queu et de la traiter apres.
-*/
+
+
+// if (!resp.getFileToStream().empty()) {
+//     int file_fd = open(resp.getFileToStream().c_str(), O_RDONLY);
+// if (file_fd < 0) { /* gestion erreur */ }
+//     _manager->getCallbackQueue().push(
+// new WriteCallback(_fd, _manager, headers, file_fd, _epoll_fd));
+// } else {
+// std::cout << "Body envoyé dans WriteCallback : [" << resp.getBody() << "]" << std::endl;
+// _manager->getCallbackQueue().push(
+// new WriteCallback(_fd, _manager, headers, resp.getBody(), _epoll_fd));
+//}

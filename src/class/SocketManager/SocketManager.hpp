@@ -24,6 +24,7 @@
 #include "../Sockets/ListeningSocket.hpp"
 #include "../Callbacks/CallbackQueue.hpp"
 #include "../../../include/webserv.hpp"
+#include "../Http/RequestValidator.hpp"
 
 class Callback;
 
@@ -44,16 +45,18 @@ public:
     int     safeEpollCtlClient(int epoll_fd, int op, int fd, struct epoll_event* event);
     void    safeRegisterToEpoll(int epoll_fd, int listeningFd);
     IVSCMAP ReadandParseConfigFile(const std::string& content);
-    ICMAP& getClientMapNonConst(void);
+    ICMAP&  getClientMapNonConst(void);
+
 
     ListeningSocket* getListeningSocket(int fd);
     LSVECTOR&        getVectorListeningSocket();
     CallbackQueue&   getCallbackQueue();
+    std::map<int, CallbackQueue>&   getWaitingList();
+
     int              getCheckIntervalMs(void);
     int              getClientSocketFd(void) const;
     int              getEpollFd(void) const;
     IVSCMAP          getConfiguration(void) const { return _serversByPort; }
-
     int setNonBlockingListening(int fd);
 
     const ICMAP& getClientMap(void) const;
@@ -62,12 +65,13 @@ private:
     SocketManager(const SocketManager& src);
     SocketManager& operator=(const SocketManager& rhs);
 
-    ICMAP         _clientSockets;     ///< Map of client sockets by file descriptor
-    LSVECTOR      _listeningSockets;  ///< The listening socket
-    int           _clientSocketFd;    ///< Client socket file descriptor (most recent)
-    CallbackQueue _callbackQueue;     ///< Simple callback queue
-    IVSCMAP       _serversByPort;
-    int           _EpollFd;
+    ICMAP            _clientSockets;     ///< Map of client sockets by file descriptor
+    LSVECTOR         _listeningSockets;  ///< The listening socket
+    int              _clientSocketFd;    ///< Client socket file descriptor (most recent)
+    CallbackQueue    _callbackQueue;     ///< Simple callback queue
+    std::map<int, CallbackQueue> _waitinglist;
+    IVSCMAP          _serversByPort;
+    int              _EpollFd;
 };
 
 #endif  // ************************************************ SOCKETMANAGER_HPP //

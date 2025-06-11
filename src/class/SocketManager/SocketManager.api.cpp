@@ -20,6 +20,7 @@
 
 #include "SocketManager.hpp"
 #include "../Callbacks/AcceptCallback.hpp"
+#include "../Callbacks/WriteCallback.hpp"
 #include "../Callbacks/ErrorCallback.hpp"
 #include "../Callbacks/CloseCallback.hpp"
 #include "../Callbacks/ReadCallback.hpp"
@@ -78,12 +79,10 @@ void SocketManager::eventLoop(int epoll_fd)
 {
     EVENT_LIST	events;
     int         checkIntervalMs;
-    bool		running;
     int         n;
 
     events = EVENT_LIST(MAXEVENTS);
     checkIntervalMs = getCheckIntervalMs();
-    running = true;
 
     while (!g_stop)
     {
@@ -137,11 +136,11 @@ void SocketManager::enqueueReadyCallbacks(int n, EVENT_LIST& events, int epoll_f
         {
             _callbackQueue.push(new ReadCallback(fd, this, epoll_fd));
         }
-        else if ((ev & EPOLLOUT))
+        else if ((ev & EPOLLOUT && !_waitinglist[fd].getQueue().empty()))
         {
-            // Socket is ready for writing - this is handled by WriteCallback
-            // We don't need to do anything here as the WriteCallback is already in the queue
-            // from the ReadCallback that processed the request
+            Callback *topush = _waitinglist[fd].getQueue().front();
+            _callbackQueue.push(topush);
+            _waitinglist[fd].getQueue().pop();
         }
         else if (ev & (EPOLLERR))
         {

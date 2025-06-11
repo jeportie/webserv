@@ -426,13 +426,21 @@ std::string makeUniqueFilepath(const std::string& dir, const std::string& filena
     return filepath;
 }
 
+#include <fstream>
+#include <string>
+
 bool saveToFile(const std::string& filepath, const std::string& data) {
     std::ofstream ofs(filepath.c_str(), std::ios::binary);
-    if (!ofs)
+    if (!ofs.is_open())
         return false;
     ofs.write(data.data(), data.size());
-    //CHECK -1 et 0
+    if (!ofs) {
+        ofs.close();
+        return false;
+    }
     ofs.close();
+    if (!ofs)
+        return false;
     return true;
 }
 

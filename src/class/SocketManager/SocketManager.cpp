@@ -69,6 +69,9 @@ ListeningSocket* SocketManager::getListeningSocket(int fd)
 
 CallbackQueue& SocketManager::getCallbackQueue() { return _callbackQueue; }
 
+std::map<int, CallbackQueue>& SocketManager::getWaitingList() { return _waitinglist; }
+
+
 int SocketManager::getClientSocketFd(void) const { return (_clientSocketFd); }
 
 int SocketManager::getEpollFd(void) const { return (_EpollFd); }
