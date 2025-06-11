@@ -258,7 +258,7 @@
     // Envoie la requête DELETE sur le bon endpoint
     document.getElementById('delete-btn').addEventListener('click', function () {
       if (!confirm("Voulez-vous vraiment supprimer 'TESTWEBSERVFILEUPLOAD.txt' ?")) return;
-      fetch('/uploads/TESTWEBSERVFILEUPLOAD.txt', {
+      fetch('/upload/uploads/TESTWEBSERVFILEUPLOAD.txt', {
         method: 'DELETE',
       }).then(response => {
         if (response.ok) {

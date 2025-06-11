@@ -231,7 +231,7 @@ void ReadCallback::sendErrorResponse(int fd, int status, const std::string& mess
     std::string header = oss.str();
 
     // Queue a WriteCallback to send the error response (body chunked)
-    _manager->getCallbackQueue().push(
+    _manager->getWaitingList()[fd].getQueue().push(
         new WriteCallback(fd, _manager, header, body, _epoll_fd));
 }
 
@@ -259,7 +259,7 @@ void ReadCallback::sendCustomErrorResponse(int fd, int status, const std::string
     std::string header = oss.str();
 
     // Queue a WriteCallback to send the custom error response (body chunked)
-    _manager->getCallbackQueue().push(
+    _manager->getWaitingList()[fd].getQueue().push(
         new WriteCallback(fd, _manager, header, body, _epoll_fd));
 }
 
