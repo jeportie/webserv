@@ -154,7 +154,7 @@ void WriteCallback::execute() {
 void WriteCallback::finalizeConnection() {
     std::cout << "[WriteCallback] ALL DONE: switching fd to EPOLLIN" << std::endl;
     struct epoll_event ev;
-    ev.events = EPOLLIN | EPOLLET;
+    ev.events = EPOLLIN | EPOLLET ;
     ev.data.fd = _fd;
     _manager->safeEpollCtlClient(_epoll_fd, EPOLL_CTL_MOD, _fd, &ev);
     if (_file_fd != -1) {
