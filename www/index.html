@@ -250,19 +250,21 @@
         button.disabled = !input.value;
       });
     });
+
     // Bouton de test autoindex
     document.getElementById('autoindex-btn').addEventListener('click', function () {
       window.location.href = '/autoindex/';
     });
 
-    // Envoie la requête DELETE sur le bon endpoint
-    document.getElementById('delete-btn').addEventListener('click', function () {
+    // Envoie la requête DELETE sur le bon endpoint (gestion plus tolérante : 2xx ou 404 => succès)
+    document.getElementById('delete-btn').addEventListener('click', function (event) {
+      event.preventDefault(); // Par sécurité si jamais ce bouton se retrouve dans un form un jour
       if (!confirm("Voulez-vous vraiment supprimer 'TESTWEBSERVFILEUPLOAD.txt' ?")) return;
       fetch('/upload/uploads/TESTWEBSERVFILEUPLOAD.txt', {
         method: 'DELETE',
       }).then(response => {
-        if (response.ok) {
-          alert("Fichier supprimé avec succès !");
+        if (response.ok || response.status === 404) {
+          alert("Fichier supprimé (ou déjà inexistant) !");
         } else {
           alert("Erreur : impossible de supprimer le fichier.");
         }

@@ -12,6 +12,7 @@
 
 #include "signal_handler.hpp"
 #include <signal.h>
+#include "../Callbacks/WriteCallback.hpp"
 
 
 extern volatile sig_atomic_t g_stop;
@@ -54,6 +55,21 @@ void closeServer(SocketManager &sm)
     {
         close(sm.getEpollFd());
     }
+
+    std::map<int, CallbackQueue>& waitingList = sm.getWaitingList();
+    std::map<int, CallbackQueue>::iterator it_waitlist = waitingList.begin();
+    for(it_waitlist = waitingList.begin(); it_waitlist != waitingList.end(); ++it_waitlist)
+    {
+    while (!it_waitlist->second.getQueue().empty())
+        {
+            WriteCallback* to_delete =  (WriteCallback*)it_waitlist->second.getQueue().front();
+            if(to_delete->get_file_fd() != -1)
+                close (to_delete->get_file_fd());
+            delete to_delete;
+            it_waitlist->second.getQueue().pop();
+        }
+    }
+ 
 
     //traverser la waiting iste et fermer les file fd qui ne snt pas a -1; et supprimer lesobjet de la waiting
 }

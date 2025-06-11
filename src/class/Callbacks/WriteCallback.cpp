@@ -162,3 +162,6 @@ void WriteCallback::finalizeConnection() {
         close(_file_fd);
     }
 }
+
+int WriteCallback::get_file_fd() const
+{ return (_file_fd); }

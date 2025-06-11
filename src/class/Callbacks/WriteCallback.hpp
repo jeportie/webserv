@@ -30,6 +30,7 @@ public:
 
     virtual void execute();
     void finalizeConnection();
+    int get_file_fd() const;
 
 private:
 

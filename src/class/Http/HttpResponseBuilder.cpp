@@ -245,14 +245,12 @@ void HttpResponseBuilder::handlePOST()
     setConnection();
 }
 
-// fonction pour supprimer le fichier
 bool deleteFile(const std::string& path)
 {
-    // std::remove retourne 0 si succès
+    //retourne 0 si succès
     return (unlink(path.c_str()) == 0);
 }
 
-// Gestion DELETE (simplifiée)
 void HttpResponseBuilder::handleDELETE()
 {
     if (_validator.hasMatchedRoute())
@@ -273,15 +271,9 @@ void HttpResponseBuilder::handleDELETE()
     {
         throw HttpException(500, "Internal Server Error", _validator.getErrorPage(500));
     }
-    // Réponse 204 No Content est classique pour un DELETE réussi sans corps de réponse
     _response.setStatus(200, "OK");
     _response.setHeader("Content-Type", "text/plain");
     _response.setBody("File deleted successfully.");
-
-    // Si tu veux renvoyer 200 OK avec un message, décommente ces lignes:
-    // _response.setStatus(200, "OK");
-    // _response.setHeader("Content-Type", "text/plain");
-    // _response.setBody("File deleted successfully.");
     setConnection();
 }
 
