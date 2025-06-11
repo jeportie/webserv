@@ -1,49 +1,21 @@
-TO DO ( apres correction blanche) :
-
-- bien tester les autoindex // A FAIRE UN BOUTON
-- bien tester les requetes chunked // FAIRE UN BOUTON 
-- bien tester le file upload //FAIRE UN BOUTON 
-
- 
-Bouton “Dossier autoindex”
-
-<a href="/uploads/">Voir l’autoindex (GET /uploads/)</a>
-
-
-Formulaire POST classique (echo)
-
-<form action="/echo" method="POST">
-  <input type="text" name="message" placeholder="Message à echo">
-  <button type="submit">POST /echo</button>
-</form>
-
-
-(Bonus) Formulaire qui POST vers un CGI
-
-<form action="/cgi-bin/script.py" method="POST">
-  <input type="text" name="data" placeholder="POST vers CGI">
-  <button type="submit">POST CGI</button>
-</form>
-
-Boutons pour tester les erreurs HTTP
-
-<a href="/404-toto">404 Not Found</a>
-<a href="/forbidden">403 Forbidden</a>
-<a href="/error-500">500 Internal Server Error</a>
-
-7. PERSISTANCE & REQUÊTES EN JS
-
-    Test “keep-alive” (simple reload avec F5, observe que la socket reste ouverte dans les headers)
-
-    Console JS pour faire du fetch (bonus)
-    Pour tester à la main, ouvrir console, et faire :
-
-fetch('/uploads/TESTWEBSERVFILEUPLOAD.txt').then(r=>r.text()).then(console.log)
+mettre des errorcallback dans writecallback a la place des closecallback            //GESTION ERROR
 
 
 
+7h30: cafe 
+7h35 : correction CPP09
 
-revoir les logs epurer
+8h15 : fiche de correction etape par etape 
+
+10h30 : cafe
+
+10h45 : effacer tous lesprints de debug
+
+11h00 : epurer les log de webserv.log
+
+12h00 : ajout des boutons sur la page html pour prouver au correcteur tout 
 
 
-voir CHECK 
+13h00 : repas 
+
+14h00 : register + correction 

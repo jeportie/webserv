@@ -88,7 +88,7 @@ void WriteCallback::execute() {
         size_t toSend = _chunkBuffer.size() - _chunkSent;
         written = send(_fd, _chunkBuffer.c_str() + _chunkSent, toSend, MSG_NOSIGNAL);
         if (written < 0) {
-            //GETIO ERROR
+            //GESTION ERROR
             _manager->getCallbackQueue().push(new CloseCallback(_fd, _manager, -1));
             return;
         }
