@@ -263,6 +263,7 @@ void HttpResponseBuilder::handleDELETE()
         }
     }
     std::string path = resolveTargetPath();
+    std::cout << "PATH =" << path << std::endl;
     if (!fileExists(path))
     {
         throw HttpException(404, "Not Found", _validator.getErrorPage(404));
@@ -300,6 +301,7 @@ std::string HttpResponseBuilder::resolveTargetPath()
         indexFiles  = route.indexFiles;
         indexIsSet  = route.indexIsSet;
         defaultFile = route.defaultFile;
+        std::cout << "UPLOADSTORE = " << route.uploadStore << std::endl;
     }
     else
     {
@@ -309,6 +311,8 @@ std::string HttpResponseBuilder::resolveTargetPath()
         indexIsSet                     = serverConf.indexIsSet;
         defaultFile                    = "index.html";  // Fallback
     }
+
+    std::cout << "ROOT = " << root << std::endl;
 
     // Retirer la partie routepath de l'uri
     if (!routepath.empty() && routepath != "/" && uri.find(routepath) == 0)

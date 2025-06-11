@@ -122,7 +122,7 @@ ClientSocket* ListeningSocket::safeAccept(int epoll_fd)
     // If epoll_fd is valid, register the client with epoll
     if (epoll_fd >= 0)
     {
-        client_ev.events  = EPOLLIN | EPOLLET | EPOLLOUT;
+        client_ev.events  = EPOLLIN | EPOLLET;
         client_ev.data.fd = clientFd;
 
         if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, clientFd, &client_ev) < 0)

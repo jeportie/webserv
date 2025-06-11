@@ -1,5 +1,5 @@
 server {
-    listen 8086;
+    listen 8087;
     root www;
     error_page 404 /errors/404.html;
     allowed_methods POST GET DELETE;
