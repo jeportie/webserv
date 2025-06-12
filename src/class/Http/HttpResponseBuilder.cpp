@@ -137,6 +137,9 @@ void HttpResponseBuilder::handleGET()
             throw HttpException(403, "Forbidden", _validator.getErrorPage(403));
 
         std::string output = runCgiScript(_request, route.cgiExecutor.second, _validator);
+        if (output.empty())
+            throw HttpException(500, "Internal Server Error : CGI does nothing", _validator.getErrorPage(500));
+
         _response.setStatus(200, "OK");
         setChunkedHeaders();
         _response.parseCgiOutputAndSet(output);

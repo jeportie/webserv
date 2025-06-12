@@ -221,6 +221,7 @@
       </button>
       <button id="redirect-btn">Tester la redirection</button>
       <a href="/cgi-bin/script.py">CGI Script PYTHON</a>
+      <button id="cgi-post-btn">CGI Script POST</button>
       <a href="/docs">Inexistant location</a>
       <button id="autoindex-btn">Tester l'autoindex</button>
       <button onclick="sendChunked()">Tester POST chunked (curl-like)</button>
@@ -231,7 +232,6 @@
   http://localhost:8088/upload/ ");
         }
       </script>
-
     </div>
   </main>
   <footer>
@@ -252,32 +252,47 @@
     });
 
     // Envoie la requête DELETE sur le bon endpoint
-document.getElementById('delete-btn').addEventListener('click', function () {
-  fetch('/upload/uploads/TESTWEBSERVFILEUPLOAD.txt', {
-    method: 'DELETE',
-  })
-    .then(response => {
-      if (response.status === 200) {
-        // Optionnel : tu peux aussi afficher la réponse texte dans l'alerte
-        return response.text().then(text => {
-          alert("Fichier supprimé avec succès !");
-          // Tu peux aussi rediriger ou rafraîchir si besoin après la pop-up
-          // location.reload();
+    document.getElementById('delete-btn').addEventListener('click', function () {
+      fetch('/upload/uploads/TESTWEBSERVFILEUPLOAD.txt', {
+        method: 'DELETE',
+      })
+        .then(response => {
+          if (response.status === 200) {
+            return response.text().then(text => {
+              alert("Fichier supprimé avec succès !");
+            });
+          } else {
+            return response.text().then(text => {
+              document.open();
+              document.write(text);
+              document.close();
+            });
+          }
+        })
+        .catch(error => {
+          document.body.innerHTML = "Erreur réseau ou serveur !";
         });
-      } else {
-        // Affiche la page HTML d'erreur (ou ce que le serveur a renvoyé)
-        return response.text().then(text => {
+    });
+
+    // Bouton de test CGI POST
+    document.getElementById('cgi-post-btn').addEventListener('click', function () {
+      fetch('/cgi-bin/script.py', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain'
+        },
+        body: 'this is injectioncgi'
+      })
+        .then(response => response.text())
+        .then(text => {
           document.open();
           document.write(text);
           document.close();
+        })
+        .catch(error => {
+          document.body.innerHTML = "Erreur réseau ou serveur !";
         });
-      }
-    })
-    .catch(error => {
-      document.body.innerHTML = "Erreur réseau ou serveur !";
     });
-});
-
 
     // Bouton de test de redirection
     document.getElementById('redirect-btn').addEventListener('click', function () {

@@ -162,8 +162,9 @@ std::string HttpResponseBuilder::runCgiScript(HttpRequest&       request,
         {
             while (total_written < (ssize_t) request.body.size())
             {
-                written = write(
-                    pipe_in[1], request.body.c_str() + total_written, request.body.size() - total_written);
+                written = write(pipe_in[1],
+                                request.body.c_str() + total_written,
+                                request.body.size() - total_written);
                 if (written == -1)
                 {
                     close(pipe_in[1]);
@@ -178,6 +179,17 @@ std::string HttpResponseBuilder::runCgiScript(HttpRequest&       request,
         close(pipe_in[1]);  // Très important, sinon CGI peut rester bloqué
         status  = 0;
         bool ok = waitWithTimeout(pid, 5, status);
+        if (!ok)
+        {
+            close(pipe_out[0]);
+            throw HttpException(504, "Gateway Timeout", _validator.getErrorPage(504));
+        }
+        else if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
+        {
+            close(pipe_out[0]);
+            throw HttpException(
+                500, "Internal Server Error : CGI failed", _validator.getErrorPage(500));
+        }
         // Lecture de la sortie du CGI
         std::string output;
 
@@ -190,8 +202,6 @@ std::string HttpResponseBuilder::runCgiScript(HttpRequest&       request,
             throw HttpException(500,
                                 "Internal server error : read in children process failed",
                                 _validator.getErrorPage(500));
-        if (!ok)
-            throw HttpException(504, "Gateway Timeout", _validator.getErrorPage(504));
         // Option : vérifier le code de retour, détecter erreurs du script...
         return (output);
     }
