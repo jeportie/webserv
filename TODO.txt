@@ -1,14 +1,14 @@
-8h15 : fiche de correction etape par etape 
+test choix du serverconfig :
 
-10h30 : cafe
-
-10h45 : effacer tous lesprints de debug
-
-11h00 : epurer les log de webserv.log
-
-12h00 : ajout des boutons sur la page html pour prouver au correcteur tout 
+curl --resolve example.com:8085:127.0.0.1 http://example.com:8085/
 
 
-13h00 : repas 
+test methode inexistante : 
 
-14h00 : register + correction 
+curl -X PROUT http://localhost:8087/upload/uploads/TESTWEBSERVFILEUPLOAD.txt
+
+
+test big file curl -v -X POST \
+  -H "Transfer-Encoding: chunked" \                                           
+  -F "file=@bigfile.txt" \
+  http://localhost:8088/upload/

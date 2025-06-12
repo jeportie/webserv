@@ -33,11 +33,9 @@ int ListeningSocket::safeFcntl(int fd, int cmd, int flag)
 
 int ListeningSocket::setNonBlocking(int fd)
 {
-    int flags;
     int retFd;
 
-    flags = safeFcntl(fd, F_GETFL, 0);
-    retFd = safeFcntl(fd, F_SETFL, flags | O_NONBLOCK);
+    retFd = safeFcntl(fd, F_SETFL, O_NONBLOCK);
 
     _isNonBlocking = true;
 
