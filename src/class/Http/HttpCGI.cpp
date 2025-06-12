@@ -33,22 +33,47 @@ std::vector<std::string> buildCgiEnv(const HttpRequest& request, const std::stri
 {
     std::vector<std::string> env;
     std::ostringstream       ss;
-    // Ajout de tous les element de la httpRequest sous la forme de char* a l'env. On peut en
-    // ajouter d'autre si besoin mais cela sont les elements requis par le norme pour lancer un
-    // process CGI
+
+    // SCRIPT_NAME : partie de l’URL jusqu’au nom du script (logique)
+    // On suppose que request.path commence par le chemin logique du script
+    std::string scriptName;
+    size_t pos = request.path.find_last_of('/');
+    if (pos != std::string::npos)
+    {
+        // on extrait le nom du script (ex: script.py)
+        std::string scriptFile = scriptPath.substr(scriptPath.find_last_of('/') + 1);
+        size_t scriptPos = request.path.find(scriptFile);
+        if (scriptPos != std::string::npos)
+        {
+            scriptName = request.path.substr(0, scriptPos + scriptFile.length());
+        }
+    }
+    if (scriptName.empty())
+        scriptName = request.path; // fallback
+
+    // PATH_INFO = ce qui vient après SCRIPT_NAME
+    std::string pathInfo;
+    if (request.path.size() > scriptName.size())
+        pathInfo = request.path.substr(scriptName.size());
+
+    // Ajout des variables CGI obligatoires
     env.push_back("GATEWAY_INTERFACE=CGI/1.1");
     env.push_back("REQUEST_METHOD=" + request.methodString());
-    // Adapte à ta classe
     env.push_back("SCRIPT_FILENAME=" + scriptPath);
-    env.push_back("SCRIPT_NAME=" + scriptPath);
+    env.push_back("SCRIPT_NAME=" + scriptName);
     env.push_back("SERVER_PROTOCOL=HTTP/1.1");
+    env.push_back("PATH_INFO=" + pathInfo);
+
     ss << request.body.size();
     env.push_back("CONTENT_LENGTH=" + ss.str());
+
     if (request.headers.count("Content-Type"))
         env.push_back("CONTENT_TYPE=" + request.headers.at("Content-Type")[0]);
+
     if (request.raw_query.length())
         env.push_back("QUERY_STRING=" + request.raw_query);
-    // Ajout de tous les headers sous la forme HTTP_NAME=VAL, en bouclant sur la
+
+    // Headers HTTP_* formatés
     for (std::map<std::string, std::vector<std::string> >::const_iterator it
          = request.headers.begin();
          it != request.headers.end();
@@ -64,11 +89,13 @@ std::vector<std::string> buildCgiEnv(const HttpRequest& request, const std::stri
         }
         std::string http_key = "HTTP_";
         for (size_t i = 0; i < key.size(); ++i)
-            http_key += (key[i] == '-' ? '_' : toupper(key[i]));
+            http_key += (key[i] == '-' ? '_' : std::toupper(key[i]));
         env.push_back(http_key + "=" + val);
     }
-    return (env);
+
+    return env;
 }
+
 
 char** vectorToEnv(const std::vector<std::string>& env)
 {
