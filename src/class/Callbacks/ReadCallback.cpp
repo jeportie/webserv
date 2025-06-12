@@ -53,7 +53,7 @@ void ReadCallback::execute()
 
     client                                  = NULL;
     const std::map<int, ClientSocket*>& map = _manager->getClientMap();
-    std::cout << "fd - " << _fd << std::endl;
+    // std::cout << "fd : " << _fd << std::endl;
     std::map<int, ClientSocket*>::const_iterator it = map.find(_fd);
     (it != map.end()) ? client = it->second : NULL;
     if (!client)
@@ -71,7 +71,7 @@ void ReadCallback::execute()
         if (!readFromClient(_fd, client))
             return;
 
-        std::cout << client->requestData.getBuffer() << std::endl;
+        // std::cout << client->requestData.getBuffer() << std::endl;
         // debug
 
         if (client->requestData.getBuffer().empty())

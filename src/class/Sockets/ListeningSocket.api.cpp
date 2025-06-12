@@ -116,7 +116,7 @@ ClientSocket* ListeningSocket::safeAccept(int epoll_fd)
 
     oss << LOG_ACCEPTED_CONNECTION << client->getClientIP() << ":" << client->getClientPort()
         << std::endl;
-    std::cout << oss.str();
+    // std::cout << oss.str();
     LOG_ERROR(INFO, SOCKET_ERROR, oss.str(), __FUNCTION__);
 
     // If epoll_fd is valid, register the client with epoll

@@ -56,23 +56,19 @@ bool ReadCallback::readFromClient(int fd, ClientSocket* client)
         }
         else if (n == 0)
         {
-            std::cout << "jai recu 0" << std::endl;
             _manager->getCallbackQueue().push(new CloseCallback(_fd, _manager, -1));
             return false; // signaler fermeture
         }
         else // n = -1
         {
-            std::cout << "jai recu -1" << std::endl;
 
             if (buf.empty())
             {
-                std::cout << "je suis empty" << std::endl;
                 _manager->getCallbackQueue().push(new CloseCallback(_fd, _manager, -1));
                 return false;
             }
             else
             {
-                std::cout << "je suis pas empty" << std::endl;
                 return true;
             }
         }

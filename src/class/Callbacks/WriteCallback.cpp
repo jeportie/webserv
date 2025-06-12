@@ -98,7 +98,7 @@ void WriteCallback::execute()
     if (!_headerDone)
     {
         size_t toSend = _header.size() - _headerSent;
-        std::cout << "TO SEND : " << _header << std::endl;
+        // std::cout << "TO SEND : " << _header << std::endl;
 
         written = send(_fd, _header.c_str() + _headerSent, toSend, MSG_NOSIGNAL);
         if (written < 0)
@@ -120,7 +120,7 @@ void WriteCallback::execute()
     if (!_chunkBuffer.empty())
     {
         size_t toSend = _chunkBuffer.size() - _chunkSent;
-        std::cout << "TO SEND : " << _chunkBuffer << std::endl;
+        // std::cout << "TO SEND : " << _chunkBuffer << std::endl;
         written = send(_fd, _chunkBuffer.c_str() + _chunkSent, toSend, MSG_NOSIGNAL);
         if (written < 0)
         {
@@ -200,14 +200,14 @@ void WriteCallback::execute()
 // Nouvelle méthode privée : finalisation de la connexion après le dernier chunk envoyé
 void WriteCallback::finalizeConnection()
 {
-    std::cout << "[WriteCallback] ALL DONE: switching fd to EPOLLIN" << std::endl;
+    // std::cout << "[WriteCallback] ALL DONE: switching fd to EPOLLIN" << std::endl;
     struct epoll_event ev;
     ev.events  = EPOLLIN | EPOLLET;
     ev.data.fd = _fd;
     _manager->safeEpollCtlClient(_epoll_fd, EPOLL_CTL_MOD, _fd, &ev);
     if (_file_fd != -1)
     {
-        std::cout << "[WriteCallback] FILE: closing file_fd=" << _file_fd << std::endl;
+        // std::cout << "[WriteCallback] FILE: closing file_fd=" << _file_fd << std::endl;
         close(_file_fd);
     }
 }

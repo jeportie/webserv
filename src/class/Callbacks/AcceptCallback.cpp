@@ -56,7 +56,7 @@ void AcceptCallback::execute()
         client->touch();  // Init timer for the new client
         oss << "New connection from " << client->getClientIP() << ":" << client->getClientPort()
         << " (fd=" << clientFd << ")" << std::endl;
-            std::cout << oss.str();
+            // std::cout << oss.str();
         LOG_ERROR(INFO, CALLBACK_ERROR, oss.str(), __FUNCTION__);
     }
     catch (const std::exception& e)

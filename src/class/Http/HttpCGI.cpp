@@ -117,7 +117,6 @@ std::string HttpResponseBuilder::runCgiScript(HttpRequest&       request,
     ssize_t     bytes_read;
     int         status;
     std::string scriptPath = resolveTargetPath();
-    std::cout << "CGI USE : " << scriptPath << std::endl;
     if (pipe(pipe_in) == -1 || pipe(pipe_out) == -1)
         throw HttpException(
             500, "Internal server error : pipe() failed", _validator.getErrorPage(500));

@@ -59,7 +59,7 @@ void SocketManager::init_connect()
             THROW_ERROR(CRITICAL, SOCKET_ERROR, oss.str(), __FUNCTION__);
         }
 
-        socket.safeListen(10);
+        socket.safeListen(128);
         socket_fd = socket.getFd();
 
         safeRegisterToEpoll(epoll_fd, socket_fd);
@@ -67,7 +67,7 @@ void SocketManager::init_connect()
         _listeningSockets.push_back(socket);
         
         oss << "Socket listening on port " << port << std::endl;
-        std::cout << oss.str();
+        // std::cout << oss.str();
         LOG_ERROR(INFO, CALLBACK_ERROR, oss.str(), __FUNCTION__);
         oss.str("");
         oss.clear();
@@ -88,7 +88,7 @@ void SocketManager::eventLoop(int epoll_fd)
     {
         /* 1) Wait up to CHECK_INTERVAL_MS for any I/O */
         n = epoll_wait(epoll_fd, &events[0], MAXEVENTS, checkIntervalMs);
-        std::cout << "N =" << n << std::endl;
+        // std::cout << "N =" << n << std::endl;
         if (n < 0)
         {
             if (errno == EINTR)
@@ -199,7 +199,7 @@ void SocketManager::cleanupClientSocket(int fd, int epoll_fd)
     it = _clientSockets.find(fd);
     if (it != _clientSockets.end())
     {
-        std::cout << "CLOSE[FD = " <<  it->first << "]" << std::endl;
+        // std::cout << "CLOSE[FD = " <<  it->first << "]" << std::endl;
         close(it->first);
         delete it->second;
         _clientSockets.erase(it);

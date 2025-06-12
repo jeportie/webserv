@@ -149,7 +149,6 @@ void HttpResponseBuilder::handleGET()
         }
     }
     std::string path = resolveTargetPath();
-    std::cout << "PATH =" << path << std::endl;
     // Si le chemin est un répertoire sans index
     if (isDirectory(path))
     {
@@ -269,7 +268,6 @@ void HttpResponseBuilder::handleDELETE()
         }
     }
     std::string path = resolveTargetPath();
-    std::cout << "PATH =" << path << std::endl;
     if (!fileExists(path))
     {
         throw HttpException(404, "Not Found", _validator.getErrorPage(404));

@@ -53,7 +53,6 @@ std::string HttpResponseBuilder::resolveTargetPath()
         indexFiles  = route.indexFiles;
         indexIsSet  = route.indexIsSet;
         defaultFile = route.defaultFile;
-        std::cout << "UPLOADSTORE = " << route.uploadStore << std::endl;
     }
     else
     {
@@ -64,7 +63,6 @@ std::string HttpResponseBuilder::resolveTargetPath()
         defaultFile                    = "index.html";  // Fallback
     }
 
-    std::cout << "ROOT = " << root << std::endl;
 
     // Retirer la partie routepath de l'uri
     if (!routepath.empty() && routepath != "/" && uri.find(routepath) == 0)
@@ -138,7 +136,6 @@ void HttpResponseBuilder::setConnection()
             connection = it->second[0];
 
 
-        std::cout << "CONNECTION = " << connection << std::endl;
         if (connection == "keep-alive")
             _response.setHeader("Connection", "keep-alive");
         else
