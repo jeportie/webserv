@@ -67,7 +67,7 @@ void SocketManager::init_connect()
         _listeningSockets.push_back(socket);
         
         oss << "Socket listening on port " << port << std::endl;
-        // std::cout << oss.str();
+        std::cout << oss.str();
         LOG_ERROR(INFO, CALLBACK_ERROR, oss.str(), __FUNCTION__);
         oss.str("");
         oss.clear();
