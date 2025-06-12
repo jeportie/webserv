@@ -1,5 +1,5 @@
 server {
-    listen 8085;
+    listen 8087;
     root www;
     error_page 404 /errors/404.html;
     allowed_methods POST GET DELETE;
@@ -29,12 +29,12 @@ server {
 }
 
 server {
-    listen 8085;
-    server_name cacahuete;
+    listen 8087;
+    server_name example.com;
     root www;
     error_page 404 /errors/404.html;
     allowed_methods POST GET DELETE;
-
+    index index2.html;
     location /cgi-bin/ {
         root www/prout;
         cgi_executor .py /usr/bin/python3;
@@ -60,8 +60,7 @@ server {
 }
 
 server {
-    listen 8086;
-    server_name cacahuete;
+    listen 8088;
     root www;
     error_page 404 /errors/404.html;
     allowed_methods POST GET DELETE;

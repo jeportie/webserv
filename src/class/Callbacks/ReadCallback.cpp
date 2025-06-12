@@ -71,7 +71,7 @@ void ReadCallback::execute()
         if (!readFromClient(_fd, client))
             return;
 
-        // std::cout << client->requestData.getBuffer() << std::endl;
+        std::cout << client->requestData.getBuffer() << std::endl;
         // debug
 
         if (client->requestData.getBuffer().empty())
@@ -99,7 +99,7 @@ void ReadCallback::execute()
         std::string         headers = formatter.formatHeadersOnly(resp);
 
         struct epoll_event ev;
-        ev.events  = EPOLLOUT;
+        ev.events  = EPOLLOUT | EPOLLET;
         ev.data.fd = _fd;
         _manager->safeEpollCtlClient(_epoll_fd, EPOLL_CTL_MOD, _fd, &ev);
 
@@ -129,7 +129,7 @@ void ReadCallback::execute()
         if (he.customPage().empty())
         {
             struct epoll_event ev;
-            ev.events  = EPOLLOUT;
+            ev.events  = EPOLLOUT | EPOLLET ;
             ev.data.fd = _fd;
             _manager->safeEpollCtlClient(_epoll_fd, EPOLL_CTL_MOD, _fd, &ev);
             sendErrorResponse(_fd, he.status(), he.what());
@@ -137,7 +137,7 @@ void ReadCallback::execute()
         else
         {
             struct epoll_event ev;
-            ev.events  = EPOLLOUT;
+            ev.events  = EPOLLOUT | EPOLLET;
             ev.data.fd = _fd;
             _manager->safeEpollCtlClient(_epoll_fd, EPOLL_CTL_MOD, _fd, &ev);
             sendCustomErrorResponse(_fd, he.status(), he.customPage());

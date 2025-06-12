@@ -99,8 +99,15 @@ std::string RequestData::findHostInHeaders()
 
     for (; it != _parsedHeaders.end(); ++it)
     {
-        if (it->first == "host")
-            return (it->second[0]);
+        if (it->first == "Host")
+        {
+            std::string host = it->second[0];
+            size_t      pos  = host.find(':');
+            if (pos != std::string::npos)
+                return host.substr(0, pos);
+            else
+                return host;
+        }
     }
     return (rtn);
 }
