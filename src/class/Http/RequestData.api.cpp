@@ -138,8 +138,9 @@ ServerConfig RequestData::findMyConfig(int port, std::string host, IVSCMAP serve
         throw HttpException(400, "Bad Request: no server config for port", "");
 
     if (host.empty())
+    {
         return configs[0];  // retourner la première config par défaut
-
+    }
     // Recherche manuelle car pas de lambda en C++98
     for (std::vector<ServerConfig>::iterator itConfig = configs.begin(); itConfig != configs.end();
          ++itConfig)
@@ -154,8 +155,7 @@ ServerConfig RequestData::findMyConfig(int port, std::string host, IVSCMAP serve
                 return config;  // config trouvée
         }
     }
-
-    throw HttpException(400, "Bad Request: no matching server name", "");
+    return configs[0];
 }
 
 void RequestData::initServerConfig(IVSCMAP ServerConfigMap)

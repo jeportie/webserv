@@ -3,6 +3,7 @@ server {
     root www;
     error_page 404 /errors/404.html;
     allowed_methods POST GET DELETE;
+    client_max_body_size 10;
 
     location /cgi-bin/ {
         root www/prout;

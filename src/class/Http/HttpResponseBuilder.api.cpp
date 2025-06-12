@@ -90,7 +90,6 @@ std::string HttpResponseBuilder::resolveTargetPath()
             for (std::vector<std::string>::iterator it = indexFiles.begin(); it != indexFiles.end();
                  ++it)
             {
-                std::cout << "JE PASSE ICI dsfjghsdhgjkdjghdfk?" << std::endl;
                 std::string candidate = fullPath + *it;
                 if (fileExists(candidate))
                     return candidate;
