@@ -277,6 +277,7 @@ void HttpResponseBuilder::handleDELETE()
     }
     _response.setStatus(200, "OK");
     _response.setHeader("Content-Type", "text/plain");
+    setChunkedHeaders();
     _response.setBody("File deleted successfully.");
     setConnection();
 }

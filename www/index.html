@@ -256,16 +256,28 @@ document.getElementById('delete-btn').addEventListener('click', function () {
   fetch('/upload/uploads/TESTWEBSERVFILEUPLOAD.txt', {
     method: 'DELETE',
   })
-    .then(response => response.text())
-    .then(text => {
-      document.open();
-      document.write(text);
-      document.close();
+    .then(response => {
+      if (response.status === 200) {
+        // Optionnel : tu peux aussi afficher la réponse texte dans l'alerte
+        return response.text().then(text => {
+          alert("Fichier supprimé avec succès !");
+          // Tu peux aussi rediriger ou rafraîchir si besoin après la pop-up
+          // location.reload();
+        });
+      } else {
+        // Affiche la page HTML d'erreur (ou ce que le serveur a renvoyé)
+        return response.text().then(text => {
+          document.open();
+          document.write(text);
+          document.close();
+        });
+      }
     })
     .catch(error => {
       document.body.innerHTML = "Erreur réseau ou serveur !";
     });
 });
+
 
     // Bouton de test de redirection
     document.getElementById('redirect-btn').addEventListener('click', function () {

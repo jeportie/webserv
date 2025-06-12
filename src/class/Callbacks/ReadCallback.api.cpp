@@ -226,6 +226,7 @@ void ReadCallback::sendErrorResponse(int fd, int status, const std::string& mess
     oss << "HTTP/1.1 " << status << " " << message << "\r\n";
     oss << "Content-Type: text/html\r\n";
     oss << "Transfer-Encoding: chunked\r\n";
+    oss << "Connection: close\r\n";
     oss << "\r\n";
     std::string header = oss.str();
 
