@@ -61,7 +61,7 @@ void ReadCallback::execute()
         // Cas normal si la socket a été récemment close
         // Tu peux commenter cette ligne ou mettre en debug uniquement
         // LOG_ERROR(ERROR, CALLBACK_ERROR, "ClientSocket not found for fd",
-        // "ReadCallback::execute"); _manager->getCallbackQueue().push(new ErrorCallback(_fd,
+        // "ReadCallback::execute"); _manager->getCallbackQueue().push(new _fd,
         // _manager, -1, SOFT));
         return;
     }
@@ -143,30 +143,18 @@ void ReadCallback::execute()
             sendCustomErrorResponse(_fd, he.status(), he.customPage());
         }
         // retire de epoll, delete ClientSocket, close(fd)
-        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1, SOFT));
+        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, _manager->getEpollFd(), SOFT));
 
         return;  // on arrête là pour ce fd
     }
     catch (const std::exception& e)
     {
         LOG_ERROR(ERROR, CALLBACK_ERROR, e.what(), "ReadCallback::execute");
-        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1, FATAL));
+        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, _manager->getEpollFd(), FATAL));
     }
     catch (...)
     {
         LOG_ERROR(ERROR, CALLBACK_ERROR, "Unknown error", "ReadCallback::execute");
-        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, -1, FATAL));
+        _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, _manager->getEpollFd(), FATAL));
     }
 }
-
-
-// if (!resp.getFileToStream().empty()) {
-//     int file_fd = open(resp.getFileToStream().c_str(), O_RDONLY);
-// if (file_fd < 0) { /* gestion erreur */ }
-//     _manager->getCallbackQueue().push(
-// new WriteCallback(_fd, _manager, headers, file_fd, _epoll_fd));
-// } else {
-// std::cout << "Body envoyé dans WriteCallback : [" << resp.getBody() << "]" << std::endl;
-// _manager->getCallbackQueue().push(
-// new WriteCallback(_fd, _manager, headers, resp.getBody(), _epoll_fd));
-//}

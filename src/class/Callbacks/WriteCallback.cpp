@@ -71,8 +71,8 @@ void WriteCallback::execute() {
     if (!_headerDone) {
         size_t toSend = _header.size() - _headerSent;
         written = send(_fd, _header.c_str() + _headerSent, toSend, MSG_NOSIGNAL);
-        if (written < 0) { // GESTION ERROR
-            _manager->getCallbackQueue().push(new CloseCallback(_fd, _manager, -1));
+        if (written < 0) { 
+            _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, _manager->getEpollFd(), FATAL));
             return;
         }
         _headerSent += written;
@@ -88,8 +88,8 @@ void WriteCallback::execute() {
         size_t toSend = _chunkBuffer.size() - _chunkSent;
         written = send(_fd, _chunkBuffer.c_str() + _chunkSent, toSend, MSG_NOSIGNAL);
         if (written < 0) {
-            //GESTION ERROR
-            _manager->getCallbackQueue().push(new CloseCallback(_fd, _manager, -1));
+            
+            _manager->getCallbackQueue().push(new ErrorCallback(_fd, _manager, _manager->getEpollFd(), FATAL));
             return;
         }
         _chunkSent += written;
