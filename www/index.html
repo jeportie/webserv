@@ -220,22 +220,17 @@
         Supprimer TESTWEBSERVFILEUPLOAD.txt
       </button>
       <button id="redirect-btn">Tester la redirection</button>
-      <a href="/cgi-bin/script.py">CGI Script</a>
-      <a href="/docs">Documentation</a>
+      <a href="/cgi-bin/script.py">CGI Script PYTHON</a>
+      <a href="/docs">Inexistant location</a>
       <button id="autoindex-btn">Tester l'autoindex</button>
       <button onclick="sendChunked()">Tester POST chunked (curl-like)</button>
       <script>
         function sendChunked() {
-          alert("Ce test doit être effectué avec curl ou un client HTTP, car le navigateur bloque le chunked streaming en HTTP. ");
+          alert("Ce test doit être effectué avec curl car le navigateur bloque le chunked streaming en HTTP \n cmd : curl -v -X POST \-H \"Transfer-Encoding: chunked\" \
+  -F \"file=@bigfile.txt\" \
+  http://localhost:8088/upload/ ");
         }
       </script>
-      <pre>
- test sendChunked curl -v -X POST \                  
-  -H "Transfer-Encoding: chunked" \
-  -F "file=@bigfile.txt" \
-  http://localhost:8088/upload/
-</pre>   fetch('/upload/uploads/TESTWEBSERVFILEUPLOAD.txt', {
-        method: 'DELETE',
 
     </div>
   </main>

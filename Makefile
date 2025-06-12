@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: anastruc <anastruc@student.42.fr>          +#+  +:+       +#+         #
+#    By: fsalomon <fsalomon@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/04/06 08:55:40 by jeportie          #+#    #+#              #
-#    Updated: 2025/06/06 17:35:53 by anastruc         ###   ########.fr        #
+#    Updated: 2025/06/12 08:32:05 by fsalomon         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -51,6 +51,7 @@ SRC = \
   src/class/Http/HttpRequest.cpp \
   src/class/Http/HttpResponse.cpp \
   src/class/Http/HttpResponseBuilder.cpp \
+  src/class/Http/HttpResponseBuilder.api.cpp \
   src/class/Http/RequestData.api.cpp \
   src/class/Http/RequestData.cpp \
   src/class/Http/RequestLine.cpp \
