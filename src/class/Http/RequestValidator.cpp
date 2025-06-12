@@ -112,6 +112,7 @@ void RequestValidator::validateMethod()
 	}
 	else if (std::find(allowed.begin(), allowed.end(), method) == allowed.end())
 	{
+		std::cout << "METODE INTERDIIIIIITE" << std::endl;
 		throw HttpException(405, "Method Not Allowed", getErrorPage(405));
 	}
 }
