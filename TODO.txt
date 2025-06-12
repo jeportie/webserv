@@ -1,10 +1,3 @@
-mettre des errorcallback dans writecallback a la place des closecallback            //GESTION ERROR
-
-
-
-7h30: cafe 
-7h35 : correction CPP09
-
 8h15 : fiche de correction etape par etape 
 
 10h30 : cafe

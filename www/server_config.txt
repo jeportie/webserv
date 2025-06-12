@@ -1,11 +1,73 @@
 server {
-    listen 8087;
+    listen 8085;
     root www;
     error_page 404 /errors/404.html;
     allowed_methods POST GET DELETE;
 
     location /cgi-bin/ {
         root www/prout;
+        cgi_executor .py /usr/bin/python3;
+    }
+
+    location /upload/ {
+        root www/toto;
+        allowed_methods POST GET DELETE;
+        upload_enable on;
+        upload_store uploads;
+    }
+
+    location /redirect 
+    {
+        return 301 http://google.com;
+    }
+
+    location /autoindex {
+    root www/html;
+    index index.html;
+    autoindex on;
+    }
+}
+
+server {
+    listen 8085;
+    server_name cacahuete;
+    root www;
+    error_page 404 /errors/404.html;
+    allowed_methods POST GET DELETE;
+
+    location /cgi-bin/ {
+        root www/prout;
+        cgi_executor .py /usr/bin/python3;
+    }
+
+    location /upload/ {
+        root www/toto;
+        allowed_methods POST GET DELETE;
+        upload_enable on;
+        upload_store uploads;
+    }
+
+    location /redirect 
+    {
+        return 301 http://google.com;
+    }
+
+    location /autoindex {
+    root www/html;
+    index index.html;
+    autoindex on;
+    }
+}
+
+server {
+    listen 8086;
+    server_name cacahuete;
+    root www;
+    error_page 404 /errors/404.html;
+    allowed_methods POST GET DELETE;
+
+    location /cgi-bin/ {
+        root www/eronner;
         cgi_executor .py /usr/bin/python3;
     }
 

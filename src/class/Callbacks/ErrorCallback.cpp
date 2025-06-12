@@ -37,8 +37,6 @@ void ErrorCallback::execute()
 {
 	if (_is_fatal)
 	{
-		std::cout << "ici " << std::endl;
 		_manager->getCallbackQueue().push(new CloseCallback(_fd, _manager, _epollFd));
-
 	}
 }

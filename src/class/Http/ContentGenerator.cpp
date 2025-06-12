@@ -19,6 +19,7 @@
 #include <cstddef>  // std::size_t
 #include <string>
 #include <dirent.h>
+#include <unistd.h>
 
 bool fileExists(const std::string& path)
 {
@@ -36,10 +37,8 @@ bool isDirectory(const std::string& path)
     return (stat(path.c_str(), &dirStat) == 0 && S_ISDIR(dirStat.st_mode));
 }
 
-bool isExecutable(const std::string& path)
-{
-    struct stat statbuf;
-    return (stat(path.c_str(), &statbuf) == 0 && (statbuf.st_mode & S_IXUSR));
+bool isExecutable(const std::string& path) {
+    return access(path.c_str(), X_OK) == 0;
 }
 
 bool readFileContent(const std::string& path, std::string& out)

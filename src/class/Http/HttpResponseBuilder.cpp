@@ -129,15 +129,20 @@ void HttpResponseBuilder::handleGET()
 
         if (!route.cgiExecutor.first.empty())
         {
-            // Si la requête cible le script, on exécute le CGI
-            if (!isExecutable(route.cgiExecutor.second) || !isExecutable(scriptPath))
-                throw HttpException(403, "Forbidden", _validator.getErrorPage(403));
-            std::string output = runCgiScript(_request, route.cgiExecutor.second, _validator);
-            _response.setStatus(200, "OK");
-            setChunkedHeaders();
-            _response.parseCgiOutputAndSet(output);
-            setConnection();
-            return;
+
+        if (!fileExists(route.cgiExecutor.second) || !fileExists(scriptPath))
+            throw HttpException(404, "Not Found", _validator.getErrorPage(404));
+
+        if (!isExecutable(route.cgiExecutor.second) || !isExecutable(scriptPath))
+            throw HttpException(403, "Forbidden", _validator.getErrorPage(403));
+
+        std::string output = runCgiScript(_request, route.cgiExecutor.second, _validator);
+        _response.setStatus(200, "OK");
+        setChunkedHeaders();
+        _response.parseCgiOutputAndSet(output);
+        setConnection();
+        return;
+        
         }
     }
     std::string path = resolveTargetPath();
