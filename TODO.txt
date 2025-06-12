@@ -8,7 +8,12 @@ test methode inexistante :
 curl -X PROUT http://localhost:8087/upload/uploads/TESTWEBSERVFILEUPLOAD.txt
 
 
-test big file curl -v -X POST \
+test upload dun big file curl -v -X POST \
   -H "Transfer-Encoding: chunked" \                                           
-  -F "file=@bigfile.txt" \
+  -F "file=@www/toto/uploads/bigfile.txt" \
   http://localhost:8088/upload/
+
+
+  50 client en meme temps qui demande une page simple html pendant 5 min d'ffile except 100%
+
+  siege -b -c 50 -t5m http://localhost:8086/empty.html
